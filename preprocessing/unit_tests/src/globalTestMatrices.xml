@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+  This file contains a few test matrices in a non-standard order.
+-->
+<matrices>
+<global>
+    <flux id="18" name="223" rows="20" columns="20" sparse="true">
+      <entry row="1" column="10"  value="421.2215141241" />
+      <entry row="3" column="10"  value="42.29146891241" />
+      <entry row="6" column="11"  value="5.221445141241" />
+      <entry row="5" column="12"  value="3.295146891241" />
+    </flux>
+    <flux id="2" name="112" rows="4" columns="4" sparse="true"  />
+    <flux id="4"  name="121" rows="10" columns="10" sparse="false" />
+    <flux id="6"  name="123" rows="84" columns="84" sparse="true"  />
+    <flux id="8"  name="132" rows="56" columns="56" sparse="false" />
+    <flux id="13" name="211" rows="84" columns="84" sparse="true"  />
+    <flux id="14" name="212" rows="56" columns="56" sparse="true"  />
+    <flux id="5"  name="122" rows="20" columns="20" sparse="true"  />
+    <flux id="10" name="141" rows="20" columns="20" sparse="true"  />
+    <flux id="16" name="221" rows="10" columns="10" sparse="true"  />
+    <flux id="19" name="232" rows="84" columns="84" sparse="true"  />
+    <flux id="11" name="142" rows="20" columns="20" sparse="false" />
+    <flux id="12" name="143" rows="20" columns="20" sparse="true">
+      <entry row="5"  column="3"  value="91.42215141241" />
+      <entry row="5"  column="4"  value="21.29146891241" />
+      <entry row="13" column="12" value="86.21445141241" />
+    </flux>
+    <flux id="9"  name="133" rows="10" columns="10" sparse="true"  />
+    <flux id="3"  name="113" rows="4" columns="4" sparse="true"  />
+    <flux id="15" name="213" rows="10" columns="10" sparse="true"  />
+    <flux id="7"  name="131" rows="20" columns="20" sparse="true"  />
+    <flux id="1"  name="111" rows="84" columns="5" sparse="true"  />
+    <flux id="17" name="222" rows="56" columns="2" sparse="false" />
+    <flux id="20" name="233" rows="20" columns="1" sparse="true"  />
+
+    <stiffness id="1" name="kXi" sparse="true" />
+    <stiffness id="2" name="kEta" sparse="true" />
+    <stiffness id="3" name="kZeta" sparse="true" />
+  </global>
+</matrices>

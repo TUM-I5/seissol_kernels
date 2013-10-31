@@ -1,0 +1,5484 @@
+// @file
+// This file is part of SeisSol.
+// 
+// @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+// @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
+// 
+// @date 2013-10-13 19:05:58.929321
+// 
+// @section LICENSE
+// This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
+// 
+// According to good scientific practice, publications on results achieved in whole or in part due to this software should cite at least one paper or referring to an URL presenting this software.
+// 
+// The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
+// 
+// Copyright (c) 2012, 2013
+// Technische Universitaet Muenchen
+// Department of Informatics
+// Chair of Scientific Computing
+// http://www5.in.tum.de/
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 
+// Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// All advertising materials mentioning features or use of this software must display the following acknowledgement: This product includes software developed by the Technische Universitaet Muenchen (TUM), Germany, and its contributors.
+// Neither the name of the Technische Universitaet Muenchen, Munich, Germany nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+// 
+// @section DESCRIPTION
+// Remark: This file was generated.
+#ifndef DENSEMATRICESHPPINCLUDE
+#define DENSEMATRICESHPPINCLUDE
+
+#if defined( __SSE3__) || defined(__MIC__)
+#include <immintrin.h>
+#endif
+
+inline void generatedMatrixMultiplication_dense_4_9_4(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=6)
+  {
+    double* b0 = B+(n*4);
+    double* b1 = B+((n+1)*4);
+    double* b2 = B+((n+2)*4);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 4; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=0;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+int m = 0;
+c0 = C+0;
+c1 = C+4;
+c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*4);
+  double* b1 = B+((n+1)*4);
+  double* b2 = B+((n+2)*4);
+  double* a0 = A+0;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 4; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*4);
+    double* b1 = B+((n+1)*4);
+    double* b2 = B+((n+2)*4);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 4; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=-4;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+4;
+double* c2_base = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*4);
+  b1 = B+((n+1)*4);
+  b2 = B+((n+2)*4);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  for (int k = 0; k < 4; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  c0+=4;
+  c1+=4;
+  c2+=4;
+  c0_base+=12;
+  c1_base+=12;
+  c2_base+=12;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 4; k++)
+  {
+    for(int m = 0; m < 4; m++)
+    {
+      C[(n*4)+m] += A[(k*4)+m] * B[(n*4)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 288;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_denseAder_4_9_4(double* A, double* B, double* C, int exit_col, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=6)
+  {
+    double* b0 = B+(n*4);
+    double* b1 = B+((n+1)*4);
+    double* b2 = B+((n+2)*4);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 4; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=0;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+int m = 0;
+c0 = C+0;
+c1 = C+4;
+c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*4);
+  double* b1 = B+((n+1)*4);
+  double* b2 = B+((n+2)*4);
+  double* a0 = A+0;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 4; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*4);
+    double* b1 = B+((n+1)*4);
+    double* b2 = B+((n+2)*4);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 4; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=-4;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+4;
+double* c2_base = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*4);
+  b1 = B+((n+1)*4);
+  b2 = B+((n+2)*4);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  for (int k = 0; k < 4; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  c0+=4;
+  c1+=4;
+  c2+=4;
+  c0_base+=12;
+  c1_base+=12;
+  c2_base+=12;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 4; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    for(int m = 0; m < 4; m++)
+    {
+      C[(n*4)+m] += A[(k*4)+m] * B[(n*4)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 72*exit_col;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_4_9_9(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=6)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=0;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+int m = 0;
+c0 = C+0;
+c1 = C+4;
+c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A+0;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+4;
+double* c2 = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=-4;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=12;
+  c1+=12;
+  c2+=12;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+4;
+double* c2_base = C+8;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  c0+=4;
+  c1+=4;
+  c2+=4;
+  c0_base+=12;
+  c1_base+=12;
+  c2_base+=12;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 9; k++)
+  {
+    for(int m = 0; m < 4; m++)
+    {
+      C[(n*4)+m] += A[(k*4)+m] * B[(n*9)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 648;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_10_9_10(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 6; m+=6)
+  {
+    double* b0 = B+(n*10);
+    double* b1 = B+((n+1)*10);
+    double* b2 = B+((n+2)*10);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 10; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=6;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=24;
+  c1+=24;
+  c2+=24;
+}
+
+int m = 6;
+c0 = C+6;
+c1 = C+16;
+c2 = C+26;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*10);
+  double* b1 = B+((n+1)*10);
+  double* b2 = B+((n+2)*10);
+  double* a0 = A+6;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 10; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=8;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*10);
+    double* b1 = B+((n+1)*10);
+    double* b2 = B+((n+2)*10);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 10; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=2;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+10;
+double* c2_base = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*10);
+  b1 = B+((n+1)*10);
+  b2 = B+((n+2)*10);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 10; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=6;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*10);
+  b1 = B+((n+1)*10);
+  b2 = B+((n+2)*10);
+  a0 = A+8;
+  c_0_0_128 = _mm_load_pd(c0);
+  c_0_1_128 = _mm_load_pd(c1);
+  c_0_2_128 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 10; k++)
+  {
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_pd(a0);
+  a0+=10;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_store_pd(c0, c_0_0_128);
+  _mm_store_pd(c1, c_0_1_128);
+  _mm_store_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  c0_base+=30;
+  c1_base+=30;
+  c2_base+=30;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 10; k++)
+  {
+    for(int m = 0; m < 10; m++)
+    {
+      C[(n*10)+m] += A[(k*10)+m] * B[(n*10)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 1800;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_denseAder_10_9_10(double* A, double* B, double* C, int exit_col, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 6; m+=6)
+  {
+    double* b0 = B+(n*10);
+    double* b1 = B+((n+1)*10);
+    double* b2 = B+((n+2)*10);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 10; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=6;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=24;
+  c1+=24;
+  c2+=24;
+}
+
+int m = 6;
+c0 = C+6;
+c1 = C+16;
+c2 = C+26;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*10);
+  double* b1 = B+((n+1)*10);
+  double* b2 = B+((n+2)*10);
+  double* a0 = A+6;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 10; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=8;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*10);
+    double* b1 = B+((n+1)*10);
+    double* b2 = B+((n+2)*10);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 10; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=2;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+10;
+double* c2_base = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*10);
+  b1 = B+((n+1)*10);
+  b2 = B+((n+2)*10);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 10; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=6;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*10);
+  b1 = B+((n+1)*10);
+  b2 = B+((n+2)*10);
+  a0 = A+8;
+  c_0_0_128 = _mm_load_pd(c0);
+  c_0_1_128 = _mm_load_pd(c1);
+  c_0_2_128 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 10; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_pd(a0);
+  a0+=10;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_store_pd(c0, c_0_0_128);
+  _mm_store_pd(c1, c_0_1_128);
+  _mm_store_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  c0_base+=30;
+  c1_base+=30;
+  c2_base+=30;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 10; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    for(int m = 0; m < 10; m++)
+    {
+      C[(n*10)+m] += A[(k*10)+m] * B[(n*10)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 180*exit_col;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_10_9_9(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 6; m+=6)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=6;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=24;
+  c1+=24;
+  c2+=24;
+}
+
+int m = 6;
+c0 = C+6;
+c1 = C+16;
+c2 = C+26;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A+6;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+  c_1_0 = _mm_load_pd(c0+2);
+  c_1_1 = _mm_load_pd(c1+2);
+  c_1_2 = _mm_load_pd(c2+2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_load_pd(a0);
+  a0+=8;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+  _mm_store_pd(c0+2, c_1_0);
+  _mm_store_pd(c1+2, c_1_1);
+  _mm_store_pd(c2+2, c_1_2);
+
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+10;
+double* c2 = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 0; m+=12)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=2;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=30;
+  c1+=30;
+  c2+=30;
+}
+
+double* c0_base = C+0;
+double* c1_base = C+10;
+double* c2_base = C+20;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+0;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=6;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+8;
+  c_0_0_128 = _mm_load_pd(c0);
+  c_0_1_128 = _mm_load_pd(c1);
+  c_0_2_128 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_pd(a0);
+  a0+=10;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_store_pd(c0, c_0_0_128);
+  _mm_store_pd(c1, c_0_1_128);
+  _mm_store_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  c0_base+=30;
+  c1_base+=30;
+  c2_base+=30;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 9; k++)
+  {
+    for(int m = 0; m < 10; m++)
+    {
+      C[(n*10)+m] += A[(k*10)+m] * B[(n*9)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 1620;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_20_9_20(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 18; m+=6)
+  {
+    double* b0 = B+(n*20);
+    double* b1 = B+((n+1)*20);
+    double* b2 = B+((n+2)*20);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 20; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=16;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=42;
+  c1+=42;
+  c2+=42;
+}
+
+int m = 18;
+c0 = C+18;
+c1 = C+38;
+c2 = C+58;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*20);
+  double* b1 = B+((n+1)*20);
+  double* b2 = B+((n+2)*20);
+  double* a0 = A+18;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 20; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=20;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=60;
+  c1+=60;
+  c2+=60;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 12; m+=12)
+  {
+    double* b0 = B+(n*20);
+    double* b1 = B+((n+1)*20);
+    double* b2 = B+((n+2)*20);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 20; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=12;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=48;
+  c1+=48;
+  c2+=48;
+}
+
+double* c0_base = C+12;
+double* c1_base = C+32;
+double* c2_base = C+52;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*20);
+  b1 = B+((n+1)*20);
+  b2 = B+((n+2)*20);
+  a0 = A+12;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 20; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=16;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=60;
+  c1_base+=60;
+  c2_base+=60;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 20; k++)
+  {
+    for(int m = 0; m < 20; m++)
+    {
+      C[(n*20)+m] += A[(k*20)+m] * B[(n*20)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 7200;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_denseAder_20_9_20(double* A, double* B, double* C, int exit_col, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 18; m+=6)
+  {
+    double* b0 = B+(n*20);
+    double* b1 = B+((n+1)*20);
+    double* b2 = B+((n+2)*20);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 20; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=16;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=42;
+  c1+=42;
+  c2+=42;
+}
+
+int m = 18;
+c0 = C+18;
+c1 = C+38;
+c2 = C+58;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*20);
+  double* b1 = B+((n+1)*20);
+  double* b2 = B+((n+2)*20);
+  double* a0 = A+18;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 20; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=20;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=60;
+  c1+=60;
+  c2+=60;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 12; m+=12)
+  {
+    double* b0 = B+(n*20);
+    double* b1 = B+((n+1)*20);
+    double* b2 = B+((n+2)*20);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 20; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=12;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=48;
+  c1+=48;
+  c2+=48;
+}
+
+double* c0_base = C+12;
+double* c1_base = C+32;
+double* c2_base = C+52;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*20);
+  b1 = B+((n+1)*20);
+  b2 = B+((n+2)*20);
+  a0 = A+12;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 20; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=16;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=60;
+  c1_base+=60;
+  c2_base+=60;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 20; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    for(int m = 0; m < 20; m++)
+    {
+      C[(n*20)+m] += A[(k*20)+m] * B[(n*20)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 360*exit_col;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_20_9_9(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 18; m+=6)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=16;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=42;
+  c1+=42;
+  c2+=42;
+}
+
+int m = 18;
+c0 = C+18;
+c1 = C+38;
+c2 = C+58;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A+18;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=20;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=60;
+  c1+=60;
+  c2+=60;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+20;
+double* c2 = C+40;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 12; m+=12)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=12;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=48;
+  c1+=48;
+  c2+=48;
+}
+
+double* c0_base = C+12;
+double* c1_base = C+32;
+double* c2_base = C+52;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+12;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=16;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=60;
+  c1_base+=60;
+  c2_base+=60;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 9; k++)
+  {
+    for(int m = 0; m < 20; m++)
+    {
+      C[(n*20)+m] += A[(k*20)+m] * B[(n*9)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 3240;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_35_9_35(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 30; m+=6)
+  {
+    double* b0 = B+(n*35);
+    double* b1 = B+((n+1)*35);
+    double* b2 = B+((n+2)*35);
+    double* a0 = A+m;
+    c_0_0 = _mm_loadu_pd(c0);
+    c_0_1 = _mm_loadu_pd(c1);
+    c_0_2 = _mm_loadu_pd(c2);
+    c_1_0 = _mm_loadu_pd(c0+2);
+    c_1_1 = _mm_loadu_pd(c1+2);
+    c_1_2 = _mm_loadu_pd(c2+2);
+    c_2_0 = _mm_loadu_pd(c0+4);
+    c_2_1 = _mm_loadu_pd(c1+4);
+    c_2_2 = _mm_loadu_pd(c2+4);
+
+    for (int k = 0; k < 35; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_loadu_pd(a0);
+    a0+=31;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_storeu_pd(c0, c_0_0);
+    _mm_storeu_pd(c1, c_0_1);
+    _mm_storeu_pd(c2, c_0_2);
+    _mm_storeu_pd(c0+2, c_1_0);
+    _mm_storeu_pd(c1+2, c_1_1);
+    _mm_storeu_pd(c2+2, c_1_2);
+    _mm_storeu_pd(c0+4, c_2_0);
+    _mm_storeu_pd(c1+4, c_2_1);
+    _mm_storeu_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=75;
+  c1+=75;
+  c2+=75;
+}
+
+int m = 30;
+c0 = C+30;
+c1 = C+65;
+c2 = C+100;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*35);
+  double* b1 = B+((n+1)*35);
+  double* b2 = B+((n+2)*35);
+  double* a0 = A+30;
+  double* a1 = A+32;
+  c_0_0 = _mm_loadu_pd(c0);
+  c_0_1 = _mm_loadu_pd(c1);
+  c_0_2 = _mm_loadu_pd(c2);
+  c_1_0 = _mm_loadu_pd(c0+2);
+  c_1_1 = _mm_loadu_pd(c1+2);
+  c_1_2 = _mm_loadu_pd(c2+2);
+  c_2_0 = _mm_load_sd(c0+4);
+  c_2_1 = _mm_load_sd(c1+4);
+  c_2_2 = _mm_load_sd(c2+4);
+  for (int k = 0; k < 35; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  a_2 = _mm_load_sd(a0);
+  a0+=31;
+  c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+  c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+  c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+  }
+  _mm_storeu_pd(c0, c_0_0);
+  _mm_storeu_pd(c1, c_0_1);
+  _mm_storeu_pd(c2, c_0_2);
+  _mm_storeu_pd(c0+2, c_1_0);
+  _mm_storeu_pd(c1+2, c_1_1);
+  _mm_storeu_pd(c2+2, c_1_2);
+  _mm_store_sd(c0+4, c_2_0);
+  _mm_store_sd(c1+4, c_2_1);
+  _mm_store_sd(c2+4, c_2_2);
+
+  c0+=105;
+  c1+=105;
+  c2+=105;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 24; m+=12)
+  {
+    double* b0 = B+(n*35);
+    double* b1 = B+((n+1)*35);
+    double* b2 = B+((n+2)*35);
+    double* a0 = A+m;
+    c_0_0 = _mm256_loadu_pd(c0);
+    c_0_1 = _mm256_loadu_pd(c1);
+    c_0_2 = _mm256_loadu_pd(c2);
+    c_1_0 = _mm256_loadu_pd(c0+4);
+    c_1_1 = _mm256_loadu_pd(c1+4);
+    c_1_2 = _mm256_loadu_pd(c2+4);
+    c_2_0 = _mm256_loadu_pd(c0+8);
+    c_2_1 = _mm256_loadu_pd(c1+8);
+    c_2_2 = _mm256_loadu_pd(c2+8);
+
+    for (int k = 0; k < 35; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_loadu_pd(a0);
+    a0+=27;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_storeu_pd(c0, c_0_0);
+    _mm256_storeu_pd(c1, c_0_1);
+    _mm256_storeu_pd(c2, c_0_2);
+    _mm256_storeu_pd(c0+4, c_1_0);
+    _mm256_storeu_pd(c1+4, c_1_1);
+    _mm256_storeu_pd(c2+4, c_1_2);
+    _mm256_storeu_pd(c0+8, c_2_0);
+    _mm256_storeu_pd(c1+8, c_2_1);
+    _mm256_storeu_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=81;
+  c1+=81;
+  c2+=81;
+}
+
+double* c0_base = C+24;
+double* c1_base = C+59;
+double* c2_base = C+94;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+24;
+  c_0_0 = _mm256_loadu_pd(c0);
+  c_0_1 = _mm256_loadu_pd(c1);
+  c_0_2 = _mm256_loadu_pd(c2);
+  c_1_0 = _mm256_loadu_pd(c0+4);
+  c_1_1 = _mm256_loadu_pd(c1+4);
+  c_1_2 = _mm256_loadu_pd(c2+4);
+
+  for (int k = 0; k < 35; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_loadu_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_loadu_pd(a0);
+  a0+=31;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_storeu_pd(c0, c_0_0);
+  _mm256_storeu_pd(c1, c_0_1);
+  _mm256_storeu_pd(c2, c_0_2);
+  _mm256_storeu_pd(c0+4, c_1_0);
+  _mm256_storeu_pd(c1+4, c_1_1);
+  _mm256_storeu_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+32;
+  c_0_0_128 = _mm_loadu_pd(c0);
+  c_0_1_128 = _mm_loadu_pd(c1);
+  c_0_2_128 = _mm_loadu_pd(c2);
+
+  for (int k = 0; k < 35; k++)
+  {
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_loadu_pd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_storeu_pd(c0, c_0_0_128);
+  _mm_storeu_pd(c1, c_0_1_128);
+  _mm_storeu_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+34;
+  c_0_0_128 = _mm_load_sd(c0);
+  c_0_1_128 = _mm_load_sd(c1);
+  c_0_2_128 = _mm_load_sd(c2);
+
+  for (int k = 0; k < 35; k++)
+  {
+  b_0_128 = _mm_load_sd(b0);
+  b_1_128 = _mm_load_sd(b1);
+  b_2_128 = _mm_load_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_sd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_sd(c_0_0_128, _mm_mul_sd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_sd(c_0_1_128, _mm_mul_sd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_sd(c_0_2_128, _mm_mul_sd(a_0_128, b_2_128));
+
+  }
+  _mm_store_sd(c0, c_0_0_128);
+  _mm_store_sd(c1, c_0_1_128);
+  _mm_store_sd(c2, c_0_2_128);
+
+  c0+=1;
+  c1+=1;
+  c2+=1;
+  c0_base+=105;
+  c1_base+=105;
+  c2_base+=105;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 35; k++)
+  {
+    for(int m = 0; m < 35; m++)
+    {
+      C[(n*35)+m] += A[(k*35)+m] * B[(n*35)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 22050;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_denseAder_35_9_35(double* A, double* B, double* C, int exit_col, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 30; m+=6)
+  {
+    double* b0 = B+(n*35);
+    double* b1 = B+((n+1)*35);
+    double* b2 = B+((n+2)*35);
+    double* a0 = A+m;
+    c_0_0 = _mm_loadu_pd(c0);
+    c_0_1 = _mm_loadu_pd(c1);
+    c_0_2 = _mm_loadu_pd(c2);
+    c_1_0 = _mm_loadu_pd(c0+2);
+    c_1_1 = _mm_loadu_pd(c1+2);
+    c_1_2 = _mm_loadu_pd(c2+2);
+    c_2_0 = _mm_loadu_pd(c0+4);
+    c_2_1 = _mm_loadu_pd(c1+4);
+    c_2_2 = _mm_loadu_pd(c2+4);
+
+    for (int k = 0; k < 35; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_loadu_pd(a0);
+    a0+=31;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_storeu_pd(c0, c_0_0);
+    _mm_storeu_pd(c1, c_0_1);
+    _mm_storeu_pd(c2, c_0_2);
+    _mm_storeu_pd(c0+2, c_1_0);
+    _mm_storeu_pd(c1+2, c_1_1);
+    _mm_storeu_pd(c2+2, c_1_2);
+    _mm_storeu_pd(c0+4, c_2_0);
+    _mm_storeu_pd(c1+4, c_2_1);
+    _mm_storeu_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=75;
+  c1+=75;
+  c2+=75;
+}
+
+int m = 30;
+c0 = C+30;
+c1 = C+65;
+c2 = C+100;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*35);
+  double* b1 = B+((n+1)*35);
+  double* b2 = B+((n+2)*35);
+  double* a0 = A+30;
+  double* a1 = A+32;
+  c_0_0 = _mm_loadu_pd(c0);
+  c_0_1 = _mm_loadu_pd(c1);
+  c_0_2 = _mm_loadu_pd(c2);
+  c_1_0 = _mm_loadu_pd(c0+2);
+  c_1_1 = _mm_loadu_pd(c1+2);
+  c_1_2 = _mm_loadu_pd(c2+2);
+  c_2_0 = _mm_load_sd(c0+4);
+  c_2_1 = _mm_load_sd(c1+4);
+  c_2_2 = _mm_load_sd(c2+4);
+  for (int k = 0; k < 35; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  a_2 = _mm_load_sd(a0);
+  a0+=31;
+  c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+  c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+  c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+  }
+  _mm_storeu_pd(c0, c_0_0);
+  _mm_storeu_pd(c1, c_0_1);
+  _mm_storeu_pd(c2, c_0_2);
+  _mm_storeu_pd(c0+2, c_1_0);
+  _mm_storeu_pd(c1+2, c_1_1);
+  _mm_storeu_pd(c2+2, c_1_2);
+  _mm_store_sd(c0+4, c_2_0);
+  _mm_store_sd(c1+4, c_2_1);
+  _mm_store_sd(c2+4, c_2_2);
+
+  c0+=105;
+  c1+=105;
+  c2+=105;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 24; m+=12)
+  {
+    double* b0 = B+(n*35);
+    double* b1 = B+((n+1)*35);
+    double* b2 = B+((n+2)*35);
+    double* a0 = A+m;
+    c_0_0 = _mm256_loadu_pd(c0);
+    c_0_1 = _mm256_loadu_pd(c1);
+    c_0_2 = _mm256_loadu_pd(c2);
+    c_1_0 = _mm256_loadu_pd(c0+4);
+    c_1_1 = _mm256_loadu_pd(c1+4);
+    c_1_2 = _mm256_loadu_pd(c2+4);
+    c_2_0 = _mm256_loadu_pd(c0+8);
+    c_2_1 = _mm256_loadu_pd(c1+8);
+    c_2_2 = _mm256_loadu_pd(c2+8);
+
+    for (int k = 0; k < 35; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_loadu_pd(a0);
+    a0+=27;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_storeu_pd(c0, c_0_0);
+    _mm256_storeu_pd(c1, c_0_1);
+    _mm256_storeu_pd(c2, c_0_2);
+    _mm256_storeu_pd(c0+4, c_1_0);
+    _mm256_storeu_pd(c1+4, c_1_1);
+    _mm256_storeu_pd(c2+4, c_1_2);
+    _mm256_storeu_pd(c0+8, c_2_0);
+    _mm256_storeu_pd(c1+8, c_2_1);
+    _mm256_storeu_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=81;
+  c1+=81;
+  c2+=81;
+}
+
+double* c0_base = C+24;
+double* c1_base = C+59;
+double* c2_base = C+94;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+24;
+  c_0_0 = _mm256_loadu_pd(c0);
+  c_0_1 = _mm256_loadu_pd(c1);
+  c_0_2 = _mm256_loadu_pd(c2);
+  c_1_0 = _mm256_loadu_pd(c0+4);
+  c_1_1 = _mm256_loadu_pd(c1+4);
+  c_1_2 = _mm256_loadu_pd(c2+4);
+
+  for (int k = 0; k < 35; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_loadu_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_loadu_pd(a0);
+  a0+=31;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_storeu_pd(c0, c_0_0);
+  _mm256_storeu_pd(c1, c_0_1);
+  _mm256_storeu_pd(c2, c_0_2);
+  _mm256_storeu_pd(c0+4, c_1_0);
+  _mm256_storeu_pd(c1+4, c_1_1);
+  _mm256_storeu_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+32;
+  c_0_0_128 = _mm_loadu_pd(c0);
+  c_0_1_128 = _mm_loadu_pd(c1);
+  c_0_2_128 = _mm_loadu_pd(c2);
+
+  for (int k = 0; k < 35; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_loadu_pd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_storeu_pd(c0, c_0_0_128);
+  _mm_storeu_pd(c1, c_0_1_128);
+  _mm_storeu_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  b0 = B+(n*35);
+  b1 = B+((n+1)*35);
+  b2 = B+((n+2)*35);
+  a0 = A+34;
+  c_0_0_128 = _mm_load_sd(c0);
+  c_0_1_128 = _mm_load_sd(c1);
+  c_0_2_128 = _mm_load_sd(c2);
+
+  for (int k = 0; k < 35; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0_128 = _mm_load_sd(b0);
+  b_1_128 = _mm_load_sd(b1);
+  b_2_128 = _mm_load_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_sd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_sd(c_0_0_128, _mm_mul_sd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_sd(c_0_1_128, _mm_mul_sd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_sd(c_0_2_128, _mm_mul_sd(a_0_128, b_2_128));
+
+  }
+  _mm_store_sd(c0, c_0_0_128);
+  _mm_store_sd(c1, c_0_1_128);
+  _mm_store_sd(c2, c_0_2_128);
+
+  c0+=1;
+  c1+=1;
+  c2+=1;
+  c0_base+=105;
+  c1_base+=105;
+  c2_base+=105;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 35; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    for(int m = 0; m < 35; m++)
+    {
+      C[(n*35)+m] += A[(k*35)+m] * B[(n*35)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 630*exit_col;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_35_9_9(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 30; m+=6)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm_loadu_pd(c0);
+    c_0_1 = _mm_loadu_pd(c1);
+    c_0_2 = _mm_loadu_pd(c2);
+    c_1_0 = _mm_loadu_pd(c0+2);
+    c_1_1 = _mm_loadu_pd(c1+2);
+    c_1_2 = _mm_loadu_pd(c2+2);
+    c_2_0 = _mm_loadu_pd(c0+4);
+    c_2_1 = _mm_loadu_pd(c1+4);
+    c_2_2 = _mm_loadu_pd(c2+4);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_loadu_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_loadu_pd(a0);
+    a0+=31;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_storeu_pd(c0, c_0_0);
+    _mm_storeu_pd(c1, c_0_1);
+    _mm_storeu_pd(c2, c_0_2);
+    _mm_storeu_pd(c0+2, c_1_0);
+    _mm_storeu_pd(c1+2, c_1_1);
+    _mm_storeu_pd(c2+2, c_1_2);
+    _mm_storeu_pd(c0+4, c_2_0);
+    _mm_storeu_pd(c1+4, c_2_1);
+    _mm_storeu_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=75;
+  c1+=75;
+  c2+=75;
+}
+
+int m = 30;
+c0 = C+30;
+c1 = C+65;
+c2 = C+100;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A+30;
+  double* a1 = A+32;
+  c_0_0 = _mm_loadu_pd(c0);
+  c_0_1 = _mm_loadu_pd(c1);
+  c_0_2 = _mm_loadu_pd(c2);
+  c_1_0 = _mm_loadu_pd(c0+2);
+  c_1_1 = _mm_loadu_pd(c1+2);
+  c_1_2 = _mm_loadu_pd(c2+2);
+  c_2_0 = _mm_load_sd(c0+4);
+  c_2_1 = _mm_load_sd(c1+4);
+  c_2_2 = _mm_load_sd(c2+4);
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  a_1 = _mm_loadu_pd(a0);
+  a0+=2;
+  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+  a_2 = _mm_load_sd(a0);
+  a0+=31;
+  c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+  c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+  c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+  }
+  _mm_storeu_pd(c0, c_0_0);
+  _mm_storeu_pd(c1, c_0_1);
+  _mm_storeu_pd(c2, c_0_2);
+  _mm_storeu_pd(c0+2, c_1_0);
+  _mm_storeu_pd(c1+2, c_1_1);
+  _mm_storeu_pd(c2+2, c_1_2);
+  _mm_store_sd(c0+4, c_2_0);
+  _mm_store_sd(c1+4, c_2_1);
+  _mm_store_sd(c2+4, c_2_2);
+
+  c0+=105;
+  c1+=105;
+  c2+=105;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+35;
+double* c2 = C+70;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 24; m+=12)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm256_loadu_pd(c0);
+    c_0_1 = _mm256_loadu_pd(c1);
+    c_0_2 = _mm256_loadu_pd(c2);
+    c_1_0 = _mm256_loadu_pd(c0+4);
+    c_1_1 = _mm256_loadu_pd(c1+4);
+    c_1_2 = _mm256_loadu_pd(c2+4);
+    c_2_0 = _mm256_loadu_pd(c0+8);
+    c_2_1 = _mm256_loadu_pd(c1+8);
+    c_2_2 = _mm256_loadu_pd(c2+8);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_loadu_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_loadu_pd(a0);
+    a0+=27;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_storeu_pd(c0, c_0_0);
+    _mm256_storeu_pd(c1, c_0_1);
+    _mm256_storeu_pd(c2, c_0_2);
+    _mm256_storeu_pd(c0+4, c_1_0);
+    _mm256_storeu_pd(c1+4, c_1_1);
+    _mm256_storeu_pd(c2+4, c_1_2);
+    _mm256_storeu_pd(c0+8, c_2_0);
+    _mm256_storeu_pd(c1+8, c_2_1);
+    _mm256_storeu_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=81;
+  c1+=81;
+  c2+=81;
+}
+
+double* c0_base = C+24;
+double* c1_base = C+59;
+double* c2_base = C+94;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+24;
+  c_0_0 = _mm256_loadu_pd(c0);
+  c_0_1 = _mm256_loadu_pd(c1);
+  c_0_2 = _mm256_loadu_pd(c2);
+  c_1_0 = _mm256_loadu_pd(c0+4);
+  c_1_1 = _mm256_loadu_pd(c1+4);
+  c_1_2 = _mm256_loadu_pd(c2+4);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_loadu_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_loadu_pd(a0);
+  a0+=31;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_storeu_pd(c0, c_0_0);
+  _mm256_storeu_pd(c1, c_0_1);
+  _mm256_storeu_pd(c2, c_0_2);
+  _mm256_storeu_pd(c0+4, c_1_0);
+  _mm256_storeu_pd(c1+4, c_1_1);
+  _mm256_storeu_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+32;
+  c_0_0_128 = _mm_loadu_pd(c0);
+  c_0_1_128 = _mm_loadu_pd(c1);
+  c_0_2_128 = _mm_loadu_pd(c2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0_128 = _mm_loaddup_pd(b0);
+  b_1_128 = _mm_loaddup_pd(b1);
+  b_2_128 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_loadu_pd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_pd(c_0_0_128, _mm_mul_pd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_pd(c_0_1_128, _mm_mul_pd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_pd(c_0_2_128, _mm_mul_pd(a_0_128, b_2_128));
+
+  }
+  _mm_storeu_pd(c0, c_0_0_128);
+  _mm_storeu_pd(c1, c_0_1_128);
+  _mm_storeu_pd(c2, c_0_2_128);
+
+  c0+=2;
+  c1+=2;
+  c2+=2;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+34;
+  c_0_0_128 = _mm_load_sd(c0);
+  c_0_1_128 = _mm_load_sd(c1);
+  c_0_2_128 = _mm_load_sd(c2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0_128 = _mm_load_sd(b0);
+  b_1_128 = _mm_load_sd(b1);
+  b_2_128 = _mm_load_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0_128 = _mm_load_sd(a0);
+  a0+=35;
+  c_0_0_128 = _mm_add_sd(c_0_0_128, _mm_mul_sd(a_0_128, b_0_128));
+  c_0_1_128 = _mm_add_sd(c_0_1_128, _mm_mul_sd(a_0_128, b_1_128));
+  c_0_2_128 = _mm_add_sd(c_0_2_128, _mm_mul_sd(a_0_128, b_2_128));
+
+  }
+  _mm_store_sd(c0, c_0_0_128);
+  _mm_store_sd(c1, c_0_1_128);
+  _mm_store_sd(c2, c_0_2_128);
+
+  c0+=1;
+  c1+=1;
+  c2+=1;
+  c0_base+=105;
+  c1_base+=105;
+  c2_base+=105;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 9; k++)
+  {
+    for(int m = 0; m < 35; m++)
+    {
+      C[(n*35)+m] += A[(k*35)+m] * B[(n*9)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 5670;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_56_9_56(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 54; m+=6)
+  {
+    double* b0 = B+(n*56);
+    double* b1 = B+((n+1)*56);
+    double* b2 = B+((n+2)*56);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 56; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=52;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=114;
+  c1+=114;
+  c2+=114;
+}
+
+int m = 54;
+c0 = C+54;
+c1 = C+110;
+c2 = C+166;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*56);
+  double* b1 = B+((n+1)*56);
+  double* b2 = B+((n+2)*56);
+  double* a0 = A+54;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 56; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=56;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=168;
+  c1+=168;
+  c2+=168;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 48; m+=12)
+  {
+    double* b0 = B+(n*56);
+    double* b1 = B+((n+1)*56);
+    double* b2 = B+((n+2)*56);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 56; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=48;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=120;
+  c1+=120;
+  c2+=120;
+}
+
+double* c0_base = C+48;
+double* c1_base = C+104;
+double* c2_base = C+160;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*56);
+  b1 = B+((n+1)*56);
+  b2 = B+((n+2)*56);
+  a0 = A+48;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 56; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=52;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=168;
+  c1_base+=168;
+  c2_base+=168;
+}
+#endif
+
+#if defined(__MIC__)
+__m512d c_0_0;
+__m512d c_1_0;
+__m512d c_2_0;
+__m512d c_3_0;
+__m512d c_4_0;
+__m512d c_5_0;
+__m512d c_6_0;
+
+__m512d c_0_1;
+__m512d c_1_1;
+__m512d c_2_1;
+__m512d c_3_1;
+__m512d c_4_1;
+__m512d c_5_1;
+__m512d c_6_1;
+
+__m512d c_0_2;
+__m512d c_1_2;
+__m512d c_2_2;
+__m512d c_3_2;
+__m512d c_4_2;
+__m512d c_5_2;
+__m512d c_6_2;
+
+__m512d b_0;
+__m512d b_1;
+__m512d b_2;
+
+__m512d a_0;
+__m512d a_1;
+__m512d a_2;
+__m512d a_3;
+__m512d a_4;
+__m512d a_5;
+__m512d a_6;
+
+double* c0 = C;
+double* c1 = C + 56;
+double* c2 = C + 112;
+#pragma prefetch c0,c1,c2
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*56);
+  double* b1 = B+((n+1)*56);
+  double* b2 = B+((n+2)*56);
+  double* a0 = A;
+
+  c_0_0 = _mm512_load_pd(c0);
+  c_1_0 = _mm512_load_pd(c0+8);
+  c_2_0 = _mm512_load_pd(c0+16);
+  c_3_0 = _mm512_load_pd(c0+24);
+  c_4_0 = _mm512_load_pd(c0+32);
+  c_5_0 = _mm512_load_pd(c0+40);
+  c_6_0 = _mm512_load_pd(c0+48);
+
+  c_0_1 = _mm512_load_pd(c1);
+  c_1_1 = _mm512_load_pd(c1+8);
+  c_2_1 = _mm512_load_pd(c1+16);
+  c_3_1 = _mm512_load_pd(c1+24);
+  c_4_1 = _mm512_load_pd(c1+32);
+  c_5_1 = _mm512_load_pd(c1+40);
+  c_6_1 = _mm512_load_pd(c1+48);
+
+  c_0_2 = _mm512_load_pd(c2);
+  c_1_2 = _mm512_load_pd(c2+8);
+  c_2_2 = _mm512_load_pd(c2+16);
+  c_3_2 = _mm512_load_pd(c2+24);
+  c_4_2 = _mm512_load_pd(c2+32);
+  c_5_2 = _mm512_load_pd(c2+40);
+  c_6_2 = _mm512_load_pd(c2+48);
+
+  #pragma prefetch b0,b1,b2,a0
+  for(int k = 0; k < 56; k++)
+  {
+    b_0 = _mm512_extload_pd(b0, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_1 = _mm512_extload_pd(b1, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_2 = _mm512_extload_pd(b2, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+
+    a_0 = _mm512_load_pd(a0);
+    c_0_0 = _mm512_fmadd_pd(a_0, b_0, c_0_0);
+    c_0_1 = _mm512_fmadd_pd(a_0, b_1, c_0_1);
+    c_0_2 = _mm512_fmadd_pd(a_0, b_2, c_0_2);
+    a0 += 8;
+    a_1 = _mm512_load_pd(a0);
+    c_1_0 = _mm512_fmadd_pd(a_1, b_0, c_1_0);
+    c_1_1 = _mm512_fmadd_pd(a_1, b_1, c_1_1);
+    c_1_2 = _mm512_fmadd_pd(a_1, b_2, c_1_2);
+    a0 += 8;
+    a_2 = _mm512_load_pd(a0);
+    c_2_0 = _mm512_fmadd_pd(a_2, b_0, c_2_0);
+    c_2_1 = _mm512_fmadd_pd(a_2, b_1, c_2_1);
+    c_2_2 = _mm512_fmadd_pd(a_2, b_2, c_2_2);
+    a0 += 8;
+    a_3 = _mm512_load_pd(a0);
+    c_3_0 = _mm512_fmadd_pd(a_3, b_0, c_3_0);
+    c_3_1 = _mm512_fmadd_pd(a_3, b_1, c_3_1);
+    c_3_2 = _mm512_fmadd_pd(a_3, b_2, c_3_2);
+    a0 += 8;
+    a_4 = _mm512_load_pd(a0);
+    c_4_0 = _mm512_fmadd_pd(a_4, b_0, c_4_0);
+    c_4_1 = _mm512_fmadd_pd(a_4, b_1, c_4_1);
+    c_4_2 = _mm512_fmadd_pd(a_4, b_2, c_4_2);
+    a0 += 8;
+    a_5 = _mm512_load_pd(a0);
+    c_5_0 = _mm512_fmadd_pd(a_5, b_0, c_5_0);
+    c_5_1 = _mm512_fmadd_pd(a_5, b_1, c_5_1);
+    c_5_2 = _mm512_fmadd_pd(a_5, b_2, c_5_2);
+    a0 += 8;
+    a_6 = _mm512_load_pd(a0);
+    c_6_0 = _mm512_fmadd_pd(a_6, b_0, c_6_0);
+    c_6_1 = _mm512_fmadd_pd(a_6, b_1, c_6_1);
+    c_6_2 = _mm512_fmadd_pd(a_6, b_2, c_6_2);
+    a0 += 8;
+
+    b0++;
+    b1++;
+    b2++;
+  }
+
+  _mm512_store_pd(c0, c_0_0);
+  _mm512_store_pd(c0+8, c_1_0);
+  _mm512_store_pd(c0+16, c_2_0);
+  _mm512_store_pd(c0+24, c_3_0);
+  _mm512_store_pd(c0+32, c_4_0);
+  _mm512_store_pd(c0+40, c_5_0);
+  _mm512_store_pd(c0+48, c_6_0);
+
+  _mm512_store_pd(c1, c_0_1);
+  _mm512_store_pd(c1+8, c_1_1);
+  _mm512_store_pd(c1+16, c_2_1);
+  _mm512_store_pd(c1+24, c_3_1);
+  _mm512_store_pd(c1+32, c_4_1);
+  _mm512_store_pd(c1+40, c_5_1);
+  _mm512_store_pd(c1+48, c_6_1);
+
+  _mm512_store_pd(c2, c_0_2);
+  _mm512_store_pd(c2+8, c_1_2);
+  _mm512_store_pd(c2+16, c_2_2);
+  _mm512_store_pd(c2+24, c_3_2);
+  _mm512_store_pd(c2+32, c_4_2);
+  _mm512_store_pd(c2+40, c_5_2);
+  _mm512_store_pd(c2+48, c_6_2);
+
+  c0 += 168;
+  c1 += 168;
+  c2 += 168;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 56; k++)
+  {
+    for(int m = 0; m < 56; m++)
+    {
+      C[(n*56)+m] += A[(k*56)+m] * B[(n*56)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 56448;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_denseAder_56_9_56(double* A, double* B, double* C, int exit_col, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 54; m+=6)
+  {
+    double* b0 = B+(n*56);
+    double* b1 = B+((n+1)*56);
+    double* b2 = B+((n+2)*56);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 56; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=52;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=114;
+  c1+=114;
+  c2+=114;
+}
+
+int m = 54;
+c0 = C+54;
+c1 = C+110;
+c2 = C+166;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*56);
+  double* b1 = B+((n+1)*56);
+  double* b2 = B+((n+2)*56);
+  double* a0 = A+54;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 56; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=56;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=168;
+  c1+=168;
+  c2+=168;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 48; m+=12)
+  {
+    double* b0 = B+(n*56);
+    double* b1 = B+((n+1)*56);
+    double* b2 = B+((n+2)*56);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 56; k++)
+    {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=48;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=120;
+  c1+=120;
+  c2+=120;
+}
+
+double* c0_base = C+48;
+double* c1_base = C+104;
+double* c2_base = C+160;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*56);
+  b1 = B+((n+1)*56);
+  b2 = B+((n+2)*56);
+  a0 = A+48;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 56; k++)
+  {
+  if ( __builtin_expect(exit_col == k, false) ) { break; }
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=52;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=168;
+  c1_base+=168;
+  c2_base+=168;
+}
+#endif
+
+#if defined(__MIC__)
+__m512d c_0_0;
+__m512d c_1_0;
+__m512d c_2_0;
+__m512d c_3_0;
+__m512d c_4_0;
+__m512d c_5_0;
+__m512d c_6_0;
+
+__m512d c_0_1;
+__m512d c_1_1;
+__m512d c_2_1;
+__m512d c_3_1;
+__m512d c_4_1;
+__m512d c_5_1;
+__m512d c_6_1;
+
+__m512d c_0_2;
+__m512d c_1_2;
+__m512d c_2_2;
+__m512d c_3_2;
+__m512d c_4_2;
+__m512d c_5_2;
+__m512d c_6_2;
+
+__m512d b_0;
+__m512d b_1;
+__m512d b_2;
+
+__m512d a_0;
+__m512d a_1;
+__m512d a_2;
+__m512d a_3;
+__m512d a_4;
+__m512d a_5;
+__m512d a_6;
+
+double* c0 = C;
+double* c1 = C + 56;
+double* c2 = C + 112;
+#pragma prefetch c0,c1,c2
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*56);
+  double* b1 = B+((n+1)*56);
+  double* b2 = B+((n+2)*56);
+  double* a0 = A;
+
+  c_0_0 = _mm512_load_pd(c0);
+  c_1_0 = _mm512_load_pd(c0+8);
+  c_2_0 = _mm512_load_pd(c0+16);
+  c_3_0 = _mm512_load_pd(c0+24);
+  c_4_0 = _mm512_load_pd(c0+32);
+  c_5_0 = _mm512_load_pd(c0+40);
+  c_6_0 = _mm512_load_pd(c0+48);
+
+  c_0_1 = _mm512_load_pd(c1);
+  c_1_1 = _mm512_load_pd(c1+8);
+  c_2_1 = _mm512_load_pd(c1+16);
+  c_3_1 = _mm512_load_pd(c1+24);
+  c_4_1 = _mm512_load_pd(c1+32);
+  c_5_1 = _mm512_load_pd(c1+40);
+  c_6_1 = _mm512_load_pd(c1+48);
+
+  c_0_2 = _mm512_load_pd(c2);
+  c_1_2 = _mm512_load_pd(c2+8);
+  c_2_2 = _mm512_load_pd(c2+16);
+  c_3_2 = _mm512_load_pd(c2+24);
+  c_4_2 = _mm512_load_pd(c2+32);
+  c_5_2 = _mm512_load_pd(c2+40);
+  c_6_2 = _mm512_load_pd(c2+48);
+
+  #pragma prefetch b0,b1,b2,a0
+  for(int k = 0; k < 56; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    b_0 = _mm512_extload_pd(b0, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_1 = _mm512_extload_pd(b1, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_2 = _mm512_extload_pd(b2, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+
+    a_0 = _mm512_load_pd(a0);
+    c_0_0 = _mm512_fmadd_pd(a_0, b_0, c_0_0);
+    c_0_1 = _mm512_fmadd_pd(a_0, b_1, c_0_1);
+    c_0_2 = _mm512_fmadd_pd(a_0, b_2, c_0_2);
+    a0 += 8;
+    a_1 = _mm512_load_pd(a0);
+    c_1_0 = _mm512_fmadd_pd(a_1, b_0, c_1_0);
+    c_1_1 = _mm512_fmadd_pd(a_1, b_1, c_1_1);
+    c_1_2 = _mm512_fmadd_pd(a_1, b_2, c_1_2);
+    a0 += 8;
+    a_2 = _mm512_load_pd(a0);
+    c_2_0 = _mm512_fmadd_pd(a_2, b_0, c_2_0);
+    c_2_1 = _mm512_fmadd_pd(a_2, b_1, c_2_1);
+    c_2_2 = _mm512_fmadd_pd(a_2, b_2, c_2_2);
+    a0 += 8;
+    a_3 = _mm512_load_pd(a0);
+    c_3_0 = _mm512_fmadd_pd(a_3, b_0, c_3_0);
+    c_3_1 = _mm512_fmadd_pd(a_3, b_1, c_3_1);
+    c_3_2 = _mm512_fmadd_pd(a_3, b_2, c_3_2);
+    a0 += 8;
+    a_4 = _mm512_load_pd(a0);
+    c_4_0 = _mm512_fmadd_pd(a_4, b_0, c_4_0);
+    c_4_1 = _mm512_fmadd_pd(a_4, b_1, c_4_1);
+    c_4_2 = _mm512_fmadd_pd(a_4, b_2, c_4_2);
+    a0 += 8;
+    a_5 = _mm512_load_pd(a0);
+    c_5_0 = _mm512_fmadd_pd(a_5, b_0, c_5_0);
+    c_5_1 = _mm512_fmadd_pd(a_5, b_1, c_5_1);
+    c_5_2 = _mm512_fmadd_pd(a_5, b_2, c_5_2);
+    a0 += 8;
+    a_6 = _mm512_load_pd(a0);
+    c_6_0 = _mm512_fmadd_pd(a_6, b_0, c_6_0);
+    c_6_1 = _mm512_fmadd_pd(a_6, b_1, c_6_1);
+    c_6_2 = _mm512_fmadd_pd(a_6, b_2, c_6_2);
+    a0 += 8;
+
+    b0++;
+    b1++;
+    b2++;
+  }
+
+  _mm512_store_pd(c0, c_0_0);
+  _mm512_store_pd(c0+8, c_1_0);
+  _mm512_store_pd(c0+16, c_2_0);
+  _mm512_store_pd(c0+24, c_3_0);
+  _mm512_store_pd(c0+32, c_4_0);
+  _mm512_store_pd(c0+40, c_5_0);
+  _mm512_store_pd(c0+48, c_6_0);
+
+  _mm512_store_pd(c1, c_0_1);
+  _mm512_store_pd(c1+8, c_1_1);
+  _mm512_store_pd(c1+16, c_2_1);
+  _mm512_store_pd(c1+24, c_3_1);
+  _mm512_store_pd(c1+32, c_4_1);
+  _mm512_store_pd(c1+40, c_5_1);
+  _mm512_store_pd(c1+48, c_6_1);
+
+  _mm512_store_pd(c2, c_0_2);
+  _mm512_store_pd(c2+8, c_1_2);
+  _mm512_store_pd(c2+16, c_2_2);
+  _mm512_store_pd(c2+24, c_3_2);
+  _mm512_store_pd(c2+32, c_4_2);
+  _mm512_store_pd(c2+40, c_5_2);
+  _mm512_store_pd(c2+48, c_6_2);
+
+  c0 += 168;
+  c1 += 168;
+  c2 += 168;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 56; k++)
+  {
+    if ( __builtin_expect(exit_col == k, false) ) { break; }
+    for(int m = 0; m < 56; m++)
+    {
+      C[(n*56)+m] += A[(k*56)+m] * B[(n*56)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 1008*exit_col;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_dense_56_9_9(double* A, double* B, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#if defined(__SSE3__) && !defined(__AVX__)
+__m128d c_0_0;
+__m128d c_0_1;
+__m128d c_0_2;
+__m128d c_1_0;
+__m128d c_1_1;
+__m128d c_1_2;
+__m128d c_2_0;
+__m128d c_2_1;
+__m128d c_2_2;
+__m128d b_0;
+__m128d b_1;
+__m128d b_2;
+__m128d a_0;
+__m128d a_1;
+__m128d a_2;
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+__m256d c_0_0;
+__m256d c_0_1;
+__m256d c_0_2;
+__m256d c_1_0;
+__m256d c_1_1;
+__m256d c_1_2;
+__m256d c_2_0;
+__m256d c_2_1;
+__m256d c_2_2;
+__m256d b_0;
+__m256d b_1;
+__m256d b_2;
+__m256d a_0;
+__m256d a_1;
+__m256d a_2;
+__m128d c_0_0_128;
+__m128d c_0_1_128;
+__m128d c_0_2_128;
+__m128d c_1_0_128;
+__m128d c_1_1_128;
+__m128d c_1_2_128;
+__m128d c_2_0_128;
+__m128d c_2_1_128;
+__m128d c_2_2_128;
+__m128d b_0_128;
+__m128d b_1_128;
+__m128d b_2_128;
+__m128d a_0_128;
+__m128d a_1_128;
+__m128d a_2_128;
+#endif
+
+#if defined(__SSE3__) && !defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 54; m+=6)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm_load_pd(c0);
+    c_0_1 = _mm_load_pd(c1);
+    c_0_2 = _mm_load_pd(c2);
+    c_1_0 = _mm_load_pd(c0+2);
+    c_1_1 = _mm_load_pd(c1+2);
+    c_1_2 = _mm_load_pd(c2+2);
+    c_2_0 = _mm_load_pd(c0+4);
+    c_2_1 = _mm_load_pd(c1+4);
+    c_2_2 = _mm_load_pd(c2+4);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm_loaddup_pd(b0);
+    b_1 = _mm_loaddup_pd(b1);
+    b_2 = _mm_loaddup_pd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm_load_pd(a0);
+    a0+=2;
+    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+    a_1 = _mm_load_pd(a0);
+    a0+=2;
+    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));
+    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));
+    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));
+
+    a_2 = _mm_load_pd(a0);
+    a0+=52;
+    c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));
+    c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));
+    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));
+
+    }
+    _mm_store_pd(c0, c_0_0);
+    _mm_store_pd(c1, c_0_1);
+    _mm_store_pd(c2, c_0_2);
+    _mm_store_pd(c0+2, c_1_0);
+    _mm_store_pd(c1+2, c_1_1);
+    _mm_store_pd(c2+2, c_1_2);
+    _mm_store_pd(c0+4, c_2_0);
+    _mm_store_pd(c1+4, c_2_1);
+    _mm_store_pd(c2+4, c_2_2);
+    c0+=6;
+    c1+=6;
+    c2+=6;
+  }
+  c0+=114;
+  c1+=114;
+  c2+=114;
+}
+
+int m = 54;
+c0 = C+54;
+c1 = C+110;
+c2 = C+166;
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A+54;
+  c_0_0 = _mm_load_pd(c0);
+  c_0_1 = _mm_load_pd(c1);
+  c_0_2 = _mm_load_pd(c2);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm_loaddup_pd(b0);
+  b_1 = _mm_loaddup_pd(b1);
+  b_2 = _mm_loaddup_pd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm_load_pd(a0);
+  a0+=56;
+  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));
+  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));
+  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));
+
+  }
+  _mm_store_pd(c0, c_0_0);
+  _mm_store_pd(c1, c_0_1);
+  _mm_store_pd(c2, c_0_2);
+
+  c0+=168;
+  c1+=168;
+  c2+=168;
+}
+#endif
+
+#if defined(__SSE3__) && defined(__AVX__)
+double* c0 = C;
+double* c1 = C+56;
+double* c2 = C+112;
+for(int n = 0; n < 9; n+=3)
+{
+  for(int m = 0; m < 48; m+=12)
+  {
+    double* b0 = B+(n*9);
+    double* b1 = B+((n+1)*9);
+    double* b2 = B+((n+2)*9);
+    double* a0 = A+m;
+    c_0_0 = _mm256_load_pd(c0);
+    c_0_1 = _mm256_load_pd(c1);
+    c_0_2 = _mm256_load_pd(c2);
+    c_1_0 = _mm256_load_pd(c0+4);
+    c_1_1 = _mm256_load_pd(c1+4);
+    c_1_2 = _mm256_load_pd(c2+4);
+    c_2_0 = _mm256_load_pd(c0+8);
+    c_2_1 = _mm256_load_pd(c1+8);
+    c_2_2 = _mm256_load_pd(c2+8);
+
+    for (int k = 0; k < 9; k++)
+    {
+    b_0 = _mm256_broadcast_sd(b0);
+    b_1 = _mm256_broadcast_sd(b1);
+    b_2 = _mm256_broadcast_sd(b2);
+
+    b0++; b1++; b2++;
+
+    a_0 = _mm256_load_pd(a0);
+    a0+=4;
+    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+    a_1 = _mm256_load_pd(a0);
+    a0+=4;
+    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+    a_2 = _mm256_load_pd(a0);
+    a0+=48;
+    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));
+    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));
+    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));
+
+    }
+    _mm256_store_pd(c0, c_0_0);
+    _mm256_store_pd(c1, c_0_1);
+    _mm256_store_pd(c2, c_0_2);
+    _mm256_store_pd(c0+4, c_1_0);
+    _mm256_store_pd(c1+4, c_1_1);
+    _mm256_store_pd(c2+4, c_1_2);
+    _mm256_store_pd(c0+8, c_2_0);
+    _mm256_store_pd(c1+8, c_2_1);
+    _mm256_store_pd(c2+8, c_2_2);
+    c0+=12;
+    c1+=12;
+    c2+=12;
+  }
+  c0+=120;
+  c1+=120;
+  c2+=120;
+}
+
+double* c0_base = C+48;
+double* c1_base = C+104;
+double* c2_base = C+160;
+for(int n = 0; n < 9; n+=3)
+{
+  c0 = c0_base;
+  c1 = c1_base;
+  c2 = c2_base;
+
+  double* b0;
+  double* b1;
+  double* b2;
+  double* a0;
+  b0 = B+(n*9);
+  b1 = B+((n+1)*9);
+  b2 = B+((n+2)*9);
+  a0 = A+48;
+  c_0_0 = _mm256_load_pd(c0);
+  c_0_1 = _mm256_load_pd(c1);
+  c_0_2 = _mm256_load_pd(c2);
+  c_1_0 = _mm256_load_pd(c0+4);
+  c_1_1 = _mm256_load_pd(c1+4);
+  c_1_2 = _mm256_load_pd(c2+4);
+
+  for (int k = 0; k < 9; k++)
+  {
+  b_0 = _mm256_broadcast_sd(b0);
+  b_1 = _mm256_broadcast_sd(b1);
+  b_2 = _mm256_broadcast_sd(b2);
+
+  b0++; b1++; b2++;
+
+  a_0 = _mm256_load_pd(a0);
+  a0+=4;
+  c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));
+  c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));
+  c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));
+
+  a_1 = _mm256_load_pd(a0);
+  a0+=52;
+  c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));
+  c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));
+  c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));
+
+  }
+  _mm256_store_pd(c0, c_0_0);
+  _mm256_store_pd(c1, c_0_1);
+  _mm256_store_pd(c2, c_0_2);
+  _mm256_store_pd(c0+4, c_1_0);
+  _mm256_store_pd(c1+4, c_1_1);
+  _mm256_store_pd(c2+4, c_1_2);
+
+  c0+=8;
+  c1+=8;
+  c2+=8;
+  c0_base+=168;
+  c1_base+=168;
+  c2_base+=168;
+}
+#endif
+
+#if defined(__MIC__)
+__m512d c_0_0;
+__m512d c_1_0;
+__m512d c_2_0;
+__m512d c_3_0;
+__m512d c_4_0;
+__m512d c_5_0;
+__m512d c_6_0;
+
+__m512d c_0_1;
+__m512d c_1_1;
+__m512d c_2_1;
+__m512d c_3_1;
+__m512d c_4_1;
+__m512d c_5_1;
+__m512d c_6_1;
+
+__m512d c_0_2;
+__m512d c_1_2;
+__m512d c_2_2;
+__m512d c_3_2;
+__m512d c_4_2;
+__m512d c_5_2;
+__m512d c_6_2;
+
+__m512d b_0;
+__m512d b_1;
+__m512d b_2;
+
+__m512d a_0;
+__m512d a_1;
+__m512d a_2;
+__m512d a_3;
+__m512d a_4;
+__m512d a_5;
+__m512d a_6;
+
+double* c0 = C;
+double* c1 = C + 56;
+double* c2 = C + 112;
+#pragma prefetch c0,c1,c2
+for(int n = 0; n < 9; n+=3)
+{
+  double* b0 = B+(n*9);
+  double* b1 = B+((n+1)*9);
+  double* b2 = B+((n+2)*9);
+  double* a0 = A;
+
+  c_0_0 = _mm512_load_pd(c0);
+  c_1_0 = _mm512_load_pd(c0+8);
+  c_2_0 = _mm512_load_pd(c0+16);
+  c_3_0 = _mm512_load_pd(c0+24);
+  c_4_0 = _mm512_load_pd(c0+32);
+  c_5_0 = _mm512_load_pd(c0+40);
+  c_6_0 = _mm512_load_pd(c0+48);
+
+  c_0_1 = _mm512_load_pd(c1);
+  c_1_1 = _mm512_load_pd(c1+8);
+  c_2_1 = _mm512_load_pd(c1+16);
+  c_3_1 = _mm512_load_pd(c1+24);
+  c_4_1 = _mm512_load_pd(c1+32);
+  c_5_1 = _mm512_load_pd(c1+40);
+  c_6_1 = _mm512_load_pd(c1+48);
+
+  c_0_2 = _mm512_load_pd(c2);
+  c_1_2 = _mm512_load_pd(c2+8);
+  c_2_2 = _mm512_load_pd(c2+16);
+  c_3_2 = _mm512_load_pd(c2+24);
+  c_4_2 = _mm512_load_pd(c2+32);
+  c_5_2 = _mm512_load_pd(c2+40);
+  c_6_2 = _mm512_load_pd(c2+48);
+
+  #pragma prefetch b0,b1,b2,a0
+  for(int k = 0; k < 9; k++)
+  {
+    b_0 = _mm512_extload_pd(b0, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_1 = _mm512_extload_pd(b1, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+    b_2 = _mm512_extload_pd(b2, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+
+    a_0 = _mm512_load_pd(a0);
+    c_0_0 = _mm512_fmadd_pd(a_0, b_0, c_0_0);
+    c_0_1 = _mm512_fmadd_pd(a_0, b_1, c_0_1);
+    c_0_2 = _mm512_fmadd_pd(a_0, b_2, c_0_2);
+    a0 += 8;
+    a_1 = _mm512_load_pd(a0);
+    c_1_0 = _mm512_fmadd_pd(a_1, b_0, c_1_0);
+    c_1_1 = _mm512_fmadd_pd(a_1, b_1, c_1_1);
+    c_1_2 = _mm512_fmadd_pd(a_1, b_2, c_1_2);
+    a0 += 8;
+    a_2 = _mm512_load_pd(a0);
+    c_2_0 = _mm512_fmadd_pd(a_2, b_0, c_2_0);
+    c_2_1 = _mm512_fmadd_pd(a_2, b_1, c_2_1);
+    c_2_2 = _mm512_fmadd_pd(a_2, b_2, c_2_2);
+    a0 += 8;
+    a_3 = _mm512_load_pd(a0);
+    c_3_0 = _mm512_fmadd_pd(a_3, b_0, c_3_0);
+    c_3_1 = _mm512_fmadd_pd(a_3, b_1, c_3_1);
+    c_3_2 = _mm512_fmadd_pd(a_3, b_2, c_3_2);
+    a0 += 8;
+    a_4 = _mm512_load_pd(a0);
+    c_4_0 = _mm512_fmadd_pd(a_4, b_0, c_4_0);
+    c_4_1 = _mm512_fmadd_pd(a_4, b_1, c_4_1);
+    c_4_2 = _mm512_fmadd_pd(a_4, b_2, c_4_2);
+    a0 += 8;
+    a_5 = _mm512_load_pd(a0);
+    c_5_0 = _mm512_fmadd_pd(a_5, b_0, c_5_0);
+    c_5_1 = _mm512_fmadd_pd(a_5, b_1, c_5_1);
+    c_5_2 = _mm512_fmadd_pd(a_5, b_2, c_5_2);
+    a0 += 8;
+    a_6 = _mm512_load_pd(a0);
+    c_6_0 = _mm512_fmadd_pd(a_6, b_0, c_6_0);
+    c_6_1 = _mm512_fmadd_pd(a_6, b_1, c_6_1);
+    c_6_2 = _mm512_fmadd_pd(a_6, b_2, c_6_2);
+    a0 += 8;
+
+    b0++;
+    b1++;
+    b2++;
+  }
+
+  _mm512_store_pd(c0, c_0_0);
+  _mm512_store_pd(c0+8, c_1_0);
+  _mm512_store_pd(c0+16, c_2_0);
+  _mm512_store_pd(c0+24, c_3_0);
+  _mm512_store_pd(c0+32, c_4_0);
+  _mm512_store_pd(c0+40, c_5_0);
+  _mm512_store_pd(c0+48, c_6_0);
+
+  _mm512_store_pd(c1, c_0_1);
+  _mm512_store_pd(c1+8, c_1_1);
+  _mm512_store_pd(c1+16, c_2_1);
+  _mm512_store_pd(c1+24, c_3_1);
+  _mm512_store_pd(c1+32, c_4_1);
+  _mm512_store_pd(c1+40, c_5_1);
+  _mm512_store_pd(c1+48, c_6_1);
+
+  _mm512_store_pd(c2, c_0_2);
+  _mm512_store_pd(c2+8, c_1_2);
+  _mm512_store_pd(c2+16, c_2_2);
+  _mm512_store_pd(c2+24, c_3_2);
+  _mm512_store_pd(c2+32, c_4_2);
+  _mm512_store_pd(c2+40, c_5_2);
+  _mm512_store_pd(c2+48, c_6_2);
+
+  c0 += 168;
+  c1 += 168;
+  c2 += 168;
+}
+#endif
+
+#if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)
+for (int n = 0; n < 9; n++)
+{
+  for (int k = 0; k < 9; k++)
+  {
+    for(int m = 0; m < 56; m++)
+    {
+      C[(n*56)+m] += A[(k*56)+m] * B[(n*9)+k];
+    }
+  }
+}
+#endif
+
+#ifndef NDEBUG
+num_flops += 9072;
+#endif
+
+}
+
+
+#endif

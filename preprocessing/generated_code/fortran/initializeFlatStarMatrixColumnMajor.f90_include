@@ -1,0 +1,112 @@
+! @file
+! This file is part of SeisSol.
+! 
+! @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+! 
+! @date 2012-11-01 18:25:37.769131
+! 
+! @section LICENSE
+! This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
+! 
+! According to good scientific practice, publications on results achieved in whole or in part due to this software should cite at least one paper or referring to an URL presenting the this software software.
+! 
+! The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
+! 
+! Copyright (c) 2012
+! Technische Universitaet Muenchen
+! Department of Informatics
+! Chair of Scientific Computing
+! http://www5.in.tum.de/
+! 
+! All rights reserved.
+! 
+! Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+! 
+! Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+! Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+! All advertising materials mentioning features or use of this software must display the following acknowledgement: This product includes software developed by the Technische Universitaet Muenchen (TUM), Germany, and its contributors.
+! Neither the name of the Technische Universitaet Muenchen, Munich, Germany nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+! 
+! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+! Initialization of flat matrices.
+!   Remark: This file was generated. It should not be modified by hand.
+  
+!Copies non-zeros (regarding the original Maple pattern) of the full matrix to the flat matrix, Maple base name: starMatrix_3D
+!   Remark: Zeros will be written to the flat matrix, if present at the given position.
+!           Error checking is disabled with the preprocessor variable NDEBUG.
+!           This file was generated. It should not be modified by hand.
+!
+!   The output order is column-major:
+!<pre>
+!          _                         _
+!         | 0  0  0  0  0  0 16  0  0 |
+!         | 0  0  0  0  0  0  0 19  0 |
+!         | 0  0  0  0  0  0  0  0 22 |
+!         | 0  0  0  0  0  0 17 20  0 |
+!         | 0  0  0  0  0  0  0 21 23 | -> [1 2 3 4 5 .. 20 21 23 24]
+!         | 0  0  0  0  0  0 18  0 24 |
+!         | 1  4  7 10  0 14  0  0  0 |
+!         | 2  5  8 11 12  0  0  0  0 |
+!         |_3  6  9  0 13 15  0  0  0_|
+!</pre>
+! @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+!
+subroutine initializeFlatStarMatrixColumnMajor( i_fullMatrix, o_flatMatrix )
+implicit none
+
+! function parameters
+real, intent(in),  dimension( :,: ) :: i_fullMatrix !< full matrix stored in a two-dimensional array.
+real, intent(out), dimension( : )   :: o_flatMatrix !< flat matrix will be set to: non-zeros of the full matrix (col-major).
+
+! local variables
+#ifndef NDEBUG
+integer :: l_row, l_col   !< loop variables.
+#endif
+
+! function
+#ifndef NDEBUG
+! assert a proper size of the flat matrix
+if( (24 .ne. ubound(o_flatMatrix,1)) .or. (1 .ne. lbound(o_flatMatrix,1)) ) then
+  write(STDERR, *) 'initializeFlatStarMatrixColumnMajor, o_flatMatrix bounds are not matching.'
+  stop
+endif
+#endif
+
+#ifndef NDEBUG
+! assert that all nonzeros are covered
+do l_col = lbound(i_fullMatrix, 2), ubound(i_fullMatrix, 2)
+  do l_row = lbound(i_fullMatrix, 1), ubound(i_fullMatrix, 1)
+    if ( (abs(i_fullMatrix(l_row, l_col)) .ge. ZEROTOLERANCE ) .and. .not. (  ( l_row .eq. 7 .and. l_col .eq. 1 ) .or.  ( l_row .eq. 8 .and. l_col .eq. 1 ) .or.  ( l_row .eq. 9 .and. l_col .eq. 1 ) .or.  ( l_row .eq. 7 .and. l_col .eq. 2 ) .or.  ( l_row .eq. 8 .and. l_col .eq. 2 ) .or.  ( l_row .eq. 9 .and. l_col .eq. 2 ) .or.  ( l_row .eq. 7 .and. l_col .eq. 3 ) .or.  ( l_row .eq. 8 .and. l_col .eq. 3 ) .or.  ( l_row .eq. 9 .and. l_col .eq. 3 ) .or.  ( l_row .eq. 7 .and. l_col .eq. 4 ) .or.  ( l_row .eq. 8 .and. l_col .eq. 4 ) .or.  ( l_row .eq. 8 .and. l_col .eq. 5 ) .or.  ( l_row .eq. 9 .and. l_col .eq. 5 ) .or.  ( l_row .eq. 7 .and. l_col .eq. 6 ) .or.  ( l_row .eq. 9 .and. l_col .eq. 6 ) .or.  ( l_row .eq. 1 .and. l_col .eq. 7 ) .or.  ( l_row .eq. 4 .and. l_col .eq. 7 ) .or.  ( l_row .eq. 6 .and. l_col .eq. 7 ) .or.  ( l_row .eq. 2 .and. l_col .eq. 8 ) .or.  ( l_row .eq. 4 .and. l_col .eq. 8 ) .or.  ( l_row .eq. 5 .and. l_col .eq. 8 ) .or.  ( l_row .eq. 3 .and. l_col .eq. 9 ) .or.  ( l_row .eq. 5 .and. l_col .eq. 9 ) .or.  ( l_row .eq. 6 .and. l_col .eq. 9 )) ) then
+       write(STDERR, *) 'initializeFlatStarMatrixColumnMajor, o_flatMatrix does not cover all nonzeros.', l_row, l_col, i_fullMatrix(l_row, l_col)
+       stop
+    endif
+  end do
+end do
+#endif
+
+o_flatMatrix(1) = i_fullMatrix(7,1)
+o_flatMatrix(2) = i_fullMatrix(8,1)
+o_flatMatrix(3) = i_fullMatrix(9,1)
+o_flatMatrix(4) = i_fullMatrix(7,2)
+o_flatMatrix(5) = i_fullMatrix(8,2)
+o_flatMatrix(6) = i_fullMatrix(9,2)
+o_flatMatrix(7) = i_fullMatrix(7,3)
+o_flatMatrix(8) = i_fullMatrix(8,3)
+o_flatMatrix(9) = i_fullMatrix(9,3)
+o_flatMatrix(10) = i_fullMatrix(7,4)
+o_flatMatrix(11) = i_fullMatrix(8,4)
+o_flatMatrix(12) = i_fullMatrix(8,5)
+o_flatMatrix(13) = i_fullMatrix(9,5)
+o_flatMatrix(14) = i_fullMatrix(7,6)
+o_flatMatrix(15) = i_fullMatrix(9,6)
+o_flatMatrix(16) = i_fullMatrix(1,7)
+o_flatMatrix(17) = i_fullMatrix(4,7)
+o_flatMatrix(18) = i_fullMatrix(6,7)
+o_flatMatrix(19) = i_fullMatrix(2,8)
+o_flatMatrix(20) = i_fullMatrix(4,8)
+o_flatMatrix(21) = i_fullMatrix(5,8)
+o_flatMatrix(22) = i_fullMatrix(3,9)
+o_flatMatrix(23) = i_fullMatrix(5,9)
+o_flatMatrix(24) = i_fullMatrix(6,9)
+
+end subroutine initializeFlatStarMatrixColumnMajor

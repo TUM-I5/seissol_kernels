@@ -1,0 +1,275 @@
+// @file
+// This file is part of SeisSol.
+// 
+// @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+// @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
+// 
+// @date 2013-09-06 14:06:35.467126
+// 
+// @section LICENSE
+// This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
+// 
+// According to good scientific practice, publications on results achieved in whole or in part due to this software should cite at least one paper or referring to an URL presenting this software.
+// 
+// The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
+// 
+// Copyright (c) 2012, 2013
+// Technische Universitaet Muenchen
+// Department of Informatics
+// Chair of Scientific Computing
+// http://www5.in.tum.de/
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 
+// Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// All advertising materials mentioning features or use of this software must display the following acknowledgement: This product includes software developed by the Technische Universitaet Muenchen (TUM), Germany, and its contributors.
+// Neither the name of the Technische Universitaet Muenchen, Munich, Germany nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+// 
+// @section DESCRIPTION
+// Remark: This file was generated.
+// preprocessor helping function to convert integer constants to strings
+#define CONCAT_HELPER_4(a,b,c,d) a ## b ## c ## d
+#define CONCAT_4(a,b,c,d) CONCAT_HELPER_4(a,b,c,d)
+#define CONCAT_HELPER_6(a,b,c,d,e,f) a ## b ## c ## d ## e ## f
+#define CONCAT_6(a,b,c,d,e,f) CONCAT_HELPER_6(a,b,c,d, e, f)
+#ifndef __MIC__
+// dense flux kernel
+if( i_sparse == false && i_id < 52 ){
+  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 0){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fM1_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 1){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fM2_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 2){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fM3_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 3){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fM4_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 4){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP111_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 5){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP112_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 6){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP113_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 7){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP121_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 8){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP122_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 9){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP123_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 10){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP131_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 11){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP132_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 12){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP133_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 13){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP141_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 14){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP142_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 15){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP143_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 16){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP211_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 17){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP212_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 18){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP213_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 19){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP221_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 20){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP222_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 21){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP223_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 22){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP231_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 23){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP232_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 24){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP233_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 25){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP241_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 26){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP242_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 27){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP243_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 28){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP311_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 29){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP312_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 30){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP313_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 31){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP321_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 32){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP322_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 33){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP323_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 34){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP331_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 35){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP332_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 36){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP333_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 37){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP341_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 38){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP342_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 39){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP343_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 40){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP411_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 41){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP412_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 42){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP413_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 43){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP421_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 44){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP422_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 45){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP423_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 46){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP431_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 47){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP432_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 48){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP433_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 49){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP441_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 50){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP442_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// sparse flux kernel
+else if( i_id == 51){
+  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_fP443_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+// dense jacobian kernel
+else if( i_id == 52 ){
+  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFVARIABLES );
+}
+// something went wrong: we dont have a kernel for this matrix
+else{
+  assert(false);
+}
+#else
+// dense only for Intel MIC
+if( i_id == 52 ){ // jacobian
+  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFVARIABLES );
+}
+else{ // flux matrix
+  // assert only sparse flux kernels are requested
+  assert(i_sparse == false);
+  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+}
+#endif
+#undef CONCAT_HELPER_4
+#undef CONCAT_4
+#undef CONCAT_HELPER_6
+#undef CONCAT_6

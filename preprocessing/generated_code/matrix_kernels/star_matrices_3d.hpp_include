@@ -1,0 +1,403 @@
+// @file
+// This file is part of SeisSol.
+// 
+// @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+// @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
+// 
+// @date 2013-10-13 19:05:58.929494
+// 
+// @section LICENSE
+// This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
+// 
+// According to good scientific practice, publications on results achieved in whole or in part due to this software should cite at least one paper or referring to an URL presenting this software.
+// 
+// The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
+// 
+// Copyright (c) 2012, 2013
+// Technische Universitaet Muenchen
+// Department of Informatics
+// Chair of Scientific Computing
+// http://www5.in.tum.de/
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 
+// Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// All advertising materials mentioning features or use of this software must display the following acknowledgement: This product includes software developed by the Technische Universitaet Muenchen (TUM), Germany, and its contributors.
+// Neither the name of the Technische Universitaet Muenchen, Munich, Germany nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+// 
+// @section DESCRIPTION
+// Remark: This file was generated.
+#ifndef STARMATRICESDHPPINCLUDE
+#define STARMATRICESDHPPINCLUDE
+
+#if defined( __SSE3__) || defined(__MIC__)
+#include <immintrin.h>
+#endif
+
+inline void generatedMatrixMultiplication_volumeStarMatrix_3D_9_4(double* A, double* values, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < 4; i+=1)
+{
+C[(i)+(0)] += A[(i)+(24)] * values[0];
+C[(i)+(0)] += A[(i)+(28)] * values[1];
+C[(i)+(0)] += A[(i)+(32)] * values[2];
+C[(i)+(4)] += A[(i)+(24)] * values[3];
+C[(i)+(4)] += A[(i)+(28)] * values[4];
+C[(i)+(4)] += A[(i)+(32)] * values[5];
+C[(i)+(8)] += A[(i)+(24)] * values[6];
+C[(i)+(8)] += A[(i)+(28)] * values[7];
+C[(i)+(8)] += A[(i)+(32)] * values[8];
+C[(i)+(12)] += A[(i)+(24)] * values[9];
+C[(i)+(12)] += A[(i)+(28)] * values[10];
+C[(i)+(16)] += A[(i)+(28)] * values[11];
+C[(i)+(16)] += A[(i)+(32)] * values[12];
+C[(i)+(20)] += A[(i)+(24)] * values[13];
+C[(i)+(20)] += A[(i)+(32)] * values[14];
+C[(i)+(24)] += A[(i)+(0)] * values[15];
+C[(i)+(24)] += A[(i)+(12)] * values[16];
+C[(i)+(24)] += A[(i)+(20)] * values[17];
+C[(i)+(28)] += A[(i)+(4)] * values[18];
+C[(i)+(28)] += A[(i)+(12)] * values[19];
+C[(i)+(28)] += A[(i)+(16)] * values[20];
+C[(i)+(32)] += A[(i)+(8)] * values[21];
+C[(i)+(32)] += A[(i)+(16)] * values[22];
+C[(i)+(32)] += A[(i)+(20)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 192;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_aderStarMatrix_3D_9_4(double* A, double* values, double* C, int exit_row, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < exit_row; i+=1)
+{
+C[(i)+(0)] += A[(i)+(24)] * values[0];
+C[(i)+(0)] += A[(i)+(28)] * values[1];
+C[(i)+(0)] += A[(i)+(32)] * values[2];
+C[(i)+(4)] += A[(i)+(24)] * values[3];
+C[(i)+(4)] += A[(i)+(28)] * values[4];
+C[(i)+(4)] += A[(i)+(32)] * values[5];
+C[(i)+(8)] += A[(i)+(24)] * values[6];
+C[(i)+(8)] += A[(i)+(28)] * values[7];
+C[(i)+(8)] += A[(i)+(32)] * values[8];
+C[(i)+(12)] += A[(i)+(24)] * values[9];
+C[(i)+(12)] += A[(i)+(28)] * values[10];
+C[(i)+(16)] += A[(i)+(28)] * values[11];
+C[(i)+(16)] += A[(i)+(32)] * values[12];
+C[(i)+(20)] += A[(i)+(24)] * values[13];
+C[(i)+(20)] += A[(i)+(32)] * values[14];
+C[(i)+(24)] += A[(i)+(0)] * values[15];
+C[(i)+(24)] += A[(i)+(12)] * values[16];
+C[(i)+(24)] += A[(i)+(20)] * values[17];
+C[(i)+(28)] += A[(i)+(4)] * values[18];
+C[(i)+(28)] += A[(i)+(12)] * values[19];
+C[(i)+(28)] += A[(i)+(16)] * values[20];
+C[(i)+(32)] += A[(i)+(8)] * values[21];
+C[(i)+(32)] += A[(i)+(16)] * values[22];
+C[(i)+(32)] += A[(i)+(20)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 48*exit_row;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_volumeStarMatrix_3D_9_10(double* A, double* values, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < 10; i+=1)
+{
+C[(i)+(0)] += A[(i)+(60)] * values[0];
+C[(i)+(0)] += A[(i)+(70)] * values[1];
+C[(i)+(0)] += A[(i)+(80)] * values[2];
+C[(i)+(10)] += A[(i)+(60)] * values[3];
+C[(i)+(10)] += A[(i)+(70)] * values[4];
+C[(i)+(10)] += A[(i)+(80)] * values[5];
+C[(i)+(20)] += A[(i)+(60)] * values[6];
+C[(i)+(20)] += A[(i)+(70)] * values[7];
+C[(i)+(20)] += A[(i)+(80)] * values[8];
+C[(i)+(30)] += A[(i)+(60)] * values[9];
+C[(i)+(30)] += A[(i)+(70)] * values[10];
+C[(i)+(40)] += A[(i)+(70)] * values[11];
+C[(i)+(40)] += A[(i)+(80)] * values[12];
+C[(i)+(50)] += A[(i)+(60)] * values[13];
+C[(i)+(50)] += A[(i)+(80)] * values[14];
+C[(i)+(60)] += A[(i)+(0)] * values[15];
+C[(i)+(60)] += A[(i)+(30)] * values[16];
+C[(i)+(60)] += A[(i)+(50)] * values[17];
+C[(i)+(70)] += A[(i)+(10)] * values[18];
+C[(i)+(70)] += A[(i)+(30)] * values[19];
+C[(i)+(70)] += A[(i)+(40)] * values[20];
+C[(i)+(80)] += A[(i)+(20)] * values[21];
+C[(i)+(80)] += A[(i)+(40)] * values[22];
+C[(i)+(80)] += A[(i)+(50)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 480;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_aderStarMatrix_3D_9_10(double* A, double* values, double* C, int exit_row, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < exit_row; i+=1)
+{
+C[(i)+(0)] += A[(i)+(60)] * values[0];
+C[(i)+(0)] += A[(i)+(70)] * values[1];
+C[(i)+(0)] += A[(i)+(80)] * values[2];
+C[(i)+(10)] += A[(i)+(60)] * values[3];
+C[(i)+(10)] += A[(i)+(70)] * values[4];
+C[(i)+(10)] += A[(i)+(80)] * values[5];
+C[(i)+(20)] += A[(i)+(60)] * values[6];
+C[(i)+(20)] += A[(i)+(70)] * values[7];
+C[(i)+(20)] += A[(i)+(80)] * values[8];
+C[(i)+(30)] += A[(i)+(60)] * values[9];
+C[(i)+(30)] += A[(i)+(70)] * values[10];
+C[(i)+(40)] += A[(i)+(70)] * values[11];
+C[(i)+(40)] += A[(i)+(80)] * values[12];
+C[(i)+(50)] += A[(i)+(60)] * values[13];
+C[(i)+(50)] += A[(i)+(80)] * values[14];
+C[(i)+(60)] += A[(i)+(0)] * values[15];
+C[(i)+(60)] += A[(i)+(30)] * values[16];
+C[(i)+(60)] += A[(i)+(50)] * values[17];
+C[(i)+(70)] += A[(i)+(10)] * values[18];
+C[(i)+(70)] += A[(i)+(30)] * values[19];
+C[(i)+(70)] += A[(i)+(40)] * values[20];
+C[(i)+(80)] += A[(i)+(20)] * values[21];
+C[(i)+(80)] += A[(i)+(40)] * values[22];
+C[(i)+(80)] += A[(i)+(50)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 48*exit_row;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_volumeStarMatrix_3D_9_20(double* A, double* values, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < 20; i+=1)
+{
+C[(i)+(0)] += A[(i)+(120)] * values[0];
+C[(i)+(0)] += A[(i)+(140)] * values[1];
+C[(i)+(0)] += A[(i)+(160)] * values[2];
+C[(i)+(20)] += A[(i)+(120)] * values[3];
+C[(i)+(20)] += A[(i)+(140)] * values[4];
+C[(i)+(20)] += A[(i)+(160)] * values[5];
+C[(i)+(40)] += A[(i)+(120)] * values[6];
+C[(i)+(40)] += A[(i)+(140)] * values[7];
+C[(i)+(40)] += A[(i)+(160)] * values[8];
+C[(i)+(60)] += A[(i)+(120)] * values[9];
+C[(i)+(60)] += A[(i)+(140)] * values[10];
+C[(i)+(80)] += A[(i)+(140)] * values[11];
+C[(i)+(80)] += A[(i)+(160)] * values[12];
+C[(i)+(100)] += A[(i)+(120)] * values[13];
+C[(i)+(100)] += A[(i)+(160)] * values[14];
+C[(i)+(120)] += A[(i)+(0)] * values[15];
+C[(i)+(120)] += A[(i)+(60)] * values[16];
+C[(i)+(120)] += A[(i)+(100)] * values[17];
+C[(i)+(140)] += A[(i)+(20)] * values[18];
+C[(i)+(140)] += A[(i)+(60)] * values[19];
+C[(i)+(140)] += A[(i)+(80)] * values[20];
+C[(i)+(160)] += A[(i)+(40)] * values[21];
+C[(i)+(160)] += A[(i)+(80)] * values[22];
+C[(i)+(160)] += A[(i)+(100)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 960;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_aderStarMatrix_3D_9_20(double* A, double* values, double* C, int exit_row, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < exit_row; i+=1)
+{
+C[(i)+(0)] += A[(i)+(120)] * values[0];
+C[(i)+(0)] += A[(i)+(140)] * values[1];
+C[(i)+(0)] += A[(i)+(160)] * values[2];
+C[(i)+(20)] += A[(i)+(120)] * values[3];
+C[(i)+(20)] += A[(i)+(140)] * values[4];
+C[(i)+(20)] += A[(i)+(160)] * values[5];
+C[(i)+(40)] += A[(i)+(120)] * values[6];
+C[(i)+(40)] += A[(i)+(140)] * values[7];
+C[(i)+(40)] += A[(i)+(160)] * values[8];
+C[(i)+(60)] += A[(i)+(120)] * values[9];
+C[(i)+(60)] += A[(i)+(140)] * values[10];
+C[(i)+(80)] += A[(i)+(140)] * values[11];
+C[(i)+(80)] += A[(i)+(160)] * values[12];
+C[(i)+(100)] += A[(i)+(120)] * values[13];
+C[(i)+(100)] += A[(i)+(160)] * values[14];
+C[(i)+(120)] += A[(i)+(0)] * values[15];
+C[(i)+(120)] += A[(i)+(60)] * values[16];
+C[(i)+(120)] += A[(i)+(100)] * values[17];
+C[(i)+(140)] += A[(i)+(20)] * values[18];
+C[(i)+(140)] += A[(i)+(60)] * values[19];
+C[(i)+(140)] += A[(i)+(80)] * values[20];
+C[(i)+(160)] += A[(i)+(40)] * values[21];
+C[(i)+(160)] += A[(i)+(80)] * values[22];
+C[(i)+(160)] += A[(i)+(100)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 48*exit_row;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_volumeStarMatrix_3D_9_35(double* A, double* values, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < 35; i+=1)
+{
+C[(i)+(0)] += A[(i)+(210)] * values[0];
+C[(i)+(0)] += A[(i)+(245)] * values[1];
+C[(i)+(0)] += A[(i)+(280)] * values[2];
+C[(i)+(35)] += A[(i)+(210)] * values[3];
+C[(i)+(35)] += A[(i)+(245)] * values[4];
+C[(i)+(35)] += A[(i)+(280)] * values[5];
+C[(i)+(70)] += A[(i)+(210)] * values[6];
+C[(i)+(70)] += A[(i)+(245)] * values[7];
+C[(i)+(70)] += A[(i)+(280)] * values[8];
+C[(i)+(105)] += A[(i)+(210)] * values[9];
+C[(i)+(105)] += A[(i)+(245)] * values[10];
+C[(i)+(140)] += A[(i)+(245)] * values[11];
+C[(i)+(140)] += A[(i)+(280)] * values[12];
+C[(i)+(175)] += A[(i)+(210)] * values[13];
+C[(i)+(175)] += A[(i)+(280)] * values[14];
+C[(i)+(210)] += A[(i)+(0)] * values[15];
+C[(i)+(210)] += A[(i)+(105)] * values[16];
+C[(i)+(210)] += A[(i)+(175)] * values[17];
+C[(i)+(245)] += A[(i)+(35)] * values[18];
+C[(i)+(245)] += A[(i)+(105)] * values[19];
+C[(i)+(245)] += A[(i)+(140)] * values[20];
+C[(i)+(280)] += A[(i)+(70)] * values[21];
+C[(i)+(280)] += A[(i)+(140)] * values[22];
+C[(i)+(280)] += A[(i)+(175)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 1680;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_aderStarMatrix_3D_9_35(double* A, double* values, double* C, int exit_row, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < exit_row; i+=1)
+{
+C[(i)+(0)] += A[(i)+(210)] * values[0];
+C[(i)+(0)] += A[(i)+(245)] * values[1];
+C[(i)+(0)] += A[(i)+(280)] * values[2];
+C[(i)+(35)] += A[(i)+(210)] * values[3];
+C[(i)+(35)] += A[(i)+(245)] * values[4];
+C[(i)+(35)] += A[(i)+(280)] * values[5];
+C[(i)+(70)] += A[(i)+(210)] * values[6];
+C[(i)+(70)] += A[(i)+(245)] * values[7];
+C[(i)+(70)] += A[(i)+(280)] * values[8];
+C[(i)+(105)] += A[(i)+(210)] * values[9];
+C[(i)+(105)] += A[(i)+(245)] * values[10];
+C[(i)+(140)] += A[(i)+(245)] * values[11];
+C[(i)+(140)] += A[(i)+(280)] * values[12];
+C[(i)+(175)] += A[(i)+(210)] * values[13];
+C[(i)+(175)] += A[(i)+(280)] * values[14];
+C[(i)+(210)] += A[(i)+(0)] * values[15];
+C[(i)+(210)] += A[(i)+(105)] * values[16];
+C[(i)+(210)] += A[(i)+(175)] * values[17];
+C[(i)+(245)] += A[(i)+(35)] * values[18];
+C[(i)+(245)] += A[(i)+(105)] * values[19];
+C[(i)+(245)] += A[(i)+(140)] * values[20];
+C[(i)+(280)] += A[(i)+(70)] * values[21];
+C[(i)+(280)] += A[(i)+(140)] * values[22];
+C[(i)+(280)] += A[(i)+(175)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 48*exit_row;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_volumeStarMatrix_3D_9_56(double* A, double* values, double* C, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < 56; i+=1)
+{
+C[(i)+(0)] += A[(i)+(336)] * values[0];
+C[(i)+(0)] += A[(i)+(392)] * values[1];
+C[(i)+(0)] += A[(i)+(448)] * values[2];
+C[(i)+(56)] += A[(i)+(336)] * values[3];
+C[(i)+(56)] += A[(i)+(392)] * values[4];
+C[(i)+(56)] += A[(i)+(448)] * values[5];
+C[(i)+(112)] += A[(i)+(336)] * values[6];
+C[(i)+(112)] += A[(i)+(392)] * values[7];
+C[(i)+(112)] += A[(i)+(448)] * values[8];
+C[(i)+(168)] += A[(i)+(336)] * values[9];
+C[(i)+(168)] += A[(i)+(392)] * values[10];
+C[(i)+(224)] += A[(i)+(392)] * values[11];
+C[(i)+(224)] += A[(i)+(448)] * values[12];
+C[(i)+(280)] += A[(i)+(336)] * values[13];
+C[(i)+(280)] += A[(i)+(448)] * values[14];
+C[(i)+(336)] += A[(i)+(0)] * values[15];
+C[(i)+(336)] += A[(i)+(168)] * values[16];
+C[(i)+(336)] += A[(i)+(280)] * values[17];
+C[(i)+(392)] += A[(i)+(56)] * values[18];
+C[(i)+(392)] += A[(i)+(168)] * values[19];
+C[(i)+(392)] += A[(i)+(224)] * values[20];
+C[(i)+(448)] += A[(i)+(112)] * values[21];
+C[(i)+(448)] += A[(i)+(224)] * values[22];
+C[(i)+(448)] += A[(i)+(280)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 2688;
+#endif
+
+}
+
+inline void generatedMatrixMultiplication_aderStarMatrix_3D_9_56(double* A, double* values, double* C, int exit_row, double* A_prefetch = NULL, double* B_prefetch = NULL, double* C_prefetch = NULL)
+{
+#pragma simd
+for (int i = 0; i < exit_row; i+=1)
+{
+C[(i)+(0)] += A[(i)+(336)] * values[0];
+C[(i)+(0)] += A[(i)+(392)] * values[1];
+C[(i)+(0)] += A[(i)+(448)] * values[2];
+C[(i)+(56)] += A[(i)+(336)] * values[3];
+C[(i)+(56)] += A[(i)+(392)] * values[4];
+C[(i)+(56)] += A[(i)+(448)] * values[5];
+C[(i)+(112)] += A[(i)+(336)] * values[6];
+C[(i)+(112)] += A[(i)+(392)] * values[7];
+C[(i)+(112)] += A[(i)+(448)] * values[8];
+C[(i)+(168)] += A[(i)+(336)] * values[9];
+C[(i)+(168)] += A[(i)+(392)] * values[10];
+C[(i)+(224)] += A[(i)+(392)] * values[11];
+C[(i)+(224)] += A[(i)+(448)] * values[12];
+C[(i)+(280)] += A[(i)+(336)] * values[13];
+C[(i)+(280)] += A[(i)+(448)] * values[14];
+C[(i)+(336)] += A[(i)+(0)] * values[15];
+C[(i)+(336)] += A[(i)+(168)] * values[16];
+C[(i)+(336)] += A[(i)+(280)] * values[17];
+C[(i)+(392)] += A[(i)+(56)] * values[18];
+C[(i)+(392)] += A[(i)+(168)] * values[19];
+C[(i)+(392)] += A[(i)+(224)] * values[20];
+C[(i)+(448)] += A[(i)+(112)] * values[21];
+C[(i)+(448)] += A[(i)+(224)] * values[22];
+C[(i)+(448)] += A[(i)+(280)] * values[23];
+}
+#ifndef NDEBUG
+num_flops += 48*exit_row;
+#endif
+
+}
+
+
+#endif

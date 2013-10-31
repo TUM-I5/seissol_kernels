@@ -1,0 +1,876 @@
+// @file
+// This file is part of SeisSol.
+// 
+// @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
+// @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
+// 
+// @date 2013-09-19 18:55:07.061527
+// 
+// @section LICENSE
+// This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
+// 
+// According to good scientific practice, publications on results achieved in whole or in part due to this software should cite at least one paper or referring to an URL presenting this software.
+// 
+// The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
+// 
+// Copyright (c) 2012, 2013
+// Technische Universitaet Muenchen
+// Department of Informatics
+// Chair of Scientific Computing
+// http://www5.in.tum.de/
+// 
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 
+// Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// All advertising materials mentioning features or use of this software must display the following acknowledgement: This product includes software developed by the Technische Universitaet Muenchen (TUM), Germany, and its contributors.
+// Neither the name of the Technische Universitaet Muenchen, Munich, Germany nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+// 
+// @section DESCRIPTION
+// Remark: This file was generated.
+if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/starMatrix_3D_csc.mtx") ){ 
+  generatedMatrixMultiplication_volumeStarMatrix_3D_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/kXiDivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_kXiDivM_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/kEtaDivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_kEtaDivM_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/kZetaDivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_kZetaDivM_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM1DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM1_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM2DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM2_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM3DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM3_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM4DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM4_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP111DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP111_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP112DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP112_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP113DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP113_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP121DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP121_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP122DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP122_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP123DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP123_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP131DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP131_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP132DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP132_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP133DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP133_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP141DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP141_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP142DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP142_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP143DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP143_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP211DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP211_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP212DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP212_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP213DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP213_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP221DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP221_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP222DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP222_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP223DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP223_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP231DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP231_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP232DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP232_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP233DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP233_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP241DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP241_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP242DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP242_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP243DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP243_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP311DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP311_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP312DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP312_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP313DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP313_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP321DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP321_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP322DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP322_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP323DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP323_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP331DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP331_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP332DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP332_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP333DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP333_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP341DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP341_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP342DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP342_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP343DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP343_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP411DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP411_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP412DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP412_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP413DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP413_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP421DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP421_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP422DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP422_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP423DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP423_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP431DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP431_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP432DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP432_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP433DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP433_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP441DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP441_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP442DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP442_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 4 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP443DivM_3D_1_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP443_9_4( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/starMatrix_3D_csc.mtx") ){ 
+  generatedMatrixMultiplication_volumeStarMatrix_3D_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/kXiDivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_kXiDivM_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/kEtaDivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_kEtaDivM_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/kZetaDivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_kZetaDivM_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM1DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM1_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM2DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM2_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM3DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM3_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM4DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM4_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP111DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP111_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP112DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP112_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP113DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP113_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP121DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP121_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP122DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP122_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP123DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP123_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP131DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP131_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP132DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP132_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP133DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP133_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP141DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP141_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP142DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP142_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP143DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP143_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP211DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP211_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP212DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP212_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP213DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP213_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP221DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP221_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP222DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP222_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP223DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP223_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP231DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP231_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP232DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP232_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP233DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP233_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP241DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP241_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP242DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP242_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP243DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP243_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP311DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP311_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP312DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP312_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP313DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP313_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP321DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP321_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP322DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP322_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP323DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP323_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP331DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP331_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP332DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP332_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP333DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP333_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP341DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP341_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP342DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP342_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP343DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP343_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP411DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP411_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP412DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP412_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP413DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP413_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP421DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP421_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP422DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP422_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP423DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP423_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP431DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP431_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP432DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP432_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP433DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP433_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP441DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP441_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP442DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP442_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 10 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP443DivM_3D_2_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP443_9_10( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/starMatrix_3D_csc.mtx") ){ 
+  generatedMatrixMultiplication_volumeStarMatrix_3D_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/kXiDivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_kXiDivM_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/kEtaDivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_kEtaDivM_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/kZetaDivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_kZetaDivM_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM1DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM1_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM2DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM2_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM3DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM3_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM4DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM4_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP111DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP111_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP112DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP112_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP113DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP113_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP121DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP121_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP122DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP122_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP123DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP123_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP131DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP131_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP132DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP132_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP133DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP133_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP141DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP141_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP142DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP142_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP143DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP143_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP211DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP211_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP212DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP212_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP213DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP213_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP221DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP221_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP222DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP222_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP223DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP223_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP231DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP231_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP232DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP232_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP233DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP233_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP241DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP241_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP242DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP242_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP243DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP243_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP311DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP311_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP312DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP312_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP313DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP313_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP321DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP321_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP322DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP322_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP323DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP323_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP331DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP331_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP332DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP332_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP333DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP333_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP341DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP341_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP342DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP342_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP343DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP343_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP411DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP411_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP412DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP412_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP413DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP413_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP421DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP421_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP422DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP422_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP423DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP423_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP431DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP431_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP432DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP432_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP433DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP433_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP441DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP441_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP442DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP442_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 20 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP443DivM_3D_3_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP443_9_20( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/starMatrix_3D_csc.mtx") ){ 
+  generatedMatrixMultiplication_volumeStarMatrix_3D_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/kXiDivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_kXiDivM_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/kEtaDivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_kEtaDivM_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/kZetaDivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_kZetaDivM_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM1DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM1_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM2DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM2_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM3DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM3_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM4DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM4_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP111DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP111_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP112DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP112_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP113DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP113_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP121DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP121_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP122DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP122_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP123DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP123_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP131DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP131_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP132DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP132_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP133DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP133_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP141DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP141_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP142DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP142_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP143DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP143_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP211DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP211_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP212DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP212_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP213DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP213_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP221DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP221_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP222DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP222_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP223DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP223_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP231DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP231_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP232DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP232_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP233DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP233_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP241DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP241_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP242DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP242_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP243DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP243_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP311DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP311_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP312DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP312_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP313DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP313_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP321DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP321_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP322DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP322_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP323DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP323_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP331DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP331_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP332DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP332_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP333DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP333_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP341DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP341_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP342DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP342_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP343DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP343_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP411DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP411_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP412DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP412_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP413DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP413_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP421DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP421_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP422DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP422_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP423DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP423_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP431DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP431_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP432DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP432_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP433DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP433_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP441DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP441_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP442DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP442_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 35 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP443DivM_3D_4_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP443_9_35( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/starMatrix_3D_csc.mtx") ){ 
+  generatedMatrixMultiplication_volumeStarMatrix_3D_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/kXiDivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_kXiDivM_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/kEtaDivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_kEtaDivM_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/kZetaDivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_kZetaDivM_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM1DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM1_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM2DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM2_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM3DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM3_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fM4DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fM4_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP111DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP111_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP112DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP112_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP113DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP113_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP121DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP121_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP122DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP122_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP123DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP123_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP131DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP131_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP132DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP132_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP133DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP133_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP141DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP141_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP142DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP142_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP143DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP143_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP211DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP211_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP212DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP212_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP213DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP213_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP221DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP221_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP222DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP222_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP223DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP223_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP231DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP231_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP232DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP232_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP233DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP233_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP241DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP241_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP242DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP242_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP243DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP243_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP311DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP311_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP312DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP312_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP313DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP313_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP321DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP321_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP322DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP322_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP323DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP323_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP331DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP331_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP332DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP332_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP333DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP333_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP341DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP341_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP342DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP342_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP343DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP343_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP411DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP411_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP412DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP412_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP413DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP413_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP421DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP421_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP422DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP422_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP423DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP423_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP431DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP431_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP432DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP432_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP433DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP433_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP441DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP441_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP442DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP442_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else if( numberOfRows == 56 && std::string::npos != pathToMatrixMarketFile.find("matrices/fP443DivM_3D_5_csc.mtx") ){ 
+  generatedMatrixMultiplication_fP443_9_56( flatColumnMajor,l_testMatrix, l_generatedResultMatrix ); 
+} 
+else 
+  TS_FAIL("invalid number of basis function or matrix file name"); 
