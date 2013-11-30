@@ -36,7 +36,7 @@
 #include <cstdlib>
 #include <cxxtest/TestSuite.h>
 
-#include "../../SeisSolGen/ReaderCSC.hpp"
+#include "../preprocessing/SeisSolGen/ReaderCSC.hpp"
 #include "generated_code/matrix_kernels/star_matrices_3d.hpp_include"
 #include "generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
 #include "generated_code/matrix_kernels/flux_matrices_3d.hpp_include"

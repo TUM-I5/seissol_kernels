@@ -34,8 +34,8 @@
 #ifndef DENSEMATRIX_HPP_
 #define DENSEMATRIX_HPP_
 
-#include "../seissol_src/Initializer/MemoryAllocator.h"
-#include "../seissol_src/Initializer/XmlParser.hpp"
+#include <Initializer/MemoryAllocator.h>
+#include <Initializer/XmlParser.hpp>
 
 const int s_maximumOrder = 6;
 // TODO: Add a zero tolerance, which matches the size of the matrix: It doesn't make sense to compare values > 10,000.0 with a zero tolerance of 10e-15..

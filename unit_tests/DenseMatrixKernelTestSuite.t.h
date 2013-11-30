@@ -34,7 +34,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
-#include "../seissol_src/Initializer/MemoryAllocator.h"
+#include <Initializer/MemoryAllocator.h>
 #include "generated_code/matrix_kernels/dense_matrices.hpp_include"
 #include "DenseMatrix.hpp"
 
@@ -61,9 +61,6 @@ namespace unit_test {
  **/
 class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
   //private:
-    //! aligned memory allocation
-    seissol::MemoryAllocator m_memoryAllocator;
-
     DenseMatrix m_denseMatrix;
 
     /**
@@ -105,11 +102,6 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
 
 
   public:
-    void tearDown() {
-      // free allocated memory
-      m_memoryAllocator.freeMemory(); 
-    }
-
     void testDenseFluxMatrixKernels() {
       // generate random seed
       srand(time(NULL));

@@ -86,7 +86,7 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       m_unitTestsSrcDirectory.erase(  m_unitTestsSrcDirectory.end() - 18,  m_unitTestsSrcDirectory.end() );
 
       // derive matrices directory
-      m_matricesDirectory = m_unitTestsSrcDirectory  + "/../../matrices";
+      m_matricesDirectory = m_unitTestsSrcDirectory  + "/../preprocessing/matrices";
 
       m_minimumOrder = 2;
       m_maximumOrder = 6;

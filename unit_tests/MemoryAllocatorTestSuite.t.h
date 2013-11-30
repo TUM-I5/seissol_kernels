@@ -34,7 +34,7 @@
 #include <iostream>
 #include <iterator>
 #include <cxxtest/TestSuite.h>
-#include "../seissol_src/Initializer/MemoryAllocator.h"
+#include <Initializer/MemoryAllocator.h>
 
 namespace unit_test {
   class MemoryAllocatorTestSuite;

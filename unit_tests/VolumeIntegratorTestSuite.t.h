@@ -35,8 +35,8 @@
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
 
-#include "../seissol_src/Initializer/MemoryManager.h"
-#include "../seissol_src/Solver/kernels/VolumeIntegrator.h"
+#include <Initializer/MemoryManager.h>
+#include "../src/VolumeIntegrator.h"
 #include "DenseMatrix.hpp"
 
 namespace unit_test {

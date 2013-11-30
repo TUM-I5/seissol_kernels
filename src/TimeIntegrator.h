@@ -38,19 +38,19 @@
 #warning compiling time integrator with assertions
 #endif
 
-#include "../../Monitoring/FlopCounter.hpp"
+#include <Monitoring/FlopCounter.hpp>
 
 #include <cstring>
 
 #include <utils/logger.h>
 
-#include "../../Initializer/XmlParser.hpp"
-#include "../../Initializer/MemoryManager.h"
-#include "../../Initializer/preProcessorMacros.fpp"
+#include <Initializer/XmlParser.hpp>
+#include <Initializer/MemoryManager.h>
+#include <Initializer/preProcessorMacros.fpp>
 
-#include "../../generated_code/matrix_kernels/dense_matrices.hpp_include"
-#include "../../generated_code/matrix_kernels/star_matrices_3d.hpp_include"
-#include "../../generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
+#include <generated_code/matrix_kernels/dense_matrices.hpp_include>
+#include <generated_code/matrix_kernels/star_matrices_3d.hpp_include>
+#include <generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include>
 
 namespace seissol {
   namespace kernels {

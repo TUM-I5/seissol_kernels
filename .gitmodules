@@ -1,0 +1,6 @@
+[submodule "submodules/utils"]
+	path = submodules/utils
+	url = https://github.com/TUM-I5/utils.git
+[submodule "submodules/pugixml"]
+	path = submodules/pugixml
+	url = https://github.com/zeux/pugixml.git

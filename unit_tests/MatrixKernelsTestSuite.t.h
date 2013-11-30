@@ -37,13 +37,13 @@
 #include <cxxtest/TestSuite.h>
 #include <utils/logger.h>
 
-#include "../seissol_src/Initializer/MemoryAllocator.h"
-#include "../seissol_src/Initializer/MemoryManager.h"
-#include "../seissol_src/Solver/kernels/TimeIntegrator.h"
+#include <seissol/Initializer/MemoryAllocator.h>
+#include <seissol/Initializer/MemoryManager.h>
+#include "../src/TimeIntegrator.h"
 
 #include "configuration.hpp"
 #include "SparseMatrix.hpp"
-#include "../seissol_src/Initializer/preProcessorMacros.fpp"
+#include <seissol/Initializer/preProcessorMacros.fpp>
 
 // extern declaration of SeisSol's "old" CauchKovalewski3D routine.
 extern "C" void c_bind_cauchy_kovalewski_3d( const double* i_unknowns,

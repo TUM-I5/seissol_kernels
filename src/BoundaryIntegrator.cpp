@@ -38,7 +38,7 @@ void seissol::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
   assert( i_id < 53 );
 
   // include the generated initialization code
-#include "../../generated_code/initialization/boundary_matrix_kernels.hpp_include"
+#include <generated_code/initialization/boundary_matrix_kernels.hpp_include>
 
 }
 

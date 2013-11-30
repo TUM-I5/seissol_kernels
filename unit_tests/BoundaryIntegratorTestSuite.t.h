@@ -37,7 +37,7 @@
 #include "Initializer/preProcessorMacros.fpp"
 
 #define private public
-#include "../seissol_src/Solver/kernels/BoundaryIntegrator.h"
+#include "../src/BoundaryIntegrator.h"
 #undef private
 #include "DenseMatrix.hpp"
 
@@ -139,7 +139,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       double l_unknownsBoundaryIntegrator[NUMBEROFUNKNOWNS]         __attribute__((aligned(64)));
 
       //! matrices of time integrated unknowns
-      double l_timeIntegratedUnknownsElement[NUMBEROFUNKNOWNS]      __attribute__((aligned(64)));
+      double l_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS]   __attribute__((aligned(64)));
       double l_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS] __attribute__((aligned(64)));
 
       //! flux solvers matrices (positive eigenvalues): \f$ N_{k,i} A_k^+ N_{k,i}^{-1} \f$
@@ -186,7 +186,9 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
         }
 
         m_denseMatrix.setRandomValues( NUMBEROFUNKNOWNS,
-                                       l_timeIntegratedUnknownsElement );
+                                       l_timeIntegratedUnknownsElement[0] );
+        m_denseMatrix.setRandomValues( NUMBEROFUNKNOWNS,
+                                       l_timeIntegratedUnknownsElement[1] );
 
 
         for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
@@ -220,7 +222,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
         }
 
         // do a simple boundary intagration
-        simpleBoundaryIntegration( l_timeIntegratedUnknownsElement,
+        simpleBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
                                    l_timeIntegratedUnknownsNeighbors,
                                    l_boundaryConditions,
                                    l_neighboringIndices,
@@ -248,7 +250,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
           l_boundaryConditions[l_face] = 5;
           
           // do a simple boundary intagration
-          simpleBoundaryIntegration( l_timeIntegratedUnknownsElement,
+          simpleBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
                                      l_timeIntegratedUnknownsNeighbors,
                                      l_boundaryConditions,
                                      l_neighboringIndices,

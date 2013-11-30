@@ -34,10 +34,10 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
-#include "../seissol_src/Initializer/MemoryAllocator.h"
+#include <Initializer/MemoryAllocator.h>
 #include "DenseMatrix.hpp"
-#include "src/generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
-#include "src/generated_code/matrix_kernels/star_matrices_3d.hpp_include"
+#include "generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
+#include "generated_code/matrix_kernels/star_matrices_3d.hpp_include"
 
 namespace unit_test {
   class BlockedMatrixKernelsTestSuite;

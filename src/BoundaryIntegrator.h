@@ -38,18 +38,18 @@
 #warning compiling boundary integrator with assertions
 #endif
 
-#include "../../Monitoring/FlopCounter.hpp"
+#include <Monitoring/FlopCounter.hpp>
 
 #include <iostream>
 #include <vector>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include "../../Initializer/XmlParser.hpp"
-#include "../../Initializer/MemoryManager.h"
-#include "../../generated_code/matrix_kernels/flux_matrices_3d.hpp_include"
-#include "../../generated_code/matrix_kernels/dense_matrices.hpp_include"
-#include "../../Initializer/preProcessorMacros.fpp"
+#include <Initializer/XmlParser.hpp>
+#include <Initializer/MemoryManager.h>
+#include <generated_code/matrix_kernels/flux_matrices_3d.hpp_include>
+#include <generated_code/matrix_kernels/dense_matrices.hpp_include>
+#include <Initializer/preProcessorMacros.fpp>
 
 #include <utils/logger.h>
 
