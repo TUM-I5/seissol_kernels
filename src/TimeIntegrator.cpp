@@ -118,6 +118,113 @@ seissol::kernels::TimeIntegrator::TimeIntegrator( const seissol::XmlParser      
   setUpMatrixKernel( 3, true );
 }
 
+void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double i_unknowns[NUMBEROFUNKNOWNS],
+                                                                     double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                     double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                     double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
+                                                                     double o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
+  /*
+   * Assert alignments, which are assumed in the matrix kernels.
+   */
+  //TODO: What do we assume in the matrix kernels??
+
+  /*
+   * Computation
+   */
+  // non-zero block sizes in stiffness and star matrix multiplications
+  int l_nonZeroBlockSizeStiffness;
+  int l_nonZeroBlockSizeStar = NUMBEROFBASISFUNCTIONS;
+
+  // temporary matrix for summation (64 byte aligned)
+  double l_partialSum[NUMBEROFUNKNOWNS] __attribute__((aligned(64)));
+
+  // copy unknowns to zeroth derivative 
+  for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
+    o_timeDerivatives[0][l_entry] = i_unknowns[l_entry];
+  }
+
+  // iterate over order in time
+  for( int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++) {
+    // set the this derivative to zero
+    // TODO: Replace by C=A.B matrix operators
+    for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
+      o_timeDerivatives[l_order][l_entry] = 0;
+    }    
+
+    // save non-zero block size of the siffness multiplcations
+    l_nonZeroBlockSizeStiffness = l_nonZeroBlockSizeStar;
+
+    /* Compute non-zero block size for the star matrix multiplications in this step and the
+     * stiffness matrix multiplications in the next step.
+     *
+     * A detailed description can be found in the global time stepping functionality of the time integrator (see below).
+     */
+    l_nonZeroBlockSizeStar  = ORDEROFTAYLORSERIESEXPANSION - l_order;
+    l_nonZeroBlockSizeStar  = l_nonZeroBlockSizeStar * (l_nonZeroBlockSizeStar + 1) * (l_nonZeroBlockSizeStar + 2);
+    l_nonZeroBlockSizeStar /= 6;
+
+    // reset partial sum
+    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
+
+    // calculate $K_\xi.Q_k$ and $(K_\xi.Q_k).A*$
+    m_matrixKernels[0] ( m_stiffnessMatrixPointers[0], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                         NULL,                         NULL                                                     ); // TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,                 i_aStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                         NULL,                         NULL                                                     ); // TODO: prefetches
+
+    // reset partial sum
+    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
+
+    // calculate $K_\eta.Q_k$ and $(K_\eta.Q_k).B*$
+    m_matrixKernels[1] ( m_stiffnessMatrixPointers[1], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,                 i_bStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+
+    // reset partial sum
+    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
+
+    // calculate $K_\zeta.Q_k$ and calculate $(K_\zeta.Q_k).C*$
+    m_matrixKernels[2] ( m_stiffnessMatrixPointers[2], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,                 i_cStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+  }
+}
+
+void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                                                            const double &i_deltaTLower,
+                                                            const double &i_deltaTUpper,
+                                                                  double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
+  // assert that this is a forwared integration in time
+  assert( i_deltaTUpper > i_deltaTLower );
+
+  // initialization of factors in the Taylor series expansion (0th term)
+  double l_taylorSeriesFactorLower = i_deltaTLower;
+  double l_taylorSeriesFactorUpper = i_deltaTUpper;
+  double l_taylorSeriesFactor = l_taylorSeriesFactorUpper - l_taylorSeriesFactorLower; 
+
+  // update the time integrated unknowns by the contribution of the 0th derivative
+  for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {
+    o_timeIntegratedUnknowns[l_entry] = l_taylorSeriesFactor * i_timeDerivatives[0][l_entry];
+  }
+ 
+ 
+  // iterate over order in time
+  for(int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) { 
+    // compute $\frac{(\Delta t^\text{up})^{j+1} - (\Delta t^\text{lo}^{j+1})}{(j+1)!}$ for the current term (l_order == j in the code)
+    //   Remark: the negative sign of the derivative is include here
+    l_taylorSeriesFactorLower = -l_taylorSeriesFactorLower * i_deltaTLower / double(l_order + 1);
+    l_taylorSeriesFactorUpper = -l_taylorSeriesFactorUpper * i_deltaTUpper / double(l_order + 1); 
+    l_taylorSeriesFactor = ( l_taylorSeriesFactorUpper - l_taylorSeriesFactorLower);
+
+    // update the time integrated unknowns by the contribution of this derivative
+    for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {
+      o_timeIntegratedUnknowns[l_entry] += l_taylorSeriesFactor * i_timeDerivatives[l_order][l_entry];
+    }
+  }
+}
+
 void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_unknowns[NUMBEROFUNKNOWNS],
                                                                   double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
                                                                   double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],

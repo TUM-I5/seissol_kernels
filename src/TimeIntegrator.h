@@ -127,7 +127,42 @@ class seissol::kernels::TimeIntegrator {
                     const seissol::initializers::MemoryManager &i_memoryManager );
 
     /**
+     * Computes the time derivatives.
+     *   Part of the local time stepping scheme.
+     *   Use the function computeTimeIntegral to compute integrals from derivatives.
+     *
+     * TODO: Switch to compressed storage scheme.
+     *
+     * @param i_unknowns unknowns of the current time step \f$ t^\text{cell} \f$ for which the time derivatives \f$ \frac{\partial^j}{\partial t^j} \f$ will be computed.
+     * @param i_aStar sparse star matrix \f$ A^*_k \f$
+     * @param i_bStar sparse star matrix \f$ B^*_k \f$
+     * @param i_cStar sparse star matrix \f$ C^*_k \f$
+     * @param o_timeDerivatives time derivatives used in the time integration.
+     **/
+    void computeTimeDerivatives( const double i_unknowns[NUMBEROFUNKNOWNS],
+                                       double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                       double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                       double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
+                                       double o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] );
+    /**
+     * Computes the time integrated unknowns from previously computed time derivatives.
+     *   Part of the local time stepping scheme.
+     *
+     * TODO: Switch to compressed storage scheme.
+     *
+     * @param i_timeDerivatives time derivatives.
+     * @param i_deltaTLower length \f$ \Delta t^\text{lo} \f$ of the lower time integration interval with respect to the current time \f$ t^\text{cell} \f$ of the cell.
+     * @param i_deltaTUpper length \f$ \Delta t^\text{up} \f$ of the upper time integration interval with respect to the current time \f$ t^\text{cell} \f$ of the cell.
+     * @param o_timeIntegratedUnknowns time integrated unknowns over the interval: \f$ [ t^\text{cell} + \Delta t^\text{lo}, t^\text{cell} + \Delta t^\text{up} ] \f$ 
+     */
+    void computeTimeIntegral( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                              const double &i_deltaTLower,
+                              const double &i_deltaTUpper,
+                                    double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] );
+
+    /**
      * Computes the time integral.
+     *   Part of the global time stepping scheme.
      *
      * @param i_unknowns unknowns of the current time step \f$ t^n \f$, which will be integrated in time to \f$ t^{n+1} = t^n + \Delta t \f$
      * @param i_aStar sparse star matrix \f$ A^*_k \f$

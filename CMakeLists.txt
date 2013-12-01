@@ -33,7 +33,7 @@
 cmake_minimum_required( VERSION 2.6 )
 
 # set number of basis functions
-add_definitions( -DNUMBEROFBASISFUNCTIONS=10
+add_definitions( -DNUMBEROFBASISFUNCTIONS=20
                  -DNUMBEROFVARIABLES=9
                  -DGENERATEDKERNELS )
 
@@ -95,6 +95,7 @@ if(CXXTEST_FOUND)
   # unit tests for the integrators
   CXXTEST_ADD_TEST( integratorsUnitTests
                     integrators.cpp
+                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/TimeIntegratorTestSuite.t.h 
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/VolumeIntegratorTestSuite.t.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BoundaryIntegratorTestSuite.t.h     
                   )
