@@ -47,6 +47,9 @@
 // C-function name of the time integration
 #define TIMEINTFUNCTIONNAME CONCAT_4( cauchyKovalewskiTimeIntegration_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS )
 
+// C-funcion name of the time derivative computation
+#define TIMEDERFUNCTIONNAME CONCAT_4( computeTimeDerivatives_,          NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS )
+
 // set up the xml-parser
 seissol::XmlParser l_matrixReader( MATRIXXMLFILE );
 
@@ -114,4 +117,20 @@ extern "C" {
                                           i_deltaT,
                                           o_timeIntegratedUnknowns );
   }
+
+  /**
+   * Simple forward of the time derivative computation. Details can be found in the TimeIntegrator-class.
+   **/
+  void TIMEDERFUNCTIONNAME( const double  i_unknowns[NUMBEROFUNKNOWNS],
+                                  double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                  double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                  double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],
+                                  double  o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
+    l_timeIntegrator.computeTimeDerivatives( i_unknowns,
+                                             i_aStar,
+                                             i_bStar,
+                                             i_cStar,
+                                             o_timeDerivatives );
+  }
+
 }
