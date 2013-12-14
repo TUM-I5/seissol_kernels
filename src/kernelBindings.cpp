@@ -50,6 +50,9 @@
 // C-funcion name of the time derivative computation
 #define TIMEDERFUNCTIONNAME CONCAT_4( computeTimeDerivatives_,          NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS )
 
+// C-function name of the time integration, which uses previously computed time derivatives and allows for LTS.
+#define LTSTIMEINTFUNCTIONNAME CONCAT_4( computeTimeIntegrationLTS_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS )
+
 // set up the xml-parser
 seissol::XmlParser l_matrixReader( MATRIXXMLFILE );
 
@@ -133,4 +136,17 @@ extern "C" {
                                              o_timeDerivatives );
   }
 
+  /**
+   * Simple forward of the time integration, which uses prevoiusly computed time derivatives.
+   * Details can be found in the TimeIntegrator-class.
+   **/
+  void LTSTIMEINTFUNCTIONNAME( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                               const double &i_deltaTLower,
+                               const double &i_deltaTUpper,
+                                     double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
+    l_timeIntegrator.computeTimeIntegral( i_timeDerivatives,
+                                          i_deltaTLower,
+                                          i_deltaTUpper,
+                                          o_timeIntegratedUnknowns );
+  }
 }
