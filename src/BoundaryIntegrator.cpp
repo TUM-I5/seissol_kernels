@@ -147,45 +147,48 @@ void seissol::BoundaryIntegrator::computeBoundaryIntegral(                double
 
   // iterate over local faces \f$i\f$ and compute the elements local contribution and the neighboring elements contribution
   for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
-    /*
-     * Compute the neighboring elements flux matrix id.
-     */
     // id of the flux matrix (0-3: element local, 4-51: neighboring element)
     unsigned int l_id;
 
-    if( i_boundaryConditions[l_localFace] != 1 ) {
-      // derive memory and kernel index
-      // TODO: Precompute this to get rid of the if's in the boundary cases.
-      l_id = 4                                        // jump over flux matrices \f$ F^{-, i} \f$
-            + l_localFace*12                          // jump over index \f$i\f$
-            + i_neighboringIndices[l_localFace][0]*3  // jump over index \f$j\f$
-            + i_neighboringIndices[l_localFace][1];   // jump over index \f$h\f$
+    // no element local contribution in the case of dynamic rupture boundary conditions
+    if( i_boundaryConditions[l_localFace] != 3 ) {
+      /*
+       * Compute the neighboring elements flux matrix id.
+       */
+      if( i_boundaryConditions[l_localFace] != 1 ) {
+        // derive memory and kernel index
+        // TODO: Precompute this to get rid of the if's in the boundary cases.
+        l_id = 4                                        // jump over flux matrices \f$ F^{-, i} \f$
+              + l_localFace*12                          // jump over index \f$i\f$
+              + i_neighboringIndices[l_localFace][0]*3  // jump over index \f$j\f$
+              + i_neighboringIndices[l_localFace][1];   // jump over index \f$h\f$
 
-      // assert we have a neighboring index in the case of non-absorbing boundary conditions.
-      assert( l_id >= 4 || i_boundaryConditions[l_localFace] == 5 );
-    }
-    else { // fall back to local matrices in case of free surface boundary conditions
-      l_id = l_localFace;
-    }
+        // assert we have a neighboring index in the case of non-absorbing boundary conditions.
+        assert( l_id >= 4 || i_boundaryConditions[l_localFace] == 5 );
+      }
+      else { // fall back to local matrices in case of free surface boundary conditions
+        l_id = l_localFace;
+      }
 
-    /*
-     * Element local contribution.
-     */
-    // set temporary product to zero
-    memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));
+      /*
+       * Element local contribution.
+       */
+      // set temporary product to zero
+      memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));
 
-    // compute element local contribution
-    m_matrixKernels[l_localFace]( m_fluxMatrixPointers[l_localFace],  i_timeIntegratedUnknownsElement[0],             l_temporaryProduct,
-                                  l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns         ); // prefetches
+      // compute element local contribution
+      m_matrixKernels[l_localFace]( m_fluxMatrixPointers[l_localFace],  i_timeIntegratedUnknownsElement[0],             l_temporaryProduct,
+                                    l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns         ); // prefetches
     
-    m_matrixKernels[52](          l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns,
-                                  m_fluxMatrixPointers[l_id],         i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct  ); // prefetches
+      m_matrixKernels[52](          l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns,
+                                    m_fluxMatrixPointers[l_id],         i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct  ); // prefetches
+    }
 
     /*
      * Neighboring elements contribution.
      */
-    // no neighboring element contribution in the case of absorbing boundary conditions
-    if( i_boundaryConditions[l_localFace] != 5 ) {
+    // no neighboring element contribution in the case of absorbing and dynamic rupture boundary conditions
+    if( i_boundaryConditions[l_localFace] != 5 && i_boundaryConditions[l_localFace] != 3 ) {
       // set temporary product to zero
       memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));    
 
