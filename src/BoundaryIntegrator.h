@@ -10,7 +10,7 @@
  *
  * The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
  *
- * Copyright (c) 2013
+ * Copyright (c) 2013-2014
  * Technische Universitaet Muenchen
  * Department of Informatics
  * Chair of Scientific Computing
@@ -54,13 +54,15 @@
 #include <utils/logger.h>
 
 namespace seissol {
-  class BoundaryIntegrator;
+  namespace kernels {
+    class BoundaryIntegrator;
+  }
 }
 
 /**
  * Boundary integrator, which computes the fluxes over the four tetrahedral faces.
  **/
-class seissol::BoundaryIntegrator {
+class seissol::kernels::BoundaryIntegrator {
   // explicit private for unit tests
   private:
     /**

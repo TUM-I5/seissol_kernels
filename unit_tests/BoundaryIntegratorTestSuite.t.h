@@ -170,7 +170,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       seissol::initializers::MemoryManager l_memoryManager( l_matrixReader );
 
       // construct a boundary integrator
-      seissol::BoundaryIntegrator l_boundaryIntegrator( l_matrixReader, l_memoryManager );
+      seissol::kernels::BoundaryIntegrator l_boundaryIntegrator( l_matrixReader, l_memoryManager );
 
       // repeat the test
       for( int l_repeat = 0; l_repeat < l_numberOfRepeats; l_repeat++) {

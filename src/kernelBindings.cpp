@@ -60,13 +60,13 @@ seissol::XmlParser l_matrixReader( MATRIXXMLFILE );
 seissol::initializers::MemoryManager l_memoryManager( l_matrixReader );
 
 // set up the boundary integrator
-seissol::BoundaryIntegrator        l_boundaryIntegrator( l_matrixReader, l_memoryManager );
+seissol::kernels::BoundaryIntegrator l_boundaryIntegrator( l_matrixReader, l_memoryManager );
 
 // set up the volume integrator
-seissol::kernels::VolumeIntegrator l_volumeIntegrator(   l_matrixReader, l_memoryManager );
+seissol::kernels::VolumeIntegrator   l_volumeIntegrator(   l_matrixReader, l_memoryManager );
 
 // set up the time integrator
-seissol::kernels::TimeIntegrator   l_timeIntegrator(     l_matrixReader, l_memoryManager );
+seissol::kernels::TimeIntegrator     l_timeIntegrator(     l_matrixReader, l_memoryManager );
 
 // prevent name mangling
 extern "C" {

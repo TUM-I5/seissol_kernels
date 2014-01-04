@@ -10,7 +10,7 @@
  *
  * The owner wishes to make the software available to all users to use, reproduce, modify, distribute and redistribute also for commercial purposes under the following conditions of the original BSD license. Linking this software module statically or dynamically with other modules is making a combined work based on this software. Thus, the terms and conditions of this license cover the whole combination. As a special exception, the copyright holders of this software give you permission to link it with independent modules or to instantiate templates and macros from this software's source files to produce an executable, regardless of the license terms of these independent modules, and to copy and distribute the resulting executable under terms of your choice, provided that you also meet, for each linked independent module, the terms and conditions of this license of that module.
  *
- * Copyright (c) 2013
+ * Copyright (c) 2013-2014
  * Technische Universitaet Muenchen
  * Department of Informatics
  * Chair of Scientific Computing
@@ -32,8 +32,8 @@
  **/
 #include "BoundaryIntegrator.h"
 
-void seissol::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
-                                                     bool i_sparse ) {
+void seissol::kernels::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
+                                                              bool i_sparse ) {
   // assert we are not out of bounds
   assert( i_id < 53 );
 
@@ -42,8 +42,8 @@ void seissol::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
 
 }
 
-seissol::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlParser &i_matrixReader,
-                                                 const seissol::initializers::MemoryManager &i_memoryManager ) {
+seissol::kernels::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlParser &i_matrixReader,
+                                                          const seissol::initializers::MemoryManager &i_memoryManager ) {
   /*
    * Initialize flux matrix pointers.
    */
@@ -95,13 +95,13 @@ seissol::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlParser &i_mat
                      l_matrixSparsities[l_matrixIds.back()] );
 }
 
-void seissol::BoundaryIntegrator::computeBoundaryIntegral(                double i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
-                                                                          double i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                                           const unsigned int    i_boundaryConditions[4],
-                                                           const unsigned int    i_neighboringIndices[4][2],
-                                                                          double i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double io_unknowns[NUMBEROFUNKNOWNS] ){
+void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double       i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                                                          double       i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
+                                                                    const unsigned int i_boundaryConditions[4],
+                                                                    const unsigned int i_neighboringIndices[4][2],
+                                                                          double       i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double       i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double       io_unknowns[NUMBEROFUNKNOWNS] ){
   /*
    * Assert alignments, which are assumed in the matrix kernels.
    */
