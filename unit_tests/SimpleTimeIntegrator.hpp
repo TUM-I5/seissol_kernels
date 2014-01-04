@@ -176,43 +176,5 @@ class unit_test::SimpleTimeIntegrator {
         } 
       }
     }
-    
-    /**
-     * Computes the time integrals of the given unknowns.
-     *
-     * @param i_timeDerivatives time derivatives of the unknowns in the cell.
-     * @param i_deltaT integration boundaries \f$ \Delta t^\text{lo} \f$ and \f$ \Delta t^\text{up} \f$ relative to the time level \f$ \t^\text{cell} \f$ of the cell; integration is performned over the interval \f$ [ t^\text{cell} + \Delta t^\text{lo}, t^\text{cell} + \Delta t^\text{up} ] \f$
-     * @param o_timeIntegratedUnknowns unknowns integrated over the specified interval.
-     **/
-    void computeTimeIntegration( const real* i_timeDerivatives,
-                                 const real i_deltaT[2],
-                                       real* o_timeIntegratedUnknowns ) {
-      // assert integration forward in time
-      TS_ASSERT( i_deltaT[1] > i_deltaT[0] );
-
-      // initialization of Taylor series factors
-      real l_taylorSeriesFactors[2];
-      l_taylorSeriesFactors[0] = i_deltaT[0];
-      l_taylorSeriesFactors[1] = i_deltaT[1];
-      real l_taylorSeriesFactor = l_taylorSeriesFactors[1] - l_taylorSeriesFactors[0];
-
-      // update time integrated unknowns with zeroth derivatives
-      for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
-        o_timeIntegratedUnknowns[l_entry] = l_taylorSeriesFactor * i_timeDerivatives[l_entry];
-      }
-
-      // iterate over order in time
-      for( int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) {
-        // compute factor of the taylor series
-        l_taylorSeriesFactors[0] = -l_taylorSeriesFactors[0] * i_deltaT[0] / real(l_order+1);
-        l_taylorSeriesFactors[1] = -l_taylorSeriesFactors[1] * i_deltaT[1] / real(l_order+1);
-        l_taylorSeriesFactor = l_taylorSeriesFactors[1] - l_taylorSeriesFactors[0];
-       
-        // update time integrated unknowns
-        for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
-          o_timeIntegratedUnknowns[l_entry] += l_taylorSeriesFactor * i_timeDerivatives[l_entry+(l_order*NUMBEROFUNKNOWNS)];
-        } 
-      }
-    }
 };
 #endif
