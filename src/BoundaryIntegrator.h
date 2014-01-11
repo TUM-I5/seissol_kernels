@@ -174,13 +174,13 @@ class seissol::kernels::BoundaryIntegrator {
      *            \bigg)
      *        \f]
      **/
-    void computeBoundaryIntegral(                double i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
-                                                 double i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                  const unsigned int    i_boundaryConditions[4],
-                                  const unsigned int    i_neighboringIndices[4][2],
-                                                 double i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                 double i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                 double io_unknowns[NUMBEROFUNKNOWNS] );
+    void computeBoundaryIntegral(       double  i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                        double *i_timeIntegratedUnknownsNeighbors[4],
+                                  const int     i_boundaryConditions[4],
+                                  const int     i_neighboringIndices[4][2],
+                                        double  i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                        double  i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                        double  io_unknowns[NUMBEROFUNKNOWNS] );
 };
 
 #endif

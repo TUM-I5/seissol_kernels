@@ -73,7 +73,7 @@ class unit_test::DenseMatrix {
      **/
     void setRandomValues( int i_length, double *o_array ) {
       for( int l_i = 0; l_i < i_length; l_i++) {
-        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*10.0;
+        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*5.0;
       }
     }
 

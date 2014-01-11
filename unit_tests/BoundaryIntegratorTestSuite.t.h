@@ -40,6 +40,7 @@
 #include "../src/BoundaryIntegrator.h"
 #undef private
 #include "DenseMatrix.hpp"
+#include "SimpleBoundaryIntegrator.hpp"
 
 namespace unit_test {
   class BoundaryIntegratorTestSuite;
@@ -61,57 +62,6 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
     //! dense matrix functionality
     DenseMatrix m_denseMatrix;
-
-    // simple boundary integration to test again
-    void simpleBoundaryIntegration(                double i_timeIntegratedUnknownsElement[NUMBEROFUNKNOWNS],
-                                                   double i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                    const unsigned int    i_boundaryConditons[4],
-                                    const unsigned int    i_neighboringIndices[4][2],
-                                                   double i_nApNm1DivM[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                   double i_nAmNm1DivM[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                   double i_fluxMatricesNeg[4][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS],
-                                                   double i_fluxMatricesPos[48][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS],
-                                                   double io_unknowns[NUMBEROFUNKNOWNS] ) {
-      //! temporary product (we have to multiply a matrix from the left and the right)
-      double l_temporaryProduct[ NUMBEROFUNKNOWNS ];
-
-
-      // compute the elements contribution
-      for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
-        // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0 );
-
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
-                                                     i_fluxMatricesNeg[l_localFace], i_timeIntegratedUnknownsElement, l_temporaryProduct );
-
-
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
-                                                     l_temporaryProduct, i_nApNm1DivM[l_localFace], io_unknowns );
-      }
-
-      // compute the neighboring elements contribution
-      for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
-        // no contribution of the neighboring element in case of absorbing boundary conditions
-        if( i_boundaryConditons[l_localFace] != 5 ) { 
-          // set temporary product to zero
-          std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0 );
-
-          // compute matrix index
-          unsigned l_fluxIndex = l_localFace * 12
-                               + i_neighboringIndices[l_localFace][0] * 3
-                               + i_neighboringIndices[l_localFace][1];
-
-          TS_ASSERT( l_fluxIndex < 48 );
-
-          m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
-                                                       i_fluxMatricesPos[l_fluxIndex], i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct );
-
-          m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
-                                                       l_temporaryProduct, i_nAmNm1DivM[l_localFace], io_unknowns );
-        }
-      }
-
-    }
 
   public:
     void setUp() {
@@ -141,6 +91,10 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       //! matrices of time integrated unknowns
       double l_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS]   __attribute__((aligned(64)));
       double l_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS] __attribute__((aligned(64)));
+      double* l_timeIntegratedUnknownsNeighborPointers[4];
+      for( int l_face = 0; l_face < 4; l_face++ ) {
+        l_timeIntegratedUnknownsNeighborPointers[l_face] = &l_timeIntegratedUnknownsNeighbors[l_face][0]; 
+      }
 
       //! flux solvers matrices (positive eigenvalues): \f$ N_{k,i} A_k^+ N_{k,i}^{-1} \f$
       double l_fluxSolversPos[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES];
@@ -148,17 +102,11 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       //! flux solvers matrices (negative eigenvalues): \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
       double l_fluxSolversNeg[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES];
 
-      //! flux matrices (elements contribution): \f$ F^{-, i} \f$
-      double l_fluxMatricesNeg[4][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
-
-      //! flux matrices (neighboring elements contribution): \f$ F^+{+, i, j, h} \f$
-      double l_fluxMatricesPos[48][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
-
       //! boundary conditions
-      unsigned int l_boundaryConditions[4] = {0, 0, 0, 0};
+      int l_boundaryConditions[4] = {0, 0, 0, 0};
 
       //! neighboring indices
-      unsigned int l_neighboringIndices[4][2];
+      int l_neighboringIndices[4][2];
 
       // read in the matrices for our unit tests
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -169,7 +117,9 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       // create a new memory manager
       seissol::initializers::MemoryManager l_memoryManager( l_matrixReader );
 
-      // construct a boundary integrator
+      // construct boundary integrators
+      unit_test::SimpleBoundaryIntegrator l_simpleBoundaryIntegrator;
+      l_simpleBoundaryIntegrator.initialize( l_matricesPath );
       seissol::kernels::BoundaryIntegrator l_boundaryIntegrator( l_matrixReader, l_memoryManager );
 
       // repeat the test
@@ -204,37 +154,22 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
                                           NUMBEROFVARIABLES,
                                           l_fluxSolversNeg[l_face] );
 
-          m_denseMatrix.initializeMatrix( l_face,
-                                          NUMBEROFBASISFUNCTIONS,
-                                          NUMBEROFBASISFUNCTIONS,
-                                          l_fluxMatricesNeg[l_face] );
-
-
           l_neighboringIndices[l_face][0] = rand() % 4;
           l_neighboringIndices[l_face][1] = rand() % 3;
         }
 
-        for( unsigned int l_id = 0; l_id < 48; l_id++) {
-          m_denseMatrix.initializeMatrix( 4+l_id,
-                                          NUMBEROFBASISFUNCTIONS,
-                                          NUMBEROFBASISFUNCTIONS,
-                                          l_fluxMatricesPos[l_id] );
-        }
-
         // do a simple boundary intagration
-        simpleBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
-                                   l_timeIntegratedUnknownsNeighbors,
-                                   l_boundaryConditions,
-                                   l_neighboringIndices,
-                                   l_fluxSolversPos,
-                                   l_fluxSolversNeg,
-                                   l_fluxMatricesNeg,
-                                   l_fluxMatricesPos,
-                                   l_unknownsUnitTests );
+        l_simpleBoundaryIntegrator.computeBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
+                                                               l_timeIntegratedUnknownsNeighbors,
+                                                               l_boundaryConditions,
+                                                               l_neighboringIndices,
+                                                               l_fluxSolversPos,
+                                                               l_fluxSolversNeg,
+                                                               l_unknownsUnitTests );
 
         // do boundary integration with generated kernels
         l_boundaryIntegrator.computeBoundaryIntegral( l_timeIntegratedUnknownsElement,
-                                                      l_timeIntegratedUnknownsNeighbors,
+                                                      l_timeIntegratedUnknownsNeighborPointers,
                                                       l_boundaryConditions,
                                                       l_neighboringIndices,
                                                       l_fluxSolversPos,
@@ -250,19 +185,17 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
           l_boundaryConditions[l_face] = 5;
           
           // do a simple boundary intagration
-          simpleBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
-                                     l_timeIntegratedUnknownsNeighbors,
-                                     l_boundaryConditions,
-                                     l_neighboringIndices,
-                                     l_fluxSolversPos,
-                                     l_fluxSolversNeg,
-                                     l_fluxMatricesNeg,
-                                     l_fluxMatricesPos,
-                                     l_unknownsUnitTests );
+          l_simpleBoundaryIntegrator.computeBoundaryIntegration( l_timeIntegratedUnknownsElement[0],
+                                                                 l_timeIntegratedUnknownsNeighbors,
+                                                                 l_boundaryConditions,
+                                                                 l_neighboringIndices,
+                                                                 l_fluxSolversPos,
+                                                                 l_fluxSolversNeg,
+                                                                 l_unknownsUnitTests );
 
           // do boundary integration with generated kernels
           l_boundaryIntegrator.computeBoundaryIntegral( l_timeIntegratedUnknownsElement,
-                                                        l_timeIntegratedUnknownsNeighbors,
+                                                        l_timeIntegratedUnknownsNeighborPointers,
                                                         l_boundaryConditions,
                                                         l_neighboringIndices,
                                                         l_fluxSolversPos,

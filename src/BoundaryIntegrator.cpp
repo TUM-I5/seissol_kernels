@@ -95,46 +95,58 @@ seissol::kernels::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlPars
                      l_matrixSparsities[l_matrixIds.back()] );
 }
 
-void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double       i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
-                                                                          double       i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                                                    const unsigned int i_boundaryConditions[4],
-                                                                    const unsigned int i_neighboringIndices[4][2],
-                                                                          double       i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double       i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double       io_unknowns[NUMBEROFUNKNOWNS] ){
+void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double        i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                                                          double       *i_timeIntegratedUnknownsNeighbors[4],
+                                                                    const int  i_boundaryConditions[4],
+                                                                    const int  i_neighboringIndices[4][2],
+                                                                          double        i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double        i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double        io_unknowns[NUMBEROFUNKNOWNS] ){
   /*
    * Assert alignments, which are assumed in the matrix kernels.
    */
 #if NUMBEROFBASISFUNCTIONS == 1
   // 8 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   %  8 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) %  8 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       %  8 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 %  8 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) %  8 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     %  8 == 0 );
 #elif NUMBEROFBASISFUNCTIONS == 4
   // 32 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   % 32 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) % 32 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       % 32 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 % 32 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) % 32 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     % 32 == 0 );
 #elif NUMBEROFBASISFUNCTIONS == 10
   // 16 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   % 16 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) % 16 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       % 16 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 % 16 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) % 16 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     % 16 == 0 );
 #elif NUMBEROFBASISFUNCTIONS == 20
   // 32 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   % 32 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) % 32 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       % 32 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 % 32 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) % 32 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     % 32 == 0 );
 #elif NUMBEROFBASISFUNCTIONS == 35
   // 8 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   %  8 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) %  8 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       %  8 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 %  8 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) %  8 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     %  8 == 0 );
 #elif NUMBEROFBASISFUNCTIONS == 56
   // 64 byte alignment
-  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)   % 64 == 0 );
-  assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors) % 64 == 0 );
-  assert( ((uintptr_t)io_unknowns)                       % 64 == 0 );
+  assert( ((uintptr_t)i_timeIntegratedUnknownsElement)                 % 64 == 0 );
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeIntegratedUnknownsNeighbors[l_neighbor]) % 64 == 0 );
+  }
+  assert( ((uintptr_t)io_unknowns)                                     % 64 == 0 );
 #else
 #error Preprocessor flag NUMBEROFBASISFUNCTIONS is not in {1, 4, 10, 20, 35, 56}.
 #endif
