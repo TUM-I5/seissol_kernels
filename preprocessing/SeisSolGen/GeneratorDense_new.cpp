@@ -24,7 +24,7 @@ namespace seissolgen {
   GeneratorDense::GeneratorDense(bool bGenerateExitForCK, bool bAdd) : bGenerateExitForCK_(bGenerateExitForCK), bAdd_(bAdd) {
   }
 
-  void sse_inner_blocked_kernel(std::stringstream& codestream, int lda, bool alignA) {
+  void sse_inner_blocked_kernel_6(std::stringstream& codestream, int lda, bool alignA) {
     codestream << "    b_0 = _mm_loaddup_pd(b0);" << std::endl;
     codestream << "    b_1 = _mm_loaddup_pd(b1);" << std::endl;
     codestream << "    b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
@@ -64,7 +64,68 @@ namespace seissolgen {
     codestream << "    c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));" << std::endl << std::endl;
   }
 
-  void avx_inner_blocked_kernel(std::stringstream& codestream, int lda, bool alignA) {
+  void sse_inner_blocked_kernel_4(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm_loaddup_pd(b0);" << std::endl;
+    codestream << "    b_1 = _mm_loaddup_pd(b1);" << std::endl;
+    codestream << "    b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_0 = _mm_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_0 = _mm_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << 2 << ";" << std::endl;
+    codestream << "    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_1 = _mm_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_1 = _mm_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << lda - 2 << ";" << std::endl;
+    codestream << "    c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));" << std::endl;
+    codestream << "    c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));" << std::endl;
+    codestream << "    c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));" << std::endl << std::endl;
+  }
+
+  void sse_inner_blocked_kernel_2(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm_loaddup_pd(b0);" << std::endl;
+    codestream << "    b_1 = _mm_loaddup_pd(b1);" << std::endl;
+    codestream << "    b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_0 = _mm_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_0 = _mm_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << lda << ";" << std::endl;
+    codestream << "    c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
+  }
+
+  void sse_inner_blocked_kernel_1(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm_load_sd(b0);" << std::endl;
+    codestream << "    b_1 = _mm_load_sd(b1);" << std::endl;
+    codestream << "    b_2 = _mm_load_sd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    codestream << "    a_0 = _mm_load_sd(a0);" << std::endl;
+
+    codestream << "    a0+=" << lda << ";" << std::endl;
+    codestream << "    c_0_0 = _mm_add_sd(c_0_0, _mm_mul_sd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm_add_sd(c_0_1, _mm_mul_sd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm_add_sd(c_0_2, _mm_mul_sd(a_0, b_2));" << std::endl << std::endl;
+  }
+
+  void avx_inner_blocked_kernel_12(std::stringstream& codestream, int lda, bool alignA) {
     codestream << "    b_0 = _mm256_broadcast_sd(b0);" << std::endl;
     codestream << "    b_1 = _mm256_broadcast_sd(b1);" << std::endl;
     codestream << "    b_2 = _mm256_broadcast_sd(b2);" << std::endl << std::endl;
@@ -77,9 +138,15 @@ namespace seissolgen {
     }
 
     codestream << "    a0+=" << 4 << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_0, b_1, c_0_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_0, b_2, c_0_2);" << std::endl;
+    codestream << "#else" << std::endl;
     codestream << "    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));" << std::endl;
     codestream << "    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));" << std::endl;
-    codestream << "    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));" << std::endl << std::endl;
+    codestream << "    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));" << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
 
     if (alignA == true) {
       codestream << "    a_1 = _mm256_load_pd(a0);" << std::endl;
@@ -88,9 +155,15 @@ namespace seissolgen {
     }
 
     codestream << "    a0+=" << 4 << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_1, b_0, c_1_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_1, b_1, c_1_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_1, b_2, c_1_2);" << std::endl;
+    codestream << "#else" << std::endl;
     codestream << "    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));" << std::endl;
     codestream << "    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));" << std::endl;
     codestream << "    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
 
     if (alignA == true) {
       codestream << "    a_2 = _mm256_load_pd(a0);" << std::endl;
@@ -99,9 +172,100 @@ namespace seissolgen {
     }
 
     codestream << "    a0+=" << lda - 8 << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_2, b_0, c_2_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_2, b_1, c_2_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_2, b_2, c_2_2);" << std::endl;
+    codestream << "#else" << std::endl;
     codestream << "    c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));" << std::endl;
     codestream << "    c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));" << std::endl;
     codestream << "    c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));" << std::endl << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
+  }
+
+  void avx_inner_blocked_kernel_8(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm256_broadcast_sd(b0);" << std::endl;
+    codestream << "    b_1 = _mm256_broadcast_sd(b1);" << std::endl;
+    codestream << "    b_2 = _mm256_broadcast_sd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_0 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_0 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << 4 << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_0, b_1, c_0_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_0, b_2, c_0_2);" << std::endl;
+    codestream << "#else" << std::endl;
+    codestream << "    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));" << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_1 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_1 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << lda - 4  << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_1, b_0, c_1_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_1, b_1, c_1_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_1, b_2, c_1_2);" << std::endl;
+    codestream << "#else" << std::endl;
+    codestream << "    c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));" << std::endl;
+    codestream << "    c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));" << std::endl;
+    codestream << "    c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
+  }
+
+  void avx_inner_blocked_kernel_4(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm256_broadcast_sd(b0);" << std::endl;
+    codestream << "    b_1 = _mm256_broadcast_sd(b1);" << std::endl;
+    codestream << "    b_2 = _mm256_broadcast_sd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "    a_0 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "    a_0 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    codestream << "    a0+=" << lda << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_pd(a_0, b_1, c_0_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_pd(a_0, b_2, c_0_2);" << std::endl;
+    codestream << "#else" << std::endl;
+    codestream << "    c_0_0 = _mm256_add_pd(c_0_0, _mm256_mul_pd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm256_add_pd(c_0_1, _mm256_mul_pd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm256_add_pd(c_0_2, _mm256_mul_pd(a_0, b_2));" << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
+  }
+
+  void avx_inner_blocked_kernel_1(std::stringstream& codestream, int lda, bool alignA) {
+    codestream << "    b_0 = _mm256_load_sd(b0);" << std::endl;
+    codestream << "    b_1 = _mm256_load_sd(b1);" << std::endl;
+    codestream << "    b_2 = _mm256_load_sd(b2);" << std::endl << std::endl;
+    codestream << "    b0++; b1++; b2++;" << std::endl << std::endl;
+
+    codestream << "    a_0 = _mm256_load_sd(a0);" << std::endl;
+
+    codestream << "    a0+=" << lda << ";" << std::endl;
+    codestream << "#ifdef __AVX2__" << std::endl;
+    codestream << "    c_0_0 = _mm256_fmadd_sd(a_0, b_0, c_0_0);" << std::endl;
+    codestream << "    c_0_1 = _mm256_fmadd_sd(a_0, b_1, c_0_1);" << std::endl;
+    codestream << "    c_0_2 = _mm256_fmadd_sd(a_0, b_2, c_0_2);" << std::endl;
+    codestream << "#else" << std::endl;
+    codestream << "    c_0_0 = _mm256_add_sd(c_0_0, _mm256_mul_sd(a_0, b_0));" << std::endl;
+    codestream << "    c_0_1 = _mm256_add_sd(c_0_1, _mm256_mul_sd(a_0, b_1));" << std::endl;
+    codestream << "    c_0_2 = _mm256_add_sd(c_0_2, _mm256_mul_sd(a_0, b_2));" << std::endl;
+    codestream << "#endif" << std::endl << std::endl;
   }
 
   void mic_inner_blocked_kernel_for_56(std::stringstream& codestream, int lda) {
