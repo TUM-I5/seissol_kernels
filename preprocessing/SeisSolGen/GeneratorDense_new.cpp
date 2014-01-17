@@ -390,21 +390,6 @@ namespace seissolgen {
     codestream << "__m256d a_0;" << std::endl;
     codestream << "__m256d a_1;" << std::endl;
     codestream << "__m256d a_2;" << std::endl;
-    codestream << "__m128d c_0_0_128;" << std::endl;
-    codestream << "__m128d c_0_1_128;" << std::endl;
-    codestream << "__m128d c_0_2_128;" << std::endl;
-    codestream << "__m128d c_1_0_128;" << std::endl;
-    codestream << "__m128d c_1_1_128;" << std::endl;
-    codestream << "__m128d c_1_2_128;" << std::endl;
-    codestream << "__m128d c_2_0_128;" << std::endl;
-    codestream << "__m128d c_2_1_128;" << std::endl;
-    codestream << "__m128d c_2_2_128;" << std::endl;
-    codestream << "__m128d b_0_128;" << std::endl;
-    codestream << "__m128d b_1_128;" << std::endl;
-    codestream << "__m128d b_2_128;" << std::endl;
-    codestream << "__m128d a_0_128;" << std::endl;
-    codestream << "__m128d a_1_128;" << std::endl;
-    codestream << "__m128d a_2_128;" << std::endl;
     codestream << "#endif" << std::endl << std::endl;
 
     /////////////////////////
@@ -415,8 +400,7 @@ namespace seissolgen {
 
     // calculate the maximum number of row
     // we can process with max. blocking
-    maxM = (M / 6) * 6;
-    remainder = M - maxM;
+    int mSix = (M / 6) * 6;
 
     if (lda % 2 == 0)
       alignA = true;
@@ -433,7 +417,7 @@ namespace seissolgen {
     codestream << "double* c2 = C+" << 2 * ldc << ";" << std::endl;
     codestream << "for(int n = 0; n < " << N << "; n+=3)" << std::endl;
     codestream << "{" << std::endl;
-    codestream << "  for(int m = 0; m < " << maxM << "; m+=6)" << std::endl;
+    codestream << "  for(int m = 0; m < " << mSix << "; m+=6)" << std::endl;
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -474,16 +458,32 @@ namespace seissolgen {
       codestream << "    c_2_2 = _mm_setzero_pd();" << std::endl << std::endl;
     }
 
-    //codestream << "    #pragma unroll(" << unroll_factor << ")" << std::endl;
-    codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
-    codestream << "    {" << std::endl;
-
+#ifndef FULL_UNROLL
     if (this->bGenerateExitForCK_ == true) {
-      codestream << "    if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
+      codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
-
-    sse_inner_blocked_kernel(codestream, lda, alignA);
+    codestream << "    {" << std::endl;
+#else
+    for(int k = 0; k < K; k++) {
+      if (this->bGenerateExitForCK_ == true) {
+        for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
+          if (l == this->BasisfunctionsCounter_[o]) {
+            codestream << "if ( __builtin_expect(exit_col == " << k << ", false) ) { goto sse_six_end; }" << std::endl;
+          }
+        }
+      }
+#endif
+    sse_inner_blocked_kernel_6(codestream, lda, alignA);
+#ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
+#else
+    }
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "sse_six_end:" << std::endl;
+    }
+#endif
 
     if (alignC == true) {
       codestream << "    _mm_store_pd(c0, c_0_0);" << std::endl;
@@ -511,391 +511,212 @@ namespace seissolgen {
     codestream << "    c1+=6;" << std::endl;
     codestream << "    c2+=6;" << std::endl;
     codestream << "  }" << std::endl;
-    codestream << "  c0+=" << (2 * ldc) + (ldc - maxM) << ";" << std::endl;
-    codestream << "  c1+=" << (2 * ldc) + (ldc - maxM) << ";" << std::endl;
-    codestream << "  c2+=" << (2 * ldc) + (ldc - maxM) << ";" << std::endl;
-    codestream << "}" << std::endl << std::endl;
 
-    // do the remainder
-    codestream << "int m = " << maxM << ";" << std::endl;
-    codestream << "c0 = C+" << maxM << ";" << std::endl;
-    codestream << "c1 = C+" << maxM + ldc << ";" << std::endl;
-    codestream << "c2 = C+" << maxM + (2 * ldc) << ";" << std::endl;
-    codestream << "for(int n = 0; n < " << N << "; n+=3)" << std::endl;
-    codestream << "{" << std::endl;
+    int mFour = (M/4)*4;
+    codestream << "  for(int m = " << mSix << "; m < " << mFour << "; m+=4)" << std::endl;
+    codestream << "  {" << std::endl;
+    codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
+    codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
+    codestream << "    double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
+    codestream << "    double* a0 = A+m;" << std::endl;
 
-    if (remainder == 1) {
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A+" << maxM << ";" << std::endl;
-
-      if (bAdd_) {
-        codestream << "  c_0_0 = _mm_load_sd(c0);" << std::endl;
-        codestream << "  c_0_1 = _mm_load_sd(c1);" << std::endl;
-        codestream << "  c_0_2 = _mm_load_sd(c2);" << std::endl << std::endl;
-      } else {
-        codestream << "  c_0_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_2 = _mm_setzero_pd();" << std::endl << std::endl;
-      }
-
-      //codestream << "  #pragma unroll(" << unroll_factor << ")" << std::endl;
-      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
-
-      if (this->bGenerateExitForCK_ == true) {
-        codestream << "  if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
-      }
-
-      codestream << "  b_0 = _mm_loaddup_pd(b0);" << std::endl;
-      codestream << "  b_1 = _mm_loaddup_pd(b1);" << std::endl;
-      codestream << "  b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
-      codestream << "  b0++; b1++; b2++;" << std::endl << std::endl;
-      codestream << "  a_0 = _mm_load_sd(a0);" << std::endl;
-      codestream << "  a0+=" << lda << ";" << std::endl;
-      codestream << "  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
-      codestream << "  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
-      codestream << "  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
-      codestream << "  }" << std::endl;
-      codestream << "  _mm_store_sd(c0, c_0_0);" << std::endl;
-      codestream << "  _mm_store_sd(c1, c_0_1);" << std::endl;
-      codestream << "  _mm_store_sd(c2, c_0_2);" << std::endl << std::endl;
-
-      codestream << "  c0+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c1+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c2+=" << 3 * ldc << ";" << std::endl;
-    } else if (remainder == 2) {
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A+" << maxM << ";" << std::endl;
-
-      if (bAdd_) {
-        if (alignC == true) {
-          codestream << "  c_0_0 = _mm_load_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_load_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_load_pd(c2);" << std::endl << std::endl;
-        } else {
-          codestream << "  c_0_0 = _mm_loadu_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_loadu_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_loadu_pd(c2);" << std::endl << std::endl;
-        }
-      } else {
-        codestream << "  c_0_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_2 = _mm_setzero_pd();" << std::endl << std::endl;
-      }
-
-      // codestream << "  #pragma unroll(" << unroll_factor << ")" << std::endl;
-      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
-
-      if (this->bGenerateExitForCK_ == true) {
-        codestream << "  if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
-      }
-
-      codestream << "  b_0 = _mm_loaddup_pd(b0);" << std::endl;
-      codestream << "  b_1 = _mm_loaddup_pd(b1);" << std::endl;
-      codestream << "  b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
-      codestream << "  b0++; b1++; b2++;" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_0 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_0 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << lda << ";" << std::endl;
-      codestream << "  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
-      codestream << "  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
-      codestream << "  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
-      codestream << "  }" << std::endl;
-
+    if (bAdd_) {
       if (alignC == true) {
-        codestream << "  _mm_store_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2, c_0_2);" << std::endl << std::endl;
+        codestream << "    c_0_0 = _mm_load_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm_load_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm_load_pd(c2);" << std::endl;
+        codestream << "    c_1_0 = _mm_load_pd(c0+2);" << std::endl;
+        codestream << "    c_1_1 = _mm_load_pd(c1+2);" << std::endl;
+        codestream << "    c_1_2 = _mm_load_pd(c2+2);" << std::endl;
       } else {
-        codestream << "  _mm_storeu_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2, c_0_2);" << std::endl << std::endl;
+        codestream << "    c_0_0 = _mm_loadu_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm_loadu_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm_loadu_pd(c2);" << std::endl;
+        codestream << "    c_1_0 = _mm_loadu_pd(c0+2);" << std::endl;
+        codestream << "    c_1_1 = _mm_loadu_pd(c1+2);" << std::endl;
+        codestream << "    c_1_2 = _mm_loadu_pd(c2+2);" << std::endl;
       }
-
-      codestream << "  c0+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c1+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c2+=" << 3 * ldc << ";" << std::endl;
-    } else if (remainder == 3) {
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A+" << maxM << ";" << std::endl;
-
-      if (bAdd_) {
-        if (alignC == true) {
-          codestream << "  c_0_0 = _mm_load_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_load_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_load_pd(c2);" << std::endl;
-        } else {
-          codestream << "  c_0_0 = _mm_loadu_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_loadu_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_loadu_pd(c2);" << std::endl;
-        }
-
-        codestream << "  c_1_0 = _mm_load_sd(c0+2);" << std::endl;
-        codestream << "  c_1_1 = _mm_load_sd(c1+2);" << std::endl;
-        codestream << "  c_1_2 = _mm_load_sd(c2+2);" << std::endl << std::endl;
-      } else {
-        codestream << "  c_0_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_2 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_2 = _mm_setzero_pd();" << std::endl << std::endl;
-      }
-
-      //codestream << "  #pragma unroll(" << unroll_factor << ")" << std::endl;
-      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
-
-      if (this->bGenerateExitForCK_ == true) {
-        codestream << "  if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
-      }
-
-      codestream << "  b_0 = _mm_loaddup_pd(b0);" << std::endl;
-      codestream << "  b_1 = _mm_loaddup_pd(b1);" << std::endl;
-      codestream << "  b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
-      codestream << "  b0++; b1++; b2++;" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_0 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_0 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << 2 << ";" << std::endl;
-      codestream << "  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
-      codestream << "  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
-      codestream << "  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
-      codestream << "  a_1 = _mm_load_sd(a0);" << std::endl;
-      codestream << "  a0+=" << lda - 2 << ";" << std::endl;
-      codestream << "  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));" << std::endl;
-      codestream << "  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));" << std::endl;
-      codestream << "  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));" << std::endl << std::endl;
-
-      codestream << "  }" << std::endl;
-
-      if (alignC == true) {
-        codestream << "  _mm_store_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2, c_0_2);" << std::endl;
-      } else {
-        codestream << "  _mm_storeu_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2, c_0_2);" << std::endl;
-      }
-
-      codestream << "  _mm_store_sd(c0+2, c_1_0);" << std::endl;
-      codestream << "  _mm_store_sd(c1+2, c_1_1);" << std::endl;
-      codestream << "  _mm_store_sd(c2+2, c_1_2);" << std::endl << std::endl;
-      codestream << "  c0+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c1+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c2+=" << 3 * ldc << ";" << std::endl;
-
-    } else if (remainder == 4) {
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A+" << maxM << ";" << std::endl;
-
-      if (bAdd_) {
-        if (alignC == true) {
-          codestream << "  c_0_0 = _mm_load_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_load_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_load_pd(c2);" << std::endl;
-          codestream << "  c_1_0 = _mm_load_pd(c0+2);" << std::endl;
-          codestream << "  c_1_1 = _mm_load_pd(c1+2);" << std::endl;
-          codestream << "  c_1_2 = _mm_load_pd(c2+2);" << std::endl << std::endl;
-        } else {
-          codestream << "  c_0_0 = _mm_loadu_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_loadu_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_loadu_pd(c2);" << std::endl;
-          codestream << "  c_1_0 = _mm_loadu_pd(c0+2);" << std::endl;
-          codestream << "  c_1_1 = _mm_loadu_pd(c1+2);" << std::endl;
-          codestream << "  c_1_2 = _mm_loadu_pd(c2+2);" << std::endl << std::endl;
-        }
-      } else {
-        codestream << "  c_0_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_2 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_2 = _mm_setzero_pd();" << std::endl << std::endl;
-      }
-
-
-      //            codestream << "  #pragma unroll(" << unroll_factor << ")" << std::endl;
-      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
-
-      if (this->bGenerateExitForCK_ == true) {
-        codestream << "  if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
-      }
-
-      codestream << "  b_0 = _mm_loaddup_pd(b0);" << std::endl;
-      codestream << "  b_1 = _mm_loaddup_pd(b1);" << std::endl;
-      codestream << "  b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
-      codestream << "  b0++; b1++; b2++;" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_0 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_0 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << 2 << ";" << std::endl;
-      codestream << "  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
-      codestream << "  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
-      codestream << "  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_1 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_1 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << lda - 2 << ";" << std::endl;
-      codestream << "  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));" << std::endl;
-      codestream << "  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));" << std::endl;
-      codestream << "  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));" << std::endl << std::endl;
-
-      codestream << "  }" << std::endl;
-
-      if (alignC == true) {
-        codestream << "  _mm_store_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2, c_0_2);" << std::endl;
-        codestream << "  _mm_store_pd(c0+2, c_1_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1+2, c_1_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2+2, c_1_2);" << std::endl << std::endl;
-      } else {
-        codestream << "  _mm_storeu_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2, c_0_2);" << std::endl;
-        codestream << "  _mm_storeu_pd(c0+2, c_1_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1+2, c_1_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2+2, c_1_2);" << std::endl << std::endl;
-      }
-
-      codestream << "  c0+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c1+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c2+=" << 3 * ldc << ";" << std::endl;
-    } else if (remainder == 5) {
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A+" << maxM << ";" << std::endl;
-      codestream << "  double* a1 = A+" << maxM + 2 << ";" << std::endl;
-
-      if (bAdd_) {
-        if (alignC == true) {
-          codestream << "  c_0_0 = _mm_load_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_load_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_load_pd(c2);" << std::endl;
-          codestream << "  c_1_0 = _mm_load_pd(c0+2);" << std::endl;
-          codestream << "  c_1_1 = _mm_load_pd(c1+2);" << std::endl;
-          codestream << "  c_1_2 = _mm_load_pd(c2+2);" << std::endl;
-        } else {
-          codestream << "  c_0_0 = _mm_loadu_pd(c0);" << std::endl;
-          codestream << "  c_0_1 = _mm_loadu_pd(c1);" << std::endl;
-          codestream << "  c_0_2 = _mm_loadu_pd(c2);" << std::endl;
-          codestream << "  c_1_0 = _mm_loadu_pd(c0+2);" << std::endl;
-          codestream << "  c_1_1 = _mm_loadu_pd(c1+2);" << std::endl;
-          codestream << "  c_1_2 = _mm_loadu_pd(c2+2);" << std::endl;
-        }
-
-        codestream << "  c_2_0 = _mm_load_sd(c0+4);" << std::endl;
-        codestream << "  c_2_1 = _mm_load_sd(c1+4);" << std::endl;
-        codestream << "  c_2_2 = _mm_load_sd(c2+4);" << std::endl;
-      } else {
-        codestream << "  c_0_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_0_2 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_1_2 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_2_0 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_2_1 = _mm_setzero_pd();" << std::endl;
-        codestream << "  c_2_2 = _mm_setzero_pd();" << std::endl;
-      }
-
-      //            codestream << "  #pragma unroll(" << unroll_factor << ")" << std::endl;
-      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
-
-      if (this->bGenerateExitForCK_ == true) {
-        codestream << "  if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
-      }
-
-      codestream << "  b_0 = _mm_loaddup_pd(b0);" << std::endl;
-      codestream << "  b_1 = _mm_loaddup_pd(b1);" << std::endl;
-      codestream << "  b_2 = _mm_loaddup_pd(b2);" << std::endl << std::endl;
-      codestream << "  b0++; b1++; b2++;" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_0 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_0 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << 2 << ";" << std::endl;
-      codestream << "  c_0_0 = _mm_add_pd(c_0_0, _mm_mul_pd(a_0, b_0));" << std::endl;
-      codestream << "  c_0_1 = _mm_add_pd(c_0_1, _mm_mul_pd(a_0, b_1));" << std::endl;
-      codestream << "  c_0_2 = _mm_add_pd(c_0_2, _mm_mul_pd(a_0, b_2));" << std::endl << std::endl;
-
-      if (alignA == true) {
-        codestream << "  a_1 = _mm_load_pd(a0);" << std::endl;
-      } else {
-        codestream << "  a_1 = _mm_loadu_pd(a0);" << std::endl;
-      }
-
-      codestream << "  a0+=" << 2 << ";" << std::endl;
-      codestream << "  c_1_0 = _mm_add_pd(c_1_0, _mm_mul_pd(a_1, b_0));" << std::endl;
-      codestream << "  c_1_1 = _mm_add_pd(c_1_1, _mm_mul_pd(a_1, b_1));" << std::endl;
-      codestream << "  c_1_2 = _mm_add_pd(c_1_2, _mm_mul_pd(a_1, b_2));" << std::endl << std::endl;
-      codestream << "  a_2 = _mm_load_sd(a0);" << std::endl;
-      codestream << "  a0+=" << lda - 4 << ";" << std::endl;
-      codestream << "  c_2_0 = _mm_add_pd(c_2_0, _mm_mul_pd(a_2, b_0));" << std::endl;
-      codestream << "  c_2_1 = _mm_add_pd(c_2_1, _mm_mul_pd(a_2, b_1));" << std::endl;
-      codestream << "  c_2_2 = _mm_add_pd(c_2_2, _mm_mul_pd(a_2, b_2));" << std::endl << std::endl;
-
-      codestream << "  }" << std::endl;
-
-      if (alignC == true) {
-        codestream << "  _mm_store_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2, c_0_2);" << std::endl;
-        codestream << "  _mm_store_pd(c0+2, c_1_0);" << std::endl;
-        codestream << "  _mm_store_pd(c1+2, c_1_1);" << std::endl;
-        codestream << "  _mm_store_pd(c2+2, c_1_2);" << std::endl;
-      } else {
-        codestream << "  _mm_storeu_pd(c0, c_0_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1, c_0_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2, c_0_2);" << std::endl;
-        codestream << "  _mm_storeu_pd(c0+2, c_1_0);" << std::endl;
-        codestream << "  _mm_storeu_pd(c1+2, c_1_1);" << std::endl;
-        codestream << "  _mm_storeu_pd(c2+2, c_1_2);" << std::endl;
-      }
-
-      codestream << "  _mm_store_sd(c0+4, c_2_0);" << std::endl;
-      codestream << "  _mm_store_sd(c1+4, c_2_1);" << std::endl;
-      codestream << "  _mm_store_sd(c2+4, c_2_2);" << std::endl << std::endl;
-      codestream << "  c0+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c1+=" << 3 * ldc << ";" << std::endl;
-      codestream << "  c2+=" << 3 * ldc << ";" << std::endl;
+    } else {
+      codestream << "    c_0_0 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_1 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_2 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_1_0 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_1_1 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_1_2 = _mm_setzero_pd();" << std::endl;
     }
 
-    codestream << "}" << std::endl;
+#ifndef FULL_UNROLL
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
+    }
+    codestream << "    {" << std::endl;
+#else
+    for(int k = 0; k < K; k++) {
+      if (this->bGenerateExitForCK_ == true) {
+        for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
+          if (l == this->BasisfunctionsCounter_[o]) {
+            codestream << "if ( __builtin_expect(exit_col == " << k << ", false) ) { goto sse_four_end; }" << std::endl;
+          }
+        }
+      }
+#endif
+    sse_inner_blocked_kernel_4(codestream, lda, alignA);
+#ifndef FULL_UNROLL
+    codestream << "    }" << std::endl;
+#else
+    }
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "sse_four_end:" << std::endl;
+    }
+#endif
+
+    if (alignC == true) {
+      codestream << "    _mm_store_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm_store_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm_store_pd(c2, c_0_2);" << std::endl;
+      codestream << "    _mm_store_pd(c0+2, c_1_0);" << std::endl;
+      codestream << "    _mm_store_pd(c1+2, c_1_1);" << std::endl;
+      codestream << "    _mm_store_pd(c2+2, c_1_2);" << std::endl;
+    } else {
+      codestream << "    _mm_storeu_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm_storeu_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm_storeu_pd(c2, c_0_2);" << std::endl;
+      codestream << "    _mm_storeu_pd(c0+2, c_1_0);" << std::endl;
+      codestream << "    _mm_storeu_pd(c1+2, c_1_1);" << std::endl;
+      codestream << "    _mm_storeu_pd(c2+2, c_1_2);" << std::endl;
+    }
+
+    codestream << "    c0+=4;" << std::endl;
+    codestream << "    c1+=4;" << std::endl;
+    codestream << "    c2+=4;" << std::endl;
+    codestream << "  }" << std::endl;
+
+    int mTwo = (M/2)*2;
+    codestream << "  for(int m = " << mFour << "; m < " << mTwo << "; m+=2)" << std::endl;
+    codestream << "  {" << std::endl;
+    codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
+    codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
+    codestream << "    double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
+    codestream << "    double* a0 = A+m;" << std::endl;
+
+    if (bAdd_) {
+      if (alignC == true) {
+        codestream << "    c_0_0 = _mm_load_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm_load_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm_load_pd(c2);" << std::endl;
+      } else {
+        codestream << "    c_0_0 = _mm_loadu_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm_loadu_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm_loadu_pd(c2);" << std::endl;
+      }
+    } else {
+      codestream << "    c_0_0 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_1 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_2 = _mm_setzero_pd();" << std::endl;
+    }
+
+#ifndef FULL_UNROLL
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
+    }
+    codestream << "    {" << std::endl;
+#else
+    for(int k = 0; k < K; k++) {
+      if (this->bGenerateExitForCK_ == true) {
+        for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
+          if (l == this->BasisfunctionsCounter_[o]) {
+            codestream << "if ( __builtin_expect(exit_col == " << k << ", false) ) { goto sse_two_end; }" << std::endl;
+          }
+        }
+      }
+#endif
+    sse_inner_blocked_kernel_2(codestream, lda, alignA);
+#ifndef FULL_UNROLL
+    codestream << "    }" << std::endl;
+#else
+    }
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "sse_two_end:" << std::endl;
+    }
+#endif
+
+    if (alignC == true) {
+      codestream << "    _mm_store_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm_store_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm_store_pd(c2, c_0_2);" << std::endl;
+    } else {
+      codestream << "    _mm_storeu_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm_storeu_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm_storeu_pd(c2, c_0_2);" << std::endl;
+    }
+
+    codestream << "    c0+=2;" << std::endl;
+    codestream << "    c1+=2;" << std::endl;
+    codestream << "    c2+=2;" << std::endl;
+    codestream << "  }" << std::endl;
+
+    codestream << "  for(int m = " << mTwo << "; m < " << M << "; m+=2)" << std::endl;
+    codestream << "  {" << std::endl;
+    codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
+    codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
+    codestream << "    double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
+    codestream << "    double* a0 = A+m;" << std::endl;
+
+    if (bAdd_) {
+      codestream << "    c_0_0 = _mm_load_sd(c0);" << std::endl;
+      codestream << "    c_0_1 = _mm_load_sd(c1);" << std::endl;
+      codestream << "    c_0_2 = _mm_load_sd(c2);" << std::endl;
+    } else {
+      codestream << "    c_0_0 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_1 = _mm_setzero_pd();" << std::endl;
+      codestream << "    c_0_2 = _mm_setzero_pd();" << std::endl;
+    }
+
+#ifndef FULL_UNROLL
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
+    }
+    codestream << "    {" << std::endl;
+#else
+    for(int k = 0; k < K; k++) {
+      if (this->bGenerateExitForCK_ == true) {
+        for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
+          if (l == this->BasisfunctionsCounter_[o]) {
+            codestream << "if ( __builtin_expect(exit_col == " << k << ", false) ) { goto sse_one_end; }" << std::endl;
+          }
+        }
+      }
+#endif
+    sse_inner_blocked_kernel_2(codestream, lda, alignA);
+#ifndef FULL_UNROLL
+    codestream << "    }" << std::endl;
+#else
+    }
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "sse_one_end:" << std::endl;
+    }
+#endif
+
+    codestream << "    _mm_store_sd(c0, c_0_0);" << std::endl;
+    codestream << "    _mm_store_sd(c1, c_0_1);" << std::endl;
+    codestream << "    _mm_store_sd(c2, c_0_2);" << std::endl;
+
+    codestream << "    c0+=1;" << std::endl;
+    codestream << "    c1+=1;" << std::endl;
+    codestream << "    c2+=1;" << std::endl;
+    codestream << "  }" << std::endl;
+
+    codestream << "  c0+=" << (2 * ldc) << ";" << std::endl;
+    codestream << "  c1+=" << (2 * ldc) << ";" << std::endl;
+    codestream << "  c2+=" << (2 * ldc) << ";" << std::endl;
+    codestream << "}" << std::endl << std::endl;
+
     codestream << "#endif" << std::endl << std::endl;
 
     /////////////////////////
