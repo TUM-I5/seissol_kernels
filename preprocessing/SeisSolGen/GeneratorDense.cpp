@@ -21,7 +21,7 @@ namespace seissolgen {
   GeneratorDense::GeneratorDense() : bGenerateExitForCK_(false), bAdd_(true) {
   }
 
-  GeneratorDense::GeneratorDense(bool bGenerateExitForCK, bool bAdd) : bGenerateExitForCK_(bGenerateExitForCK), bAdd_(bAdd) {
+  GeneratorDense::GeneratorDense(bool bGenerateExitForCK, int nMaxOrder, bool bAdd) : bGenerateExitForCK_(bGenerateExitForCK), bAdd_(bAdd) {
   }
 
   void sse_inner_blocked_kernel(std::stringstream& codestream, int lda, bool alignA) {

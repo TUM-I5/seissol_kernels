@@ -93,7 +93,7 @@ void generator_seissol_dense(std::string tFileOut, std::string tRoutineName, int
   std::ofstream out;
   seissolgen::GeneratorDense* gen;
 
-  gen = new seissolgen::GeneratorDense(generateCK, bAdd);
+  gen = new seissolgen::GeneratorDense(generateCK, MAX_CK_ORDER, bAdd);
 
   out.open(tFileOut.c_str(), std::ios::app);
   // generate code

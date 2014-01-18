@@ -10,6 +10,8 @@
 #ifndef GENERATORDENSE_HPP
 #define GENERATORDENSE_HPP
 
+#include <vector>
+
 namespace seissolgen {
 
   /**
@@ -19,11 +21,12 @@ namespace seissolgen {
     private:
       bool bGenerateExitForCK_;
       bool bAdd_;
+      std::vector<int> BasisfunctionsCounter_;
 
     public:
       GeneratorDense();
 
-      GeneratorDense(bool bGenerateExitForCK, bool bAdd);
+      GeneratorDense(bool bGenerateExitForCK, int nMaxOrder, bool bAdd);
 
       std::string generate_dense(bool bIsColMajor, int M, int N, int K, int lda, int ldb, int ldc);
   };
