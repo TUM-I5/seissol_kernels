@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2013 Technische Universitaet Muenchen                         *
+* Copyright (C) 2012-2014 Technische Universitaet Muenchen                    *
 *                                                                             *
 * This file is part of the SeisSolGen project. For conditions of              *
 * distribution and use, please see the copyright notice                       *
