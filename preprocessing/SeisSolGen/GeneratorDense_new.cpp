@@ -428,6 +428,7 @@ namespace seissolgen {
     codestream << "double* c0 = C;" << std::endl;
     codestream << "double* c1 = C+" << ldc << ";" << std::endl;
     codestream << "double* c2 = C+" << 2 * ldc << ";" << std::endl;
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "int M = 2;" << std::endl;
       codestream << "switch(exit_col)" << std::endl;
@@ -452,6 +453,7 @@ namespace seissolgen {
       codestream << "    break;" << std::endl;
       codestream << "}" << std::endl;
     }
+
     codestream << "for(int n = 0; n < " << N << "; n+=3)" << std::endl;
     codestream << "{" << std::endl;
 
@@ -462,9 +464,10 @@ namespace seissolgen {
       codestream << "  mDone = (M/6)*6;" << std::endl;
       codestream << "  for(int m = 0; m < mDone; m+=6)" << std::endl;
     } else {
-      mDone = (M/6)*6;
+      mDone = (M / 6) * 6;
       codestream << "  for(int m = 0; m < " << mDone << "; m+=6)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -506,14 +509,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -521,15 +527,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     sse_inner_blocked_kernel_6(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "sse_six_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "sse_six_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -565,9 +574,10 @@ namespace seissolgen {
       codestream << "  for(int m = mDone_old; m < mDone; m+=4)" << std::endl;
     } else {
       mDone_old = mDone;
-      mDone = mDone_old+(((M-mDone_old)/4)*4);    
+      mDone = mDone_old + (((M - mDone_old) / 4) * 4);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=4)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -600,14 +610,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -615,15 +628,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     sse_inner_blocked_kernel_4(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "sse_four_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "sse_four_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -653,9 +669,10 @@ namespace seissolgen {
       codestream << "  for(int m = mDone_old; m < mDone; m+=2)" << std::endl;
     } else {
       mDone_old = mDone;
-      mDone = mDone_old+(((M-mDone_old)/2)*2);  
+      mDone = mDone_old + (((M - mDone_old) / 2) * 2);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=2)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -679,14 +696,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -694,15 +714,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     sse_inner_blocked_kernel_2(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "sse_two_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "sse_two_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -725,6 +748,7 @@ namespace seissolgen {
     } else {
       codestream << "  for(int m = " << mDone << "; m < " << M << "; m++)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -742,14 +766,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -757,15 +784,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     sse_inner_blocked_kernel_1(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "sse_one_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "sse_one_end:" << std::endl;
+  }
+
 #endif
 
     codestream << "    _mm_store_sd(c0, c_0_0);" << std::endl;
@@ -786,6 +816,7 @@ namespace seissolgen {
       codestream << "  c1+=" << (2 * ldc) << ";" << std::endl;
       codestream << "  c2+=" << (2 * ldc) << ";" << std::endl;
     }
+
     codestream << "}" << std::endl << std::endl;
 
     codestream << "#endif" << std::endl << std::endl;
@@ -807,6 +838,7 @@ namespace seissolgen {
     codestream << "double* c0 = C;" << std::endl;
     codestream << "double* c1 = C+" << ldc << ";" << std::endl;
     codestream << "double* c2 = C+" << 2 * ldc << ";" << std::endl;
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "int M = 4;" << std::endl;
       codestream << "switch(exit_col)" << std::endl;
@@ -831,6 +863,7 @@ namespace seissolgen {
       codestream << "    break;" << std::endl;
       codestream << "}" << std::endl;
     }
+
     codestream << "for(int n = 0; n < " << N << "; n+=3)" << std::endl;
     codestream << "{" << std::endl;
 
@@ -841,9 +874,10 @@ namespace seissolgen {
       codestream << "  mDone = (M/12)*12;" << std::endl;
       codestream << "  for(int m = 0; m < mDone; m+=12)" << std::endl;
     } else {
-      mDone = (M/12)*12;
+      mDone = (M / 12) * 12;
       codestream << "  for(int m = 0; m < " << mDone << "; m+=12)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -885,14 +919,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -900,15 +937,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     avx_inner_blocked_kernel_12(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "avx_twelve_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "avx_twelve_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -947,9 +987,10 @@ namespace seissolgen {
       codestream << "  for(int m = mDone_old; m < mDone; m+=8)" << std::endl;
     } else {
       mDone_old = mDone;
-      mDone = mDone_old+(((M-mDone_old)/8)*8);    
+      mDone = mDone_old + (((M - mDone_old) / 8) * 8);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=8)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -982,14 +1023,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -997,15 +1041,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     avx_inner_blocked_kernel_8(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "avx_eight_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "avx_eight_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -1038,9 +1085,10 @@ namespace seissolgen {
       codestream << "  for(int m = mDone_old; m < mDone; m+=4)" << std::endl;
     } else {
       mDone_old = mDone;
-      mDone = mDone_old+(((M-mDone_old)/4)*4);    
+      mDone = mDone_old + (((M - mDone_old) / 4) * 4);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=4)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -1064,14 +1112,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -1079,15 +1130,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     avx_inner_blocked_kernel_4(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "avx_four_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "avx_four_end:" << std::endl;
+  }
+
 #endif
 
     if (alignC == true) {
@@ -1107,9 +1161,10 @@ namespace seissolgen {
 
     if (this->bGenerateExitForCK_ == true) {
       codestream << "  for(int m = mDone; m < M; m++)" << std::endl;
-    } else {    
+    } else {
       codestream << "  for(int m = " << mDone << "; m < " << M << "; m++)" << std::endl;
     }
+
     codestream << "  {" << std::endl;
     codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
     codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
@@ -1127,14 +1182,17 @@ namespace seissolgen {
     }
 
 #ifndef FULL_UNROLL
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
       codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
     }
+
     codestream << "    {" << std::endl;
 #else
-    for(int k = 0; k < K; k++) {
+
+    for (int k = 0; k < K; k++) {
       if (this->bGenerateExitForCK_ == true) {
         for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
           if (k == this->BasisfunctionsCounter_[o]) {
@@ -1142,15 +1200,18 @@ namespace seissolgen {
           }
         }
       }
+
 #endif
     avx_inner_blocked_kernel_1(codestream, lda, alignA);
 #ifndef FULL_UNROLL
     codestream << "    }" << std::endl;
 #else
-    }
-    if (this->bGenerateExitForCK_ == true) {
-      codestream << "avx_one_end:" << std::endl;
-    }
+  }
+
+  if (this->bGenerateExitForCK_ == true) {
+    codestream << "avx_one_end:" << std::endl;
+  }
+
 #endif
 
     codestream << "    _mm_store_sd(c0, c_0_0_128);" << std::endl;
@@ -1171,6 +1232,7 @@ namespace seissolgen {
       codestream << "  c1+=" << (2 * ldc) << ";" << std::endl;
       codestream << "  c2+=" << (2 * ldc) << ";" << std::endl;
     }
+
     codestream << "}" << std::endl << std::endl;
     codestream << "#endif" << std::endl << std::endl;
 
