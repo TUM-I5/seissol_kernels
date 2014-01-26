@@ -227,4 +227,9 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
                                   m_fluxMatrixPointers[l_upcomingId], i_timeIntegratedUnknownsElement[l_localFace/3], l_temporaryProduct  ); // prefetches
     }
   }
+
+#ifndef NDEBUG
+  // update flop counter
+  addBoundaryFlops();
+#endif
 }

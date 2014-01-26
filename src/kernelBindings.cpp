@@ -73,13 +73,13 @@ extern "C" {
   /**
    * Simple forward of the boundary integration. Details can be found in the BoundaryIntegrator-class.
    **/
-  void BOUNDARYINTFUNCTIONNAME(                double i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
-                                               double i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                const unsigned int    i_boundaryConditions[4],
-                                const unsigned int    i_neighboringIndices[4][2],
-                                               double i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                               double i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                               double io_unknowns[NUMBEROFUNKNOWNS] ) {
+  void BOUNDARYINTFUNCTIONNAME(       double  i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                      double *i_timeIntegratedUnknownsNeighbors[4],
+                                const int     i_boundaryConditions[4],
+                                const int     i_neighboringIndices[4][2],
+                                      double  i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                      double  i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                      double  io_unknowns[NUMBEROFUNKNOWNS] ) {
     l_boundaryIntegrator.computeBoundaryIntegral( i_timeIntegratedUnknownsElement,
                                                   i_timeIntegratedUnknownsNeighbors,
                                                   i_boundaryConditions,
