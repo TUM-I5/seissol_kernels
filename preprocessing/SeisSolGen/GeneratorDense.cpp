@@ -535,7 +535,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_six_end:" << std::endl;
   }
 
@@ -636,7 +636,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_four_end:" << std::endl;
   }
 
@@ -722,7 +722,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_two_end:" << std::endl;
   }
 
@@ -792,7 +792,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_one_end:" << std::endl;
   }
 
@@ -945,7 +945,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_twelve_end:" << std::endl;
   }
 
@@ -1049,7 +1049,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_eight_end:" << std::endl;
   }
 
@@ -1138,7 +1138,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_four_end:" << std::endl;
   }
 
@@ -1208,7 +1208,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_one_end:" << std::endl;
   }
 
@@ -1243,6 +1243,9 @@ namespace seissolgen {
     if ( (M == 56) ) {
       //if ( (M == 56) && (K == 56) ) {
       codestream << "#if defined(__MIC__)" << std::endl;
+      if (this->bGenerateExitForCK_ == true) {
+        codestream << "int M = " << M << ";" << std::endl;
+      }
       codestream << "__m512d c_0_0;" << std::endl;
       codestream << "__m512d c_1_0;" << std::endl;
       codestream << "__m512d c_2_0;" << std::endl;
@@ -1458,7 +1461,7 @@ namespace seissolgen {
     codestream << "#ifndef NDEBUG" << std::endl;
 
     if (this->bGenerateExitForCK_ == true) {
-      codestream << "num_flops += " << 2 * N* M << "*exit_col;" << std::endl;
+      codestream << "num_flops += " << 2 * N << "*M*exit_col;" << std::endl;
     } else {
       codestream << "num_flops += " << 2 * N* M* K << ";" << std::endl;
     }

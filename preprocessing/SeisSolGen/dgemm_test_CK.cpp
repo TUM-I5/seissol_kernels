@@ -70,7 +70,12 @@ int main(int argc, char* argv[]) {
   gettimeofday(&start, NULL);
 
   for (int t = 0; t < REPS; t++) {
-    dense_test(a, b, c, 84);
+    dense_test(a, b, c, 56);
+    dense_test(a, b, c, 35);
+    dense_test(a, b, c, 20);
+    dense_test(a, b, c, 10);
+    dense_test(a, b, c, 4);
+    dense_test(a, b, c, 1);
 #if 0
     __m128d a_0, a_1, a_2, a_3;
     __m128d b_0, b_1, b_2;
