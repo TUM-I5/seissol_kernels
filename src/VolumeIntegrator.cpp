@@ -186,4 +186,9 @@ void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeInt
                        l_partialProduct,             i_cStar,                  io_unknowns       ); // prefetches 
   m_matrixKernels[3] ( l_partialProduct,             i_cStar,                  io_unknowns,
                        m_stiffnessMatrixPointers[6], i_timeIntegratedUnknowns, NULL              ); // inter-kernel prefetches for the bnd. int.
+
+#ifndef NDEBUG
+  // update flop counter
+  addVolumeFlops();
+#endif
 }

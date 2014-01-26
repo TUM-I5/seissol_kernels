@@ -78,11 +78,7 @@
      * Prints the measured FLOPS.
      */
     void printFlops() {
-      int l_mpiRank;
-#ifdef PARALLEL
-      MPI_Comm_rank(MPI_COMM_WORLD, &l_mpiRank);
-#endif
-      logInfo() << l_mpiRank << "FLOPS - "
+      logInfo() << "FLOPS - "
                 << "time: "    << l_numberOfTimeIntegrationFlops   << ", "
                 << "vol: "     << l_numberOfVolumeIntegrationFlops << ", "
                 << "bnd: "     << l_numberOfBoundaryIntegrationFlops;

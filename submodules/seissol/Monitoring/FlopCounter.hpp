@@ -36,15 +36,19 @@
 
 #ifndef NDEBUG
 
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
 #include <utils/logger.h>
 
   //! floating point operations performed in the matrix kernels.
   //!   Remark: This variable is updated by the matrix kernels.
   extern unsigned long long num_flops;
+
+  extern "C" {
+    void addTimeFlops();
+    void addVolumeFlops();
+    void addBoundaryFlops();
+    void printFlops();
+  }
+
 #endif
 
 #endif
