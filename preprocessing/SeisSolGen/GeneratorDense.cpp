@@ -1243,9 +1243,11 @@ namespace seissolgen {
     if ( (M == 56) ) {
       //if ( (M == 56) && (K == 56) ) {
       codestream << "#if defined(__MIC__)" << std::endl;
+
       if (this->bGenerateExitForCK_ == true) {
         codestream << "int M = " << M << ";" << std::endl;
       }
+
       codestream << "__m512d c_0_0;" << std::endl;
       codestream << "__m512d c_1_0;" << std::endl;
       codestream << "__m512d c_2_0;" << std::endl;

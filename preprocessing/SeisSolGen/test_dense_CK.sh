@@ -1,13 +1,12 @@
 #!/bin/sh
 
 VEC=avx
-START=56
-END=56
+ORDERS="4 10 20 35 56 84"
 
 make clean
 make
 
-for i in `seq $START 1 $END`
+for i in ${ORDERS}
 do
         echo "START TEST WITH MATRIX DIMENISON $i"
 	rm -rf gen_matmul_dense.hpp
