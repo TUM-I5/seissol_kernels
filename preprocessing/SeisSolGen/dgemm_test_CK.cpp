@@ -112,9 +112,9 @@ int main(int argc, char* argv[]) {
       a[(j * ORDER_NUMBER) + i] = (double)(i + (j * ORDER_NUMBER));
 
       if (j < 9) {
-        b[(j * 9) + i] = (double)(i + (j * 9));
-        c[(j * 9) + i] = 0.0;
-        c_gold[(j * 9) + i] = 0.0;
+        b[(j * ORDER_NUMBER) + i] = (double)(i + (j * 9));
+        c[(j * ORDER_NUMBER) + i] = 0.0;
+        c_gold[(j * ORDER_NUMBER) + i] = 0.0;
       }
     }
   }
