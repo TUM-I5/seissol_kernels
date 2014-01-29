@@ -87,6 +87,43 @@ void c_dgemm(double* a, double* b, double* c_gold, int exit_col) {
   }
 
 #endif
+#if defined(__MIC__)
+  M = 8;
+  int K = 8;
+  switch(exit_col) {
+    case 84:
+      M = 56;
+      K = 84;
+      break;
+
+    case 56:
+      M = 40;
+      K = 56;
+      break;
+
+    case 35:
+      M = 24;
+      K = 40;
+      break;
+
+    case 20:
+      M = 16;
+      K = 24;
+      break;
+
+    case 10:
+      M = 8;
+      K = 16;
+      break;
+
+    case 4:
+      M = 8;
+      K = 8;
+      break;
+  }
+
+  exit_col = K;
+#endif
 
   for (int n = 0; n < 9; n++) {
     for (int k = 0; k < exit_col; k++) {
