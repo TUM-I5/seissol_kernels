@@ -1366,15 +1366,27 @@ namespace seissolgen {
       codestream << "#pragma prefetch C" << std::endl;
       codestream << "for (int m = 0; m < 48; m += 8)" << std::endl;
       codestream << "{" << std::endl;
-      codestream << "  c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
-      codestream << "  c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
-      codestream << "  c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
-      codestream << "  c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
-      codestream << "  c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
-      codestream << "  c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
-      codestream << "  c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
-      codestream << "  c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
-      codestream << "  c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+      if (bAdd_) {
+        codestream << "  c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
+        codestream << "  c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
+        codestream << "  c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
+        codestream << "  c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
+        codestream << "  c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
+        codestream << "  c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
+        codestream << "  c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
+        codestream << "  c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
+        codestream << "  c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+      } else {
+        codestream << "  c_0 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_1 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_2 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_3 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_4 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_5 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_6 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_7 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_8 = _mm512_setzero_pd();" << std::endl << std::endl;
+      }
 
       codestream << "  double* cur_A = A + m;" << std::endl;
       codestream << "  double* cur_B = B;" << std::endl;
@@ -1406,25 +1418,61 @@ namespace seissolgen {
       codestream << "}" << std::endl << std::endl;
 
       codestream << "int m = 48;" << std::endl << std::endl;
-
+      
       codestream << "_mm_prefetch((const char*)C_prefetch + (0*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_0 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (1*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_1 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (2*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_2 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (3*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_3 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (4*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_4 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (5*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_5 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (6*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_6 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (7*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
+      if (bAdd_) {
+        codestream << "c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
+      } else {
+        codestream << "c_7 = _mm512_setzero_pd();" << std::endl;
+      }
       codestream << "_mm_prefetch((const char*)C_prefetch + (8*" << ldc << "), _MM_HINT_T1);" << std::endl;
-      codestream << "c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+      if (bAdd_) {
+        codestream << "c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+      } else {
+        codestream << "c_8 = _mm512_setzero_pd();" << std::endl << std::endl;
+      }
 
       codestream << "double* cur_A = A + m;" << std::endl;
       codestream << "double* cur_B = B;" << std::endl;
