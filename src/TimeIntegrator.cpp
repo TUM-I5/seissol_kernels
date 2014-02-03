@@ -376,9 +376,11 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_unkn
 #ifndef NDEBUG
     // add the previous multiply-adds to the FLOP counter
     num_flops += NUMBEROFUNKNOWNS * 2;
-    
-    // update flop counter
-    addTimeFlops();
 #endif
   }
+
+#ifndef NDEBUG
+  // update flop counter
+  addTimeFlops();
+#endif
 }

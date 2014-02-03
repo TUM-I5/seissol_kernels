@@ -53,6 +53,24 @@ class PerformanceModeler():
                 56: 5
                }
 
+  # mapping: polynomial degree -> #(basis functions)
+  m_degreeToBasisFunctions = { 0:  1, 
+                               1:  4,
+                               2: 10, 
+                               3: 20,
+                               4: 35,
+                               5: 56
+                             }
+  
+  # mapping: polynomial degree -> #(basis functions) in the case of SNB-kernels
+  m_degreeToBasisFunctionsSNB = { 0:  4, 
+                                  1:  4,
+                                  2: 12, 
+                                  3: 20,
+                                  4: 36,
+                                  5: 56
+                                }
+
   # Constructor
   # @param i_pathToOutputDirectory directory, where the performance models will be stored.
   def __init__( self, i_pathToOutputDirectory ):
@@ -384,18 +402,25 @@ class PerformanceModeler():
       for l_neighboringSide in ['1', '2', '3', '4']:
         for l_vertexCombination in ['1', '2', '3']:
           l_fluxMatrices = l_fluxMatrices+['fP'+l_localSide+l_neighboringSide+l_vertexCombination]
+    
 
     # collect #scalar floating point multiplications for volume and boundary matrices
     for l_matrixName in ['kXiDivM',  'kEtaDivM',  'kZetaDivM',
                          'kXiDivMT', 'kEtaDivMT', 'kZetaDivMT',
                          'flux_solver', 'star_matrix'] + l_fluxMatrices:
-      # TODO: take care of this guy for dense matrices in ADER time integration
       if( l_matrices[l_matrixName]['sparse'] == 'true' ):
         l_numberOfNonZeros = l_matrices[l_matrixName]['#non_zeros']
       else:
-        assert(  l_matrices[l_matrixName]['sparse'] == 'false' )
-        l_numberOfNonZeros = int(l_matrices[l_matrixName]['#rows']) * int(l_matrices[l_matrixName]['#columns'])
-
+        # default matrix not part of CK
+        if( l_matrixName not in [ 'kXiDivMT', 'kEtaDivMT', 'kZetaDivMT' ] ):
+          assert(  l_matrices[l_matrixName]['sparse'] == 'false' )
+          l_numberOfNonZeros = int(l_matrices[l_matrixName]['#rows']) * int(l_matrices[l_matrixName]['#columns'])
+        # transposed stiffness matrix in CK
+        else:
+          l_numberOfNonZeros = {}
+          # dense recursive scheme of stiffness matrices
+          for l_degree in xrange( 1, l_polynomialDegree+1 ):
+            l_numberOfNonZeros[self.m_degreeToBasisFunctions[l_degree]] = self.m_degreeToBasisFunctions[l_degree] * self.m_degreeToBasisFunctionsSNB[l_degree-1] 
       # determine type of multiplication (left * unknowns, unknowns * right)
       if( l_matrices[l_matrixName]['type'] in ['flux', 'stiffness'] ):
         l_repeatsPerEntry = l_numberOfVariables
@@ -446,8 +471,8 @@ class PerformanceModeler():
     l_numberOfUnknowns = l_numberOfBasisFunctions * l_numberOfVariables
     
     # compute first taylor step
-    l_performanceModel['time_kernel']['FLOPS'] = l_numberOfUnknowns
-
+    l_performanceModel['time_kernel']['FLOPS'] = l_numberOfUnknowns    
+    
     # iterate over talyor expansion
     for l_order in range(1, l_orderOfTaylorSeriesExpansion):
       # compute size of the non-zero blocks/submatrices

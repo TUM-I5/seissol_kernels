@@ -185,7 +185,7 @@ if l_commandLineArguments.convertToXml:
                                     i_sparseDenseSwitch=l_sparseDenseSwitch  )
 
 if l_commandLineArguments.generatePerformanceModel:
-  for l_matrixFile in ['matrices_4.xml', 'matrices_10_tmp.xml', 'matrices_20_tmp.xml', 'matrices_35.xml', 'matrices_56.xml']:
+  for l_matrixFile in ['matrices_4.xml', 'matrices_10.xml', 'matrices_20.xml', 'matrices_35.xml', 'matrices_56.xml']:
     l_pathToMatricesFile = 'matrices/'+l_matrixFile
     l_performanceModeler.generatePerformanceModel( i_pathToMatricesFile = l_pathToMatricesFile )
   #l_matrixFiles = [ 'matrices_0.18_20.xml', 'matrices_0.25_35.xml', 'matrices_0.15_56.xml' ]
