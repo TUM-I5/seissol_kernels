@@ -274,6 +274,109 @@ namespace seissolgen {
     codestream << "#endif" << std::endl << std::endl;
   }
 
+  void mic_inner_blocked_kernel_8_L1(std::stringstream& codestream, int lda, int ldb, int cnt) {
+    if (cnt > 7) {
+      std::cout << "MIC inner kernel unroll is greater than 7 --> Exit! Please fix Code Generator" << std::endl;
+      exit(-1);
+    }
+
+    codestream << "    _mm_prefetch((const char*) (cur_A + 8), _MM_HINT_T1);" << std::endl;
+    codestream << "    a_0 = _mm512_load_pd(cur_A);" << std::endl;
+    codestream << "    cur_A += " << lda << ";" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (0*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_0 = _mm512_fmadd_pd(a_0, b_bcst, c_0);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (1*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    _mm_prefetch((const char*)cur_A, _MM_HINT_T0);" << std::endl;
+    codestream << "    c_1 = _mm512_fmadd_pd(a_0, b_bcst, c_1);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (2*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_2 = _mm512_fmadd_pd(a_0, b_bcst, c_2);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (3*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_3 = _mm512_fmadd_pd(a_0, b_bcst, c_3);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (4*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_4 = _mm512_fmadd_pd(a_0, b_bcst, c_4);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (5*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    _mm_prefetch((const char*)pre_B_L1 + (" << cnt << "*" << ldb << "), _MM_HINT_T0);" << std::endl;
+    codestream << "    c_5 = _mm512_fmadd_pd(a_0, b_bcst, c_5);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (6*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_6 = _mm512_fmadd_pd(a_0, b_bcst, c_6);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (7*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_7 = _mm512_fmadd_pd(a_0, b_bcst, c_7);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (8*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_8 = _mm512_fmadd_pd(a_0, b_bcst, c_8);" << std::endl;
+    if (cnt == 7) {
+      codestream << "    _mm_prefetch((const char*)pre_B_L1 + (" << cnt+1 << "*" << ldb << "), _MM_HINT_T0);" << std::endl;
+      codestream << "    pre_B_L1+=8;" << std::endl;
+    }
+    codestream << "    cur_B++;" << std::endl << std::endl;
+  }
+
+  void mic_inner_blocked_kernel_8_noprefetch_B(std::stringstream& codestream, int lda, int ldb, int cnt) {
+    codestream << "    _mm_prefetch((const char*) (cur_A + 8), _MM_HINT_T1);" << std::endl;
+    codestream << "    a_0 = _mm512_load_pd(cur_A);" << std::endl;
+    codestream << "    cur_A += " << lda << ";" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (0*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_0 = _mm512_fmadd_pd(a_0, b_bcst, c_0);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (1*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    _mm_prefetch((const char*)cur_A, _MM_HINT_T0);" << std::endl;
+    codestream << "    c_1 = _mm512_fmadd_pd(a_0, b_bcst, c_1);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (2*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_2 = _mm512_fmadd_pd(a_0, b_bcst, c_2);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (3*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_3 = _mm512_fmadd_pd(a_0, b_bcst, c_3);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (4*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_4 = _mm512_fmadd_pd(a_0, b_bcst, c_4);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (5*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_5 = _mm512_fmadd_pd(a_0, b_bcst, c_5);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (6*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_6 = _mm512_fmadd_pd(a_0, b_bcst, c_6);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (7*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_7 = _mm512_fmadd_pd(a_0, b_bcst, c_7);" << std::endl;
+    codestream << "    b_bcst = _mm512_extload_pd(cur_B + (8*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "    c_8 = _mm512_fmadd_pd(a_0, b_bcst, c_8);" << std::endl;
+    codestream << "    cur_B++;" << std::endl << std::endl;
+  }
+
+  void mic_inner_blocked_kernel_8_L2(std::stringstream& codestream, int lda, int ldb, int cnt) {
+    if (cnt > 7) {
+      std::cout << "MIC inner kernel unroll is greater than 7 --> Exit! Please fix Code Generator" << std::endl;
+      exit(-1);
+    }
+
+    codestream << "  _mm_prefetch((const char*)pre_A_L2, _MM_HINT_T2);" << std::endl;
+    codestream << "  a_0 = _mm512_load_pd(cur_A);" << std::endl;
+    codestream << "  cur_A += " << lda << ";" << std::endl;
+    codestream << "  pre_A_L2 += " << lda << ";" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (0*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_0 = _mm512_fmadd_pd(a_0, b_bcst, c_0);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (1*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  _mm_prefetch((const char*)cur_A, _MM_HINT_T0);" << std::endl;
+    codestream << "  c_1 = _mm512_fmadd_pd(a_0, b_bcst, c_1);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (2*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_2 = _mm512_fmadd_pd(a_0, b_bcst, c_2);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (3*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  _mm_prefetch((const char*)pre_B_L2 + (" << cnt << "*56), _MM_HINT_T1);" << std::endl;
+    codestream << "  c_3 = _mm512_fmadd_pd(a_0, b_bcst, c_3);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (4*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_4 = _mm512_fmadd_pd(a_0, b_bcst, c_4);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (5*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  //_mm_prefetch((const char*)pre_B_L1 + (" << cnt << "*" << ldb << "), _MM_HINT_T0);" << std::endl;
+    codestream << "  c_5 = _mm512_fmadd_pd(a_0, b_bcst, c_5);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (6*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_6 = _mm512_fmadd_pd(a_0, b_bcst, c_6);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (7*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_7 = _mm512_fmadd_pd(a_0, b_bcst, c_7);" << std::endl;
+    if (cnt == 7) codestream << "  _mm_prefetch((const char*)pre_B_L2 + (" << cnt+1 << "*56), _MM_HINT_T1);" << std::endl;
+    codestream << "  b_bcst = _mm512_extload_pd(cur_B + (8*" << ldb << "), _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
+    codestream << "  c_8 = _mm512_fmadd_pd(a_0, b_bcst, c_8);" << std::endl;
+    if (cnt == 7) {
+      codestream << "  //_mm_prefetch((const char*)pre_B_L1 + (" << cnt+1 << "*" << ldb << "), _MM_HINT_T0);" << std::endl;
+      codestream << "  //pre_B_L1+=8;" << std::endl;
+      codestream << "  pre_B_L2+=8;" << std::endl;
+    }
+    codestream << "  cur_B++;" << std::endl << std::endl;
+  }
+
+
   void mic_inner_blocked_kernel_for_56(std::stringstream& codestream, int lda) {
     codestream << "    b_0 = _mm512_extload_pd(b0, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
     codestream << "    b_1 = _mm512_extload_pd(b1, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
@@ -535,7 +638,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_six_end:" << std::endl;
   }
 
@@ -636,7 +739,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_four_end:" << std::endl;
   }
 
@@ -722,7 +825,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_two_end:" << std::endl;
   }
 
@@ -792,7 +895,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "sse_one_end:" << std::endl;
   }
 
@@ -945,7 +1048,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_twelve_end:" << std::endl;
   }
 
@@ -1049,7 +1152,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_eight_end:" << std::endl;
   }
 
@@ -1138,7 +1241,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_four_end:" << std::endl;
   }
 
@@ -1208,7 +1311,7 @@ namespace seissolgen {
 #else
   }
 
-  if (this->bGenerateExitForCK_ == true) {
+  if (this->bGenerateExitForCK_ == true && K > 4) {
     codestream << "avx_one_end:" << std::endl;
   }
 
@@ -1241,199 +1344,225 @@ namespace seissolgen {
     /////////////////////////
 
     if ( (M == 56) ) {
-      //if ( (M == 56) && (K == 56) ) {
       codestream << "#if defined(__MIC__)" << std::endl;
-      codestream << "__m512d c_0_0;" << std::endl;
-      codestream << "__m512d c_1_0;" << std::endl;
-      codestream << "__m512d c_2_0;" << std::endl;
-      codestream << "__m512d c_3_0;" << std::endl;
-      codestream << "__m512d c_4_0;" << std::endl;
-      codestream << "__m512d c_5_0;" << std::endl;
-      codestream << "__m512d c_6_0;" << std::endl << std::endl;
-
-      codestream << "__m512d c_0_1;" << std::endl;
-      codestream << "__m512d c_1_1;" << std::endl;
-      codestream << "__m512d c_2_1;" << std::endl;
-      codestream << "__m512d c_3_1;" << std::endl;
-      codestream << "__m512d c_4_1;" << std::endl;
-      codestream << "__m512d c_5_1;" << std::endl;
-      codestream << "__m512d c_6_1;" << std::endl << std::endl;
-
-      codestream << "__m512d c_0_2;" << std::endl;
-      codestream << "__m512d c_1_2;" << std::endl;
-      codestream << "__m512d c_2_2;" << std::endl;
-      codestream << "__m512d c_3_2;" << std::endl;
-      codestream << "__m512d c_4_2;" << std::endl;
-      codestream << "__m512d c_5_2;" << std::endl;
-      codestream << "__m512d c_6_2;" << std::endl << std::endl;
-
-      codestream << "__m512d b_0;" << std::endl;
-      codestream << "__m512d b_1;" << std::endl;
-      codestream << "__m512d b_2;" << std::endl << std::endl;
-
-      codestream << "__m512d a_0;" << std::endl;
-      codestream << "__m512d a_1;" << std::endl;
-      codestream << "__m512d a_2;" << std::endl;
-      codestream << "__m512d a_3;" << std::endl;
-      codestream << "__m512d a_4;" << std::endl;
-      codestream << "__m512d a_5;" << std::endl;
-      codestream << "__m512d a_6;" << std::endl << std::endl;
-
-      codestream << "double* c0 = C;" << std::endl;
-      codestream << "double* c1 = C + " << ldc << ";" << std::endl;
-      codestream << "double* c2 = C + " << 2 * ldc << ";" << std::endl;
-      codestream << "#pragma prefetch c0,c1,c2" << std::endl;
-      codestream << "for(int n = 0; n < " << N << "; n+=3)" << std::endl;
-      codestream << "{" << std::endl;
-      codestream << "  double* b0 = B+(n*" << ldb << ");" << std::endl;
-      codestream << "  double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
-      codestream << "  double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
-      codestream << "  double* a0 = A;" << std::endl << std::endl;
-
-      if (bAdd_) {
-        codestream << "  c_0_0 = _mm512_load_pd(c0);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_0 = _mm512_load_pd(c0+8);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_0 = _mm512_load_pd(c0+16);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_0 = _mm512_load_pd(c0+24);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_0 = _mm512_load_pd(c0+32);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_0 = _mm512_load_pd(c0+40);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_0 = _mm512_load_pd(c0+48);" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-
-        codestream << "  c_0_1 = _mm512_load_pd(c1);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_1 = _mm512_load_pd(c1+8);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_1 = _mm512_load_pd(c1+16);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_1 = _mm512_load_pd(c1+24);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_1 = _mm512_load_pd(c1+32);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_1 = _mm512_load_pd(c1+40);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_1 = _mm512_load_pd(c1+48);" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-
-        codestream << "  c_0_2 = _mm512_load_pd(c2);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_2 = _mm512_load_pd(c2+8);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_2 = _mm512_load_pd(c2+16);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_2 = _mm512_load_pd(c2+24);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_2 = _mm512_load_pd(c2+32);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_2 = _mm512_load_pd(c2+40);" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_2 = _mm512_load_pd(c2+48);" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-      } else {
-        codestream << "  c_0_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_0 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_0 = _mm512_setzero_pd();" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c0+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-
-        codestream << "  c_0_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_1 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_1 = _mm512_setzero_pd();" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-
-        codestream << "  c_0_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_1_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+8+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_2_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+16+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_3_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+24+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_4_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+32+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_5_2 = _mm512_setzero_pd();" << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+40+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-        codestream << "  c_6_2 = _mm512_setzero_pd();" << std::endl << std::endl;
-        //codestream << "  _mm_prefetch((const char*)c1+48+" << 3*ldc << ", _MM_HINT_T1);" << std::endl;
-      }
-
-      /// loop
-      codestream << "  #pragma prefetch b0,b1,b2,a0" << std::endl;
-      codestream << "  for(int k = 0; k < " << K << "; k++)" << std::endl;
-      codestream << "  {" << std::endl;
 
       if (this->bGenerateExitForCK_ == true) {
-        codestream << "    if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
+        codestream << "int M = 8;" << std::endl;
+        codestream << "int K = 8;" << std::endl;
+        codestream << "switch(exit_col)" << std::endl;
+        codestream << "{" << std::endl;
+        codestream << "  case 84:" << std::endl;
+        codestream << "    M = 56;" << std::endl;
+        codestream << "    K = 84;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "  case 56:" << std::endl;
+        codestream << "    M = 40;" << std::endl;
+        codestream << "    K = 56;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "  case 35:" << std::endl;
+        codestream << "    M = 24;" << std::endl;
+        codestream << "    K = 40;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "  case 20:" << std::endl;
+        codestream << "    M = 16;" << std::endl;
+        codestream << "    K = 24;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "  case 10:" << std::endl;
+        codestream << "    M = 8;" << std::endl;
+        codestream << "    K = 16;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "  case 4:" << std::endl;
+        codestream << "    M = 8;" << std::endl;
+        codestream << "    K = 8;" << std::endl;
+        codestream << "    break;" << std::endl;
+        codestream << "}" << std::endl;
+        codestream << "exit_col = K;" << std::endl << std::endl;
+      }
+      codestream << "A_prefetch = A;" << std::endl;
+      codestream << "B_prefetch = B;" << std::endl;
+      codestream << "C_prefetch = C;" << std::endl << std::endl;
+
+      codestream << "__m512d c_0;" << std::endl;
+      codestream << "__m512d c_1;" << std::endl;
+      codestream << "__m512d c_2;" << std::endl;
+      codestream << "__m512d c_3;" << std::endl;
+      codestream << "__m512d c_4;" << std::endl;
+      codestream << "__m512d c_5;" << std::endl;
+      codestream << "__m512d c_6;" << std::endl;
+      codestream << "__m512d c_7;" << std::endl;
+      codestream << "__m512d c_8;" << std::endl << std::endl;
+
+      codestream << "__m512d b_bcst;" << std::endl << std::endl;
+
+      codestream << "__m512d a_0;" << std::endl << std::endl;
+
+      codestream << "#pragma prefetch C" << std::endl;
+      if (this->bGenerateExitForCK_ == true) {
+        codestream << "for (int m = 0; m < M; m += 8)" << std::endl; 
+      } else {
+        codestream << "for (int m = 0; m < 48; m += 8)" << std::endl;
+      }
+      codestream << "{" << std::endl;
+      if (bAdd_) {
+        codestream << "  c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
+        codestream << "  c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
+        codestream << "  c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
+        codestream << "  c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
+        codestream << "  c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
+        codestream << "  c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
+        codestream << "  c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
+        codestream << "  c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
+        codestream << "  c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+      } else {
+        codestream << "  c_0 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_1 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_2 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_3 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_4 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_5 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_6 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_7 = _mm512_setzero_pd();" << std::endl;
+        codestream << "  c_8 = _mm512_setzero_pd();" << std::endl << std::endl;
       }
 
-      //codestream << "    _mm_prefetch((const char*)b0+" << 3*ldb << ", _MM_HINT_T1);" << std::endl;
-      //codestream << "    _mm_prefetch((const char*)b1+" << 3*ldb << ", _MM_HINT_T1);" << std::endl;
-      //codestream << "    _mm_prefetch((const char*)b2+" << 3*ldb << ", _MM_HINT_T1);" << std::endl;
-      mic_inner_blocked_kernel_for_56(codestream, lda);
+      codestream << "  double* cur_A = A + m;" << std::endl;
+      codestream << "  double* cur_B = B;" << std::endl;
+      codestream << "  double* pre_B_L1 = B+8;" << std::endl << std::endl;
 
-      codestream << "  }" << std::endl << std::endl;
+      if (K == 9) {
+        for (int i = 0; i < 9; i++) { 
+          mic_inner_blocked_kernel_8_noprefetch_B(codestream, lda, ldb, i);
+        }
+      } else {
+        codestream << "  #pragma noprefetch" << std::endl;
+        if (this->bGenerateExitForCK_ == true) {
+          codestream << "  for (int k = 0; k < exit_col; k+=8)" << std::endl;
+        } else {
+          codestream << "  for (int k = 0; k < 56; k+=8)" << std::endl;
+        }
+        codestream << "  {" << std::endl;
+        for (int i = 0; i < 8; i++) { 
+          mic_inner_blocked_kernel_8_L1(codestream, lda, ldb, i);
+        }
+        codestream << "  }" << std::endl << std::endl;
+      }
+  
+      codestream << "  _mm512_store_pd(C + m + 0*" << ldc << ", c_0);" << std::endl;
+      codestream << "  _mm512_store_pd(C + m + 1*" << ldc << ", c_1);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 2*" << ldc << ", c_2);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 3*" << ldc << ", c_3);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 4*" << ldc << ", c_4);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 5*" << ldc << ", c_5);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 6*" << ldc << ", c_6);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 7*" << ldc << ", c_7);" << std::endl;  
+      codestream << "  _mm512_store_pd(C + m + 8*" << ldc << ", c_8);" << std::endl;  
+      codestream << "}" << std::endl << std::endl;
 
-      codestream << "  _mm512_store_pd(c0, c_0_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+8, c_1_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+16, c_2_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+24, c_3_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+32, c_4_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+40, c_5_0);" << std::endl;
-      codestream << "  _mm512_store_pd(c0+48, c_6_0);" << std::endl << std::endl;
+      if (this->bGenerateExitForCK_ == false) {
+        codestream << "int m = 48;" << std::endl << std::endl;
+      
+        codestream << "_mm_prefetch((const char*)C_prefetch + (0*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_0 = _mm512_load_pd(C + m + 0*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_0 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (1*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_1 = _mm512_load_pd(C + m + 1*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_1 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (2*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_2 = _mm512_load_pd(C + m + 2*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_2 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (3*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_3 = _mm512_load_pd(C + m + 3*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_3 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (4*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_4 = _mm512_load_pd(C + m + 4*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_4 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (5*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_5 = _mm512_load_pd(C + m + 5*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_5 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (6*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_6 = _mm512_load_pd(C + m + 6*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_6 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (7*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_7 = _mm512_load_pd(C + m + 7*" << ldc << ");" << std::endl;
+        } else {
+          codestream << "c_7 = _mm512_setzero_pd();" << std::endl;
+        }
+        codestream << "_mm_prefetch((const char*)C_prefetch + (8*" << ldc << "), _MM_HINT_T1);" << std::endl;
+        if (bAdd_) {
+          codestream << "c_8 = _mm512_load_pd(C + m + 8*" << ldc << ");" << std::endl << std::endl;
+        } else {
+          codestream << "c_8 = _mm512_setzero_pd();" << std::endl << std::endl;
+        }
 
-      codestream << "  _mm512_store_pd(c1, c_0_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+8, c_1_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+16, c_2_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+24, c_3_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+32, c_4_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+40, c_5_1);" << std::endl;
-      codestream << "  _mm512_store_pd(c1+48, c_6_1);" << std::endl << std::endl;
+        codestream << "double* cur_A = A + m;" << std::endl;
+        codestream << "double* cur_B = B;" << std::endl;
+        codestream << "double* pre_B_L1 = B+8;" << std::endl;
+        codestream << "double* pre_B_L2 = B_prefetch;" << std::endl;
+        codestream << "double* pre_A_L2 = A_prefetch;" << std::endl << std::endl;
 
-      codestream << "  _mm512_store_pd(c2, c_0_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+8, c_1_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+16, c_2_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+24, c_3_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+32, c_4_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+40, c_5_2);" << std::endl;
-      codestream << "  _mm512_store_pd(c2+48, c_6_2);" << std::endl << std::endl;
+        if (K == 9) {
+          for (int i = 0; i < 8; i++) { 
+            mic_inner_blocked_kernel_8_L2(codestream, lda, ldb, i);
+          }
+          mic_inner_blocked_kernel_8_L2(codestream, lda, ldb, 0);
+        } else {
+          codestream << "#pragma noprefetch" << std::endl;
+          codestream << "for (int k = 0; k < 56; k+=8)" << std::endl;
+          codestream << "{" << std::endl;
 
-      codestream << "  c0 += " << 3 * ldc << ";" << std::endl;
-      codestream << "  c1 += " << 3 * ldc << ";" << std::endl;
-      codestream << "  c2 += " << 3 * ldc << ";" << std::endl;
+          for (int i = 0; i < 8; i++) { 
+            mic_inner_blocked_kernel_8_L2(codestream, lda, ldb, i);
+          }
+          codestream << "}" << std::endl << std::endl;
+        }
 
-      codestream << "}" << std::endl;
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (0*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 0*" << ldc << ", c_0);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (1*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 1*" << ldc << ", c_1);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (2*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 2*" << ldc << ", c_2);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (3*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 3*" << ldc << ", c_3);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (4*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 4*" << ldc << ", c_4);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (5*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 5*" << ldc << ", c_5);" << std::endl;  
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (6*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 6*" << ldc << ", c_6);" << std::endl;
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (7*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 7*" << ldc << ", c_7);" << std::endl;
+        codestream << "//_mm_prefetch((const char*)C_prefetch + (8*" << ldc << "), _MM_HINT_T0);" << std::endl;
+        codestream << "_mm512_store_pd(C + m + 8*" << ldc << ", c_8);" << std::endl << std::endl;
+      }
       codestream << "#endif" << std::endl << std::endl;
     }
 
     // generate fallback c code
     if ( (M == 56) ) {
-      //if ( (M == 56) && (K == 56) ) {
-      codestream << "#if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)" << std::endl;
+        codestream << "#if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)" << std::endl;
     } else {
       codestream << "#if !defined(__SSE3__) && !defined(__AVX__)" << std::endl;
     }
@@ -1458,7 +1587,7 @@ namespace seissolgen {
     codestream << "#ifndef NDEBUG" << std::endl;
 
     if (this->bGenerateExitForCK_ == true) {
-      codestream << "num_flops += " << 2 * N* M << "*exit_col;" << std::endl;
+      codestream << "num_flops += " << 2 * N << "*M*exit_col;" << std::endl;
     } else {
       codestream << "num_flops += " << 2 * N* M* K << ";" << std::endl;
     }
