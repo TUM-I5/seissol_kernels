@@ -1567,16 +1567,46 @@ namespace seissolgen {
       codestream << "#if !defined(__SSE3__) && !defined(__AVX__)" << std::endl;
     }
 
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "int M = 4;" << std::endl;
+      codestream << "switch(exit_col)" << std::endl;
+      codestream << "{" << std::endl;
+      codestream << "  case 84:" << std::endl;
+      codestream << "    M = 56;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "  case 56:" << std::endl;
+      codestream << "    M = 35;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "  case 35:" << std::endl;
+      codestream << "    M = 20;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "  case 20:" << std::endl;
+      codestream << "    M = 10;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "  case 10:" << std::endl;
+      codestream << "    M = 4;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "  case 4:" << std::endl;
+      codestream << "    M = 4;" << std::endl;
+      codestream << "    break;" << std::endl;
+      codestream << "}" << std::endl;
+    }
+
+
     codestream << "for (int n = 0; n < " << N << "; n++)" << std::endl;
     codestream << "{" << std::endl;
-    codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "  for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "  for (int k = 0; k < " << K << "; k++)" << std::endl;
+    }
     codestream << "  {" << std::endl;
 
     if (this->bGenerateExitForCK_ == true) {
-      codestream << "    if ( __builtin_expect(exit_col == k, false) ) { break; }" << std::endl;
+      codestream << "    for(int m = 0; m < M; m++)" << std::endl;
+    } else {
+      codestream << "    for(int m = 0; m < " << M << "; m++)" << std::endl;
     }
-
-    codestream << "    for(int m = 0; m < " << M << "; m++)" << std::endl;
     codestream << "    {" << std::endl;
     codestream << "      C[(n*" << ldc << ")+m] += A[(k*" << lda << ")+m] * B[(n*" << ldb << ")+k];" << std::endl;
     codestream << "    }" << std::endl;

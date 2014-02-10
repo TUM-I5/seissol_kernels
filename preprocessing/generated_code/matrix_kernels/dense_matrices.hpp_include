@@ -4,7 +4,7 @@
 // @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 // @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
 // 
-// @date 2014-01-29 15:23:57.471554
+// @date 2014-02-10 12:28:19.868533
 // 
 // @section LICENSE
 // This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
@@ -2009,12 +2009,33 @@ for(int n = 0; n < 9; n+=3)
 #endif
 
 #if !defined(__SSE3__) && !defined(__AVX__)
+int M = 4;
+switch(exit_col)
+{
+  case 84:
+    M = 56;
+    break;
+  case 56:
+    M = 35;
+    break;
+  case 35:
+    M = 20;
+    break;
+  case 20:
+    M = 10;
+    break;
+  case 10:
+    M = 4;
+    break;
+  case 4:
+    M = 4;
+    break;
+}
 for (int n = 0; n < 9; n++)
 {
-  for (int k = 0; k < 4; k++)
+  for (int k = 0; k < exit_col; k++)
   {
-    if ( __builtin_expect(exit_col == k, false) ) { break; }
-    for(int m = 0; m < 4; m++)
+    for(int m = 0; m < M; m++)
     {
       C[(n*4)+m] += A[(k*4)+m] * B[(n*4)+k];
     }
@@ -7989,12 +8010,33 @@ avx_one_end:
 #endif
 
 #if !defined(__SSE3__) && !defined(__AVX__)
+int M = 4;
+switch(exit_col)
+{
+  case 84:
+    M = 56;
+    break;
+  case 56:
+    M = 35;
+    break;
+  case 35:
+    M = 20;
+    break;
+  case 20:
+    M = 10;
+    break;
+  case 10:
+    M = 4;
+    break;
+  case 4:
+    M = 4;
+    break;
+}
 for (int n = 0; n < 9; n++)
 {
-  for (int k = 0; k < 10; k++)
+  for (int k = 0; k < exit_col; k++)
   {
-    if ( __builtin_expect(exit_col == k, false) ) { break; }
-    for(int m = 0; m < 10; m++)
+    for(int m = 0; m < M; m++)
     {
       C[(n*10)+m] += A[(k*10)+m] * B[(n*10)+k];
     }
@@ -17517,12 +17559,33 @@ avx_one_end:
 #endif
 
 #if !defined(__SSE3__) && !defined(__AVX__)
+int M = 4;
+switch(exit_col)
+{
+  case 84:
+    M = 56;
+    break;
+  case 56:
+    M = 35;
+    break;
+  case 35:
+    M = 20;
+    break;
+  case 20:
+    M = 10;
+    break;
+  case 10:
+    M = 4;
+    break;
+  case 4:
+    M = 4;
+    break;
+}
 for (int n = 0; n < 9; n++)
 {
-  for (int k = 0; k < 20; k++)
+  for (int k = 0; k < exit_col; k++)
   {
-    if ( __builtin_expect(exit_col == k, false) ) { break; }
-    for(int m = 0; m < 20; m++)
+    for(int m = 0; m < M; m++)
     {
       C[(n*20)+m] += A[(k*20)+m] * B[(n*20)+k];
     }
@@ -32363,12 +32426,33 @@ avx_one_end:
 #endif
 
 #if !defined(__SSE3__) && !defined(__AVX__)
+int M = 4;
+switch(exit_col)
+{
+  case 84:
+    M = 56;
+    break;
+  case 56:
+    M = 35;
+    break;
+  case 35:
+    M = 20;
+    break;
+  case 20:
+    M = 10;
+    break;
+  case 10:
+    M = 4;
+    break;
+  case 4:
+    M = 4;
+    break;
+}
 for (int n = 0; n < 9; n++)
 {
-  for (int k = 0; k < 35; k++)
+  for (int k = 0; k < exit_col; k++)
   {
-    if ( __builtin_expect(exit_col == k, false) ) { break; }
-    for(int m = 0; m < 35; m++)
+    for(int m = 0; m < M; m++)
     {
       C[(n*35)+m] += A[(k*35)+m] * B[(n*35)+k];
     }
@@ -55465,12 +55549,33 @@ for (int m = 0; m < M; m += 8)
 #endif
 
 #if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)
+int M = 4;
+switch(exit_col)
+{
+  case 84:
+    M = 56;
+    break;
+  case 56:
+    M = 35;
+    break;
+  case 35:
+    M = 20;
+    break;
+  case 20:
+    M = 10;
+    break;
+  case 10:
+    M = 4;
+    break;
+  case 4:
+    M = 4;
+    break;
+}
 for (int n = 0; n < 9; n++)
 {
-  for (int k = 0; k < 56; k++)
+  for (int k = 0; k < exit_col; k++)
   {
-    if ( __builtin_expect(exit_col == k, false) ) { break; }
-    for(int m = 0; m < 56; m++)
+    for(int m = 0; m < M; m++)
     {
       C[(n*56)+m] += A[(k*56)+m] * B[(n*56)+k];
     }
