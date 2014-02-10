@@ -67,7 +67,11 @@ class unit_test::TimeIntegratorTestSuite: public CxxTest::TestSuite {
      **/
     void testTimeIntegrator() {
       //! setup matrix path
+#ifdef __MIC__
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".mic.xml";
+#else
       std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+#endif
 
       // set up the xml-parser
       seissol::XmlParser l_matrixReader( l_matricesPath );

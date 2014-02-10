@@ -36,7 +36,11 @@
 
 // setup path of the XML-file, which contains information about the matrices.
 // TODO: Add this to input-parameters of SeisSol.
+#ifdef __MIC__
+#define MATRIXXMLFILE "matrices_" STR(NUMBEROFBASISFUNCTIONS) ".mic.xml"
+#else
 #define MATRIXXMLFILE "matrices_" STR(NUMBEROFBASISFUNCTIONS) ".xml"
+#endif
 
 // C-function name of the boundary integration.
 #define BOUNDARYINTFUNCTIONNAME CONCAT_4( boundaryIntegration_,         NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS )
