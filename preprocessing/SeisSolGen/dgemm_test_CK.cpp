@@ -90,7 +90,8 @@ void c_dgemm(double* a, double* b, double* c_gold, int exit_col) {
 #if defined(__MIC__)
   M = 8;
   int K = 8;
-  switch(exit_col) {
+
+  switch (exit_col) {
     case 84:
       M = 56;
       K = 84;
