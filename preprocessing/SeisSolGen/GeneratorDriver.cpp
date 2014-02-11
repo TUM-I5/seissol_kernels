@@ -80,7 +80,7 @@ void generator_seissol_sparse(std::string tFileOut, std::string tRoutineName, st
 
 #ifdef DEBUG
   std::cout << "code was generated and exported to " << tFileOut << ":" << std::endl;
-  std::cout << generated_code << std::endl << std::endl;
+//  std::cout << generated_code << std::endl << std::endl;
 #endif
   generate_epilogue(out);
   out.close();
@@ -115,7 +115,7 @@ void generator_seissol_dense(std::string tFileOut, std::string tRoutineName, int
 
 #ifdef DEBUG
   std::cout << "code was generated and exported to " << tFileOut << ":" << std::endl;
-  std::cout << generated_code << std::endl << std::endl;
+//  std::cout << generated_code << std::endl << std::endl;
 #endif
 
   delete gen;

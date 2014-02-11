@@ -101,7 +101,7 @@ namespace seissolgen {
       i++;
       colidx_id[c] = 1;
       colidx[c + 1] = i;
-#ifdef DEBUG
+#ifdef FULLDEBUG
       std::cout << r << " " << c << " " << i << " " << colidx[c + 1] << std::endl;
 #endif
     }
@@ -115,7 +115,7 @@ namespace seissolgen {
     }
 
     _mm_free(colidx_id);
-#ifdef DEBUG
+#ifdef FULLDEBUG
     std::cout << "Parsing done!" << std::endl;
     std::cout << "Printing CSC Matrix we just read:" << std::endl;
 
