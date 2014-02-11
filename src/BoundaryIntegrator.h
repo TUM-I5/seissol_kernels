@@ -185,7 +185,7 @@ class seissol::kernels::BoundaryIntegrator {
                                         double  io_unknowns[NUMBEROFUNKNOWNS] );
 
     /**
-     * Deprecated: Fall back code, which uses internal flux matrices
+     * DEPRECATED: Fall back code, which uses internal flux matrices
      **/
     void computeBoundaryIntegral(       double  i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
                                         double *i_timeIntegratedUnknownsNeighbors[4],

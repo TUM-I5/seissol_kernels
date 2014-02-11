@@ -146,6 +146,23 @@ class seissol::kernels::TimeIntegrator {
                                        double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
                                        double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
                                        double o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] );
+
+    /*
+     * DEPRECATED: Fall back code, which uses internal flux matrices.
+     */    
+    void computeTimeDerivatives( const double i_unknowns[NUMBEROFUNKNOWNS],
+                                       double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                       double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                       double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
+                                       double o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
+      computeTimeDerivatives( i_unknowns,
+                              m_stiffnessMatrixPointers,
+                              i_aStar,
+                              i_bStar,
+                              i_cStar, 
+                              o_timeDerivatives );
+     }
+
     /**
      * Computes the time integrated unknowns from previously computed time derivatives.
      *   Part of the local time stepping scheme.
@@ -191,6 +208,25 @@ class seissol::kernels::TimeIntegrator {
                                     double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],
                               const double &i_deltaT,
                                     double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] );
+
+    /**
+     * DEPRECATED: Fall back code, which uses internal flux matrices.
+     **/
+    void computeTimeIntegral( const double  i_unknowns[NUMBEROFUNKNOWNS],
+                                    double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                    double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                    double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],
+                              const double &i_deltaT,
+                                    double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
+      computeTimeIntegral( i_unknowns,
+                           m_stiffnessMatrixPointers,
+                           i_aStar,
+                           i_bStar,
+                           i_cStar,
+                           i_deltaT,
+                           o_timeIntegratedUnknowns );
+    }
+
 };
 
 #endif
