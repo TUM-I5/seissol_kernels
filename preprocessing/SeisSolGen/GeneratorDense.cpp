@@ -382,73 +382,6 @@ namespace seissolgen {
     codestream << "  cur_B++;" << std::endl << std::endl;
   }
 
-
-  void mic_inner_blocked_kernel_for_56(std::stringstream& codestream, int lda) {
-    codestream << "    b_0 = _mm512_extload_pd(b0, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
-    codestream << "    b_1 = _mm512_extload_pd(b1, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl;
-    codestream << "    b_2 = _mm512_extload_pd(b2, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);" << std::endl << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_0 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_0_0 = _mm512_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
-    codestream << "    c_0_1 = _mm512_fmadd_pd(a_0, b_1, c_0_1);" << std::endl;
-    codestream << "    c_0_2 = _mm512_fmadd_pd(a_0, b_2, c_0_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_1 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_1_0 = _mm512_fmadd_pd(a_1, b_0, c_1_0);" << std::endl;
-    codestream << "    c_1_1 = _mm512_fmadd_pd(a_1, b_1, c_1_1);" << std::endl;
-    codestream << "    c_1_2 = _mm512_fmadd_pd(a_1, b_2, c_1_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_2 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_2_0 = _mm512_fmadd_pd(a_2, b_0, c_2_0);" << std::endl;
-    codestream << "    c_2_1 = _mm512_fmadd_pd(a_2, b_1, c_2_1);" << std::endl;
-    codestream << "    c_2_2 = _mm512_fmadd_pd(a_2, b_2, c_2_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_3 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_3_0 = _mm512_fmadd_pd(a_3, b_0, c_3_0);" << std::endl;
-    codestream << "    c_3_1 = _mm512_fmadd_pd(a_3, b_1, c_3_1);" << std::endl;
-    codestream << "    c_3_2 = _mm512_fmadd_pd(a_3, b_2, c_3_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_4 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_4_0 = _mm512_fmadd_pd(a_4, b_0, c_4_0);" << std::endl;
-    codestream << "    c_4_1 = _mm512_fmadd_pd(a_4, b_1, c_4_1);" << std::endl;
-    codestream << "    c_4_2 = _mm512_fmadd_pd(a_4, b_2, c_4_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_5 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_5_0 = _mm512_fmadd_pd(a_5, b_0, c_5_0);" << std::endl;
-    codestream << "    c_5_1 = _mm512_fmadd_pd(a_5, b_1, c_5_1);" << std::endl;
-    codestream << "    c_5_2 = _mm512_fmadd_pd(a_5, b_2, c_5_2);" << std::endl;
-    codestream << "    a0 += 8;" << std::endl;
-
-    //codestream << "    _mm_prefetch((const char*)a0+16, _MM_HINT_T0);" << std::endl;
-    //codestream << "    _mm_prefetch((const char*)a0+" << 2*lda << ", _MM_HINT_T1);" << std::endl;
-    codestream << "    a_6 = _mm512_load_pd(a0);" << std::endl;
-    codestream << "    c_6_0 = _mm512_fmadd_pd(a_6, b_0, c_6_0);" << std::endl;
-    codestream << "    c_6_1 = _mm512_fmadd_pd(a_6, b_1, c_6_1);" << std::endl;
-    codestream << "    c_6_2 = _mm512_fmadd_pd(a_6, b_2, c_6_2);" << std::endl;
-    codestream << "    a0 += " << lda - 48 << ";" << std::endl << std::endl;
-
-    codestream << "    b0++;" << std::endl;
-    codestream << "    b1++;" << std::endl;
-    codestream << "    b2++;" << std::endl;
-  }
-
   std::string GeneratorDense::generate_dense(bool bIsColMajor, int M, int N, int K, int lda, int ldb, int ldc) {
     std::stringstream codestream;
     int mDone = 0;
@@ -459,9 +392,6 @@ namespace seissolgen {
     bool alignA = false;
     bool alignB = false;
     bool alignC = false;
-
-    // @TODO add unrolling factors depending on K
-    int unroll_factor = 8;
 
 #ifdef DEBUG
     std::cout << "Generating dense matrix multiplication" << std::endl;
