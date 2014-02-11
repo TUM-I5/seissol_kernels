@@ -95,13 +95,14 @@ seissol::kernels::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlPars
                      l_matrixSparsities[l_matrixIds.back()] );
 }
 
-void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double        i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
-                                                                          double       *i_timeIntegratedUnknownsNeighbors[4],
-                                                                    const int  i_boundaryConditions[4],
-                                                                    const int  i_neighboringIndices[4][2],
-                                                                          double        i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double        i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                                                          double        io_unknowns[NUMBEROFUNKNOWNS] ){
+void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double   i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                                                          double  *i_timeIntegratedUnknownsNeighbors[4],
+                                                                    const int      i_boundaryConditions[4],
+                                                                    const int      i_neighboringIndices[4][2],
+                                                                          double  *i_fluxMatrices[52],
+                                                                          double   i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double   i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                                                          double   io_unknowns[NUMBEROFUNKNOWNS] ){
   /*
    * Assert alignments, which are assumed in the matrix kernels.
    */
@@ -151,6 +152,13 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
 #error Preprocessor flag NUMBEROFBASISFUNCTIONS is not in {1, 4, 10, 20, 35, 56}.
 #endif
 
+#ifndef NDEBUG
+  // 64 byte alignment of flux matrices
+  for( int l_matrix = 0; l_matrix < 52; l_matrix++ ) {
+    assert( ((uintptr_t)i_fluxMatrices[l_matrix]) % 64 == 0 );
+  }
+#endif
+
   /*
    * Computation
    */
@@ -189,11 +197,11 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
       memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));
 
       // compute element local contribution
-      m_matrixKernels[l_localFace]( m_fluxMatrixPointers[l_localFace],  i_timeIntegratedUnknownsElement[0],             l_temporaryProduct,
-                                    l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns         ); // prefetches
+      m_matrixKernels[l_localFace]( i_fluxMatrices[l_localFace],  i_timeIntegratedUnknownsElement[0],             l_temporaryProduct,
+                                    l_temporaryProduct,           i_nApNm1[l_localFace],                          io_unknowns         ); // prefetches
     
-      m_matrixKernels[52](          l_temporaryProduct,                 i_nApNm1[l_localFace],                          io_unknowns,
-                                    m_fluxMatrixPointers[l_id],         i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct  ); // prefetches
+      m_matrixKernels[52](          l_temporaryProduct,           i_nApNm1[l_localFace],                          io_unknowns,
+                                    i_fluxMatrices[l_id],         i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct  ); // prefetches
     }
 
     /*
@@ -208,8 +216,8 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
       assert( l_id < 52 );
 
       // compute neighboring elements contribution
-      m_matrixKernels[l_id](      m_fluxMatrixPointers[l_id],         i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct,
-                                  l_temporaryProduct,                 i_nAmNm1[l_localFace],                          io_unknowns         ); // prefetches
+      m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct,
+                             l_temporaryProduct,   i_nAmNm1[l_localFace],                          io_unknowns         ); // prefetches
 
       /*
        * Compute the id of the global matrix used in the matrix kernel following the next operator.
@@ -221,10 +229,10 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
 
       /*
        * Prefetch either the next flux matrix and the time integrated unknowns of this element or if this is the last operation - local face \f$i\f$ is four:
-       * Prefetch the the first stiffness matrix of the volume integrator \f$ M^{-1} K^\xi \f$ and the time integrated unknowns of the next element.
+       * (TODO stiffness matrix) and the time integrated unknowns of the next element.
        */
-      m_matrixKernels[52](        l_temporaryProduct,                 i_nAmNm1[l_localFace],                          io_unknowns,
-                                  m_fluxMatrixPointers[l_upcomingId], i_timeIntegratedUnknownsElement[l_localFace/3], l_temporaryProduct  ); // prefetches
+      m_matrixKernels[52]( l_temporaryProduct,           i_nAmNm1[l_localFace],                          io_unknowns,
+                           i_fluxMatrices[l_upcomingId], i_timeIntegratedUnknownsElement[l_localFace/3], l_temporaryProduct  ); // prefetches
     }
   }
 

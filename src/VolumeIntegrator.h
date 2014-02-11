@@ -129,6 +129,7 @@ class seissol::kernels::VolumeIntegrator {
      *
      * @param i_timeIntegratedUnknowns time integrated unknowns of the element \f$ k \f$ over the interval \f$ [t^n, t^{n+1}] \f$:
      *        \f$ I(t^n, t^{n+1}, Q_k^n) \f$.
+     * @param i_stiffnessMatrices TODO: see above
      * @param i_aStar sparse star matrix \f$ A^*_k \f$
      * @param i_bStar sparse star matrix \f$ B^*_k \f$
      * @param i_cStar sparse star matrix \f$ C^*_k \f$
@@ -140,11 +141,29 @@ class seissol::kernels::VolumeIntegrator {
      *        \f]
      *
      **/
+    void computeVolumeIntegral( double  i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
+                                double *i_stiffnessMatrices[3],
+                                double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],
+                                double  io_unknowns[NUMBEROFUNKNOWNS] );
+
+    /**
+     * DEPRECATED: Fall back code, which uses internal stiffness matrices.
+     **/
     void computeVolumeIntegral( double i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
                                 double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
                                 double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
                                 double i_cStar[STARMATRIX_NUMBEROFNONZEROS],
-                                double io_unknowns[NUMBEROFUNKNOWNS] );
+                                double io_unknowns[NUMBEROFUNKNOWNS] ) {
+      computeVolumeIntegral( i_timeIntegratedUnknowns,
+                             m_stiffnessMatrixPointers,
+                             i_aStar,
+                             i_bStar,
+                             i_cStar,
+                             io_unknowns );
+    }
+
 };
 
 #endif

@@ -147,6 +147,7 @@ class seissol::kernels::BoundaryIntegrator {
      *        A two dimensional array is expected, where the first index i_neighboringIndices[i][]
      *        selects the face of the current element and the second index i_neighboringIndices[][*]
      *        gives \f$ j(i)\f$: i_neighboringIndices[][0] or \f$ h(i) \f$:  i_neighboringIndices[][1].
+     * @param i_fluxMatrices TODO: see above
      * @param i_nApNm1 matrices \f$N_{k,i} A_k^+ N_{k,i}^{-1}\f$,
      *        where \f$N_{k,i}^{-1}\f$ and \f$N_{k,i}\f$ account for the forth and back transformation
      *        to reference space relative to the outerpointing normal of face \f$i\f$ in element
@@ -178,9 +179,31 @@ class seissol::kernels::BoundaryIntegrator {
                                         double *i_timeIntegratedUnknownsNeighbors[4],
                                   const int     i_boundaryConditions[4],
                                   const int     i_neighboringIndices[4][2],
+                                        double *i_fluxMatrices[52],
                                         double  i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
                                         double  i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
                                         double  io_unknowns[NUMBEROFUNKNOWNS] );
+
+    /**
+     * Deprecated: Fall back code, which uses internal flux matrices
+     **/
+    void computeBoundaryIntegral(       double  i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
+                                        double *i_timeIntegratedUnknownsNeighbors[4],
+                                  const int     i_boundaryConditions[4],
+                                  const int     i_neighboringIndices[4][2],
+                                        double  i_nApNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                        double  i_nAmNm1[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
+                                        double  io_unknowns[NUMBEROFUNKNOWNS] ) {
+      computeBoundaryIntegral( i_timeIntegratedUnknownsElement,
+                               i_timeIntegratedUnknownsNeighbors,
+                               i_boundaryConditions,
+                               i_neighboringIndices,
+                               m_fluxMatrixPointers,
+                               i_nApNm1,
+                               i_nAmNm1,
+                               io_unknowns );
+    };
+    
 };
 
 #endif

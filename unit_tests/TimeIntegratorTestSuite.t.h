@@ -80,6 +80,12 @@ class unit_test::TimeIntegratorTestSuite: public CxxTest::TestSuite {
       // set up the time integrator
       seissol::kernels::TimeIntegrator l_timeIntegrator( l_matrixReader, l_memoryManager );
 
+      // stiffness matrices
+      double* l_stiffnessMatrices[3];
+      for( int l_matrix = 0; l_matrix < 3; l_matrix++ ) {
+        l_stiffnessMatrices[l_matrix] = (l_memoryManager.getStiffnessMatrixPointers())[l_matrix+3]; 
+      }
+
       // unknowns of the cell
       double l_unknowns[NUMBEROFUNKNOWNS] __attribute__((aligned(64)));
  
@@ -146,6 +152,7 @@ class unit_test::TimeIntegratorTestSuite: public CxxTest::TestSuite {
                                                       l_timeDerivativesUnitTests );
         // genrated multiplication
         l_timeIntegrator.computeTimeDerivatives( l_unknowns,
+                                                 l_stiffnessMatrices,
                                                  l_starMatricesSparse[0],
                                                  l_starMatricesSparse[1],
                                                  l_starMatricesSparse[2],
@@ -191,6 +198,7 @@ class unit_test::TimeIntegratorTestSuite: public CxxTest::TestSuite {
 
         // generated multiplication
         l_timeIntegrator.computeTimeIntegral( l_unknowns,
+                                              l_stiffnessMatrices,
                                               l_starMatricesSparse[0],
                                               l_starMatricesSparse[1],
                                               l_starMatricesSparse[2],

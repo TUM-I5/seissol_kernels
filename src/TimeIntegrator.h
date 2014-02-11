@@ -134,12 +134,14 @@ class seissol::kernels::TimeIntegrator {
      * TODO: Switch to compressed storage scheme.
      *
      * @param i_unknowns unknowns of the current time step \f$ t^\text{cell} \f$ for which the time derivatives \f$ \frac{\partial^j}{\partial t^j} \f$ will be computed.
+     * @param i_stiffnessMatrices TODO: see description above.
      * @param i_aStar sparse star matrix \f$ A^*_k \f$
      * @param i_bStar sparse star matrix \f$ B^*_k \f$
      * @param i_cStar sparse star matrix \f$ C^*_k \f$
      * @param o_timeDerivatives time derivatives used in the time integration.
      **/
     void computeTimeDerivatives( const double i_unknowns[NUMBEROFUNKNOWNS],
+                                       double *i_stiffnessMatrices[3],
                                        double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
                                        double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
                                        double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
@@ -165,6 +167,7 @@ class seissol::kernels::TimeIntegrator {
      *   Part of the global time stepping scheme.
      *
      * @param i_unknowns unknowns of the current time step \f$ t^n \f$, which will be integrated in time to \f$ t^{n+1} = t^n + \Delta t \f$
+     * @param i_stiffnessMatrices TODO: see description above.
      * @param i_aStar sparse star matrix \f$ A^*_k \f$
      * @param i_bStar sparse star matrix \f$ B^*_k \f$
      * @param i_cStar sparse star matrix \f$ C^*_k \f$
@@ -182,6 +185,7 @@ class seissol::kernels::TimeIntegrator {
      *        \f]
      **/
     void computeTimeIntegral( const double  i_unknowns[NUMBEROFUNKNOWNS],
+                                    double *i_stiffnessMatrices[3],
                                     double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
                                     double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
                                     double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],

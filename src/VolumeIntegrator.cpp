@@ -119,6 +119,7 @@ seissol::kernels::VolumeIntegrator::VolumeIntegrator( const seissol::XmlParser  
 }
 
 void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
+                                                                double *i_stiffnessMatrices[3],
                                                                 double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
                                                                 double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
                                                                 double i_cStar[STARMATRIX_NUMBEROFNONZEROS],
@@ -152,6 +153,13 @@ void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeInt
 #error Preprocessor flag NUMBEROFBASISFUNCTIONS is not in {1, 4, 10, 20, 35, 56}.
 #endif
 
+#ifndef NDEBUG
+  // 64 byte alignment of stiffness matrices
+  for( int l_matrix = 0; l_matrix < 3; l_matrix++ ) {
+    assert( ((uintptr_t)i_stiffnessMatrices[l_matrix]) % 64 == 0 );
+  }
+#endif
+
   /*
    * Computation
    */
@@ -164,28 +172,28 @@ void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeInt
   memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
 
   // calculate $K_\xi.I(Q_k, t^n, t^{n+1}$ and $(K_\xi.I(Q_k, t^n, t^{n+1}).A^*$
-  m_matrixKernels[0] ( m_stiffnessMatrixPointers[0], i_timeIntegratedUnknowns, l_partialProduct,
-                       l_partialProduct,             i_aStar,                  io_unknowns       ); // prefetches
-  m_matrixKernels[3] ( l_partialProduct,             i_aStar,                  io_unknowns,
-                       m_stiffnessMatrixPointers[1], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
+  m_matrixKernels[0] ( i_stiffnessMatrices[0], i_timeIntegratedUnknowns, l_partialProduct,
+                       l_partialProduct,       i_aStar,                  io_unknowns       ); // prefetches
+  m_matrixKernels[3] ( l_partialProduct,       i_aStar,                  io_unknowns,
+                       i_stiffnessMatrices[1], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
 
   // reset temporary matrix
   memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
 
   // calculate $K_\eta.I(Q_k, t^n, t^{n+1}$ and $(K_\eta.I(Q_k, t^n, t^{n+1}).B^*$
-  m_matrixKernels[1] ( m_stiffnessMatrixPointers[1], i_timeIntegratedUnknowns, l_partialProduct,
-                       l_partialProduct,             i_bStar,                  io_unknowns       ); // prefetches
-  m_matrixKernels[3] ( l_partialProduct,             i_bStar,                  io_unknowns,
-                       m_stiffnessMatrixPointers[2], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
+  m_matrixKernels[1] ( i_stiffnessMatrices[1], i_timeIntegratedUnknowns, l_partialProduct,
+                       l_partialProduct,       i_bStar,                  io_unknowns       ); // prefetches
+  m_matrixKernels[3] ( l_partialProduct,       i_bStar,                  io_unknowns,
+                       i_stiffnessMatrices[2], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
 
   // reset temporary matrix
   memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
 
   // calculate $K_\zeta.I(Q_k, t^n, t^{n+1}$ and $(K_\zeta.I(Q_k, t^n, t^{n+1}).C^*$
-  m_matrixKernels[2] ( m_stiffnessMatrixPointers[2], i_timeIntegratedUnknowns, l_partialProduct,
-                       l_partialProduct,             i_cStar,                  io_unknowns       ); // prefetches 
-  m_matrixKernels[3] ( l_partialProduct,             i_cStar,                  io_unknowns,
-                       m_stiffnessMatrixPointers[6], i_timeIntegratedUnknowns, NULL              ); // inter-kernel prefetches for the bnd. int.
+  m_matrixKernels[2] ( i_stiffnessMatrices[2], i_timeIntegratedUnknowns, l_partialProduct,
+                       l_partialProduct,       i_cStar,                  io_unknowns       ); // prefetches 
+  m_matrixKernels[3] ( l_partialProduct,       i_cStar,                  io_unknowns,
+                       i_stiffnessMatrices[6], i_timeIntegratedUnknowns, NULL              ); // inter-kernel prefetches for the bnd. int.
 
 #ifndef NDEBUG
   // update flop counter

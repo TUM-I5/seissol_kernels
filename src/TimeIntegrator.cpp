@@ -118,11 +118,12 @@ seissol::kernels::TimeIntegrator::TimeIntegrator( const seissol::XmlParser      
   setUpMatrixKernel( 3, true );
 }
 
-void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double i_unknowns[NUMBEROFUNKNOWNS],
-                                                                     double i_aStar[STARMATRIX_NUMBEROFNONZEROS],
-                                                                     double i_bStar[STARMATRIX_NUMBEROFNONZEROS],
-                                                                     double i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
-                                                                     double o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
+void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double  i_unknowns[NUMBEROFUNKNOWNS],
+                                                                     double *i_stiffnessMatrices[3],
+                                                                     double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                     double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                     double  i_cStar[STARMATRIX_NUMBEROFNONZEROS], 
+                                                                     double  o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
   /*
    * Assert alignments, which are assumed in the matrix kernels.
    */
@@ -167,28 +168,28 @@ void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double i_un
     memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
 
     // calculate $K_\xi.Q_k$ and $(K_\xi.Q_k).A*$
-    m_matrixKernels[0] ( m_stiffnessMatrixPointers[0], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
-                         NULL,                         NULL,                         NULL                                                     ); // TODO: prefetches
-    m_matrixKernels[3] ( l_partialSum,                 i_aStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
-                         NULL,                         NULL,                         NULL                                                     ); // TODO: prefetches
+    m_matrixKernels[0] ( i_stiffnessMatrices[0], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                   NULL,                         NULL                                                     ); // TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,           i_aStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                   NULL,                         NULL                                                     ); // TODO: prefetches
 
     // reset partial sum
     memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
 
     // calculate $K_\eta.Q_k$ and $(K_\eta.Q_k).B*$
-    m_matrixKernels[1] ( m_stiffnessMatrixPointers[1], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
-                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
-    m_matrixKernels[3] ( l_partialSum,                 i_bStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
-                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[1] ( i_stiffnessMatrices[1], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,           i_bStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
 
     // reset partial sum
     memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
 
     // calculate $K_\zeta.Q_k$ and calculate $(K_\zeta.Q_k).C*$
-    m_matrixKernels[2] ( m_stiffnessMatrixPointers[2], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
-                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
-    m_matrixKernels[3] ( l_partialSum,                 i_cStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
-                         NULL,                         NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[2] ( i_stiffnessMatrices[2], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
+                         NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
+    m_matrixKernels[3] ( l_partialSum,           i_cStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
+                         NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
   }
 }
 
@@ -225,12 +226,13 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_time
   }
 }
 
-void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_unknowns[NUMBEROFUNKNOWNS],
-                                                                  double  i_aStar[STARMATRIX_NUMBEROFNONZEROS],
-                                                                  double  i_bStar[STARMATRIX_NUMBEROFNONZEROS],
-                                                                  double  i_cStar[STARMATRIX_NUMBEROFNONZEROS],
-                                                            const double &i_deltaT,
-                                                                  double  o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
+void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double   i_unknowns[NUMBEROFUNKNOWNS],
+                                                                  double  *i_stiffnessMatrices[3],
+                                                                  double   i_aStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                  double   i_bStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                                  double   i_cStar[STARMATRIX_NUMBEROFNONZEROS],
+                                                            const double  &i_deltaT,
+                                                                  double   o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
   /*
    * Assert alignments, which are assumed in the matrix kernels.
    */
@@ -258,6 +260,13 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_unkn
   assert( ((uintptr_t)o_timeIntegratedUnknowns) % 64 == 0 );
 #else
 #error Preprocessor flag NUMBEROFBASISFUNCTIONS is not in {1, 4, 10, 20, 35, 56}.
+#endif
+
+#ifndef NDEBUG
+  // 64 byte alignment of stiffness matrices
+  for( int l_matrix = 0; l_matrix < 3; l_matrix++ ) {
+    assert( ((uintptr_t)i_stiffnessMatrices[l_matrix]) % 64 == 0 );
+  }
 #endif
 
   /*
@@ -343,28 +352,28 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_unkn
     memset( l_secondPartialSum, 0, NUMBEROFUNKNOWNS*sizeof(*l_secondPartialSum) );
 
     // calculate $K_\xi.Q_k$ and $(K_\xi.Q_k).A*$
-    m_matrixKernels[0] ( m_stiffnessMatrixPointers[0], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
-                         l_firstPartialSum,            i_aStar,                  l_secondPartialSum                               ); // prefetches
-    m_matrixKernels[3] ( l_firstPartialSum,            i_aStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
-                         m_stiffnessMatrixPointers[1], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
+    m_matrixKernels[0] ( i_stiffnessMatrices[0], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
+                         l_firstPartialSum,      i_aStar,                  l_secondPartialSum                               ); // prefetches
+    m_matrixKernels[3] ( l_firstPartialSum,      i_aStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
+                         i_stiffnessMatrices[1], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
 
     // reset first partial sum
     memset( l_firstPartialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_firstPartialSum ) );
 
     // calculate $K_\eta.Q_k$ and $(K_\eta.Q_k).B*$
-    m_matrixKernels[1] ( m_stiffnessMatrixPointers[1], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
-                         l_firstPartialSum,            i_bStar,                  l_secondPartialSum                               ); // prefetches
-    m_matrixKernels[3] ( l_firstPartialSum,            i_bStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
-                         m_stiffnessMatrixPointers[2], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
+    m_matrixKernels[1] ( i_stiffnessMatrices[1], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
+                         l_firstPartialSum,      i_bStar,                  l_secondPartialSum                               ); // prefetches
+    m_matrixKernels[3] ( l_firstPartialSum,      i_bStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
+                         i_stiffnessMatrices[2], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
 
     // reset first partial sum
     memset( l_firstPartialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_firstPartialSum ) );
 
     // calculate $K_\zeta.Q_k$ and calculate $(K_\zeta.Q_k).C*$
-    m_matrixKernels[2] ( m_stiffnessMatrixPointers[2], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
-                         l_firstPartialSum,            i_cStar,                  l_secondPartialSum                               ); // prefetches
-    m_matrixKernels[3] ( l_firstPartialSum,            i_cStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
-                         m_stiffnessMatrixPointers[0], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches; TODO: Upcoming time int.
+    m_matrixKernels[2] ( i_stiffnessMatrices[2], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
+                         l_firstPartialSum,      i_cStar,                  l_secondPartialSum                               ); // prefetches
+    m_matrixKernels[3] ( l_firstPartialSum,      i_cStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
+                         i_stiffnessMatrices[0], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches; TODO: Upcoming time int.
 
     // compute $\frac{(t^{n+1} - t^n)^{j+1}}{(j+1)!}$ for the current term (l_order == j in the code)
     //   Remark: the negative sign of the derivative is include here
