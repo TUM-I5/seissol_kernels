@@ -131,6 +131,81 @@ namespace seissolgen {
     codestream << "      c_0_2 = _mm_add_sd(c_0_2, _mm_mul_sd(a_0, b_2));" << std::endl << std::endl;
   }
 
+  void avx2_inner_blocked_kernel_16(std::stringstream& codestream, int lda, bool alignA, bool preC) {
+    codestream << "      b_0 = _mm256_broadcast_sd(b0);" << std::endl;
+    codestream << "      b_1 = _mm256_broadcast_sd(b1);" << std::endl;
+    codestream << "      b_2 = _mm256_broadcast_sd(b2);" << std::endl << std::endl;
+    codestream << "      b0++; b1++; b2++;" << std::endl << std::endl;
+
+    if (alignA == true) {
+      codestream << "      a_0 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "      a_0 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+    
+    if (preC) {
+      codestream << "      _mm_prefetch((const char*)c0, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c1, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c2, _MM_HINT_T0);" << std::endl;
+    }
+    //codestream << "      _mm_prefetch((const char*)a0+" << lda*2 << ", _MM_HINT_T0);" << std::endl;
+    codestream << "      a0+=" << 4 << ";" << std::endl;
+    codestream << "      c_0_0 = _mm256_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
+    codestream << "      c_0_1 = _mm256_fmadd_pd(a_0, b_1, c_0_1);" << std::endl;
+    codestream << "      c_0_2 = _mm256_fmadd_pd(a_0, b_2, c_0_2);" << std::endl;
+
+    if (alignA == true) {
+      codestream << "      a_1 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "      a_1 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    if (preC) {
+      codestream << "      _mm_prefetch((const char*)c0+4, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c1+4, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c2+4, _MM_HINT_T0);" << std::endl;
+    }
+    codestream << "      a0+=" << 4 << ";" << std::endl;
+    //codestream << "      _mm_prefetch((const char*)a0+" << lda*2 << ", _MM_HINT_T0);" << std::endl;
+    codestream << "      c_1_0 = _mm256_fmadd_pd(a_1, b_0, c_1_0);" << std::endl;
+    codestream << "      c_1_1 = _mm256_fmadd_pd(a_1, b_1, c_1_1);" << std::endl;
+    codestream << "      c_1_2 = _mm256_fmadd_pd(a_1, b_2, c_1_2);" << std::endl;
+
+    if (alignA == true) {
+      codestream << "      a_2 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "      a_2 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    if (preC) {
+      codestream << "      _mm_prefetch((const char*)c0+8, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c1+8, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c2+8, _MM_HINT_T0);" << std::endl;
+    }
+    codestream << "      a0+=" << 4 << ";" << std::endl;
+    codestream << "      c_2_0 = _mm256_fmadd_pd(a_2, b_0, c_2_0);" << std::endl;
+    codestream << "      c_2_1 = _mm256_fmadd_pd(a_2, b_1, c_2_1);" << std::endl;
+    codestream << "      c_2_2 = _mm256_fmadd_pd(a_2, b_2, c_2_2);" << std::endl;
+
+    if (alignA == true) {
+      codestream << "      a_3 = _mm256_load_pd(a0);" << std::endl;
+    } else {
+      codestream << "      a_3 = _mm256_loadu_pd(a0);" << std::endl;
+    }
+
+    if (preC) {
+      codestream << "      _mm_prefetch((const char*)c0+12, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c1+12, _MM_HINT_T0);" << std::endl;
+      codestream << "      _mm_prefetch((const char*)c2+12, _MM_HINT_T0);" << std::endl;
+    }
+    codestream << "      a0+=" << lda - 12 << ";" << std::endl;
+    codestream << "      c_3_0 = _mm256_fmadd_pd(a_3, b_0, c_3_0);" << std::endl;
+    codestream << "      c_3_1 = _mm256_fmadd_pd(a_3, b_1, c_3_1);" << std::endl;
+    codestream << "      c_3_2 = _mm256_fmadd_pd(a_3, b_2, c_3_2);" << std::endl;
+
+  }
+
+
   void avx_inner_blocked_kernel_12(std::stringstream& codestream, int lda, bool alignA) {
     codestream << "      b_0 = _mm256_broadcast_sd(b0);" << std::endl;
     codestream << "      b_1 = _mm256_broadcast_sd(b1);" << std::endl;
@@ -168,7 +243,7 @@ namespace seissolgen {
     codestream << "#else" << std::endl;
     codestream << "      c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));" << std::endl;
     codestream << "      c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));" << std::endl;
-    codestream << "      c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl << std::endl;
+    codestream << "      c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl;
     codestream << "#endif" << std::endl << std::endl;
 
     if (alignA == true) {
@@ -185,7 +260,7 @@ namespace seissolgen {
     codestream << "#else" << std::endl;
     codestream << "      c_2_0 = _mm256_add_pd(c_2_0, _mm256_mul_pd(a_2, b_0));" << std::endl;
     codestream << "      c_2_1 = _mm256_add_pd(c_2_1, _mm256_mul_pd(a_2, b_1));" << std::endl;
-    codestream << "      c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));" << std::endl << std::endl;
+    codestream << "      c_2_2 = _mm256_add_pd(c_2_2, _mm256_mul_pd(a_2, b_2));" << std::endl;
     codestream << "#endif" << std::endl << std::endl;
   }
 
@@ -201,6 +276,7 @@ namespace seissolgen {
       codestream << "      a_0 = _mm256_loadu_pd(a0);" << std::endl;
     }
 
+    //codestream << "      _mm_prefetch((const char*)a0+" << lda*2 << ", _MM_HINT_T0);" << std::endl;
     codestream << "      a0+=" << 4 << ";" << std::endl;
     codestream << "#ifdef __AVX2__" << std::endl;
     codestream << "      c_0_0 = _mm256_fmadd_pd(a_0, b_0, c_0_0);" << std::endl;
@@ -226,7 +302,7 @@ namespace seissolgen {
     codestream << "#else" << std::endl;
     codestream << "      c_1_0 = _mm256_add_pd(c_1_0, _mm256_mul_pd(a_1, b_0));" << std::endl;
     codestream << "      c_1_1 = _mm256_add_pd(c_1_1, _mm256_mul_pd(a_1, b_1));" << std::endl;
-    codestream << "      c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl << std::endl;
+    codestream << "      c_1_2 = _mm256_add_pd(c_1_2, _mm256_mul_pd(a_1, b_2));" << std::endl;
     codestream << "#endif" << std::endl << std::endl;
   }
 
@@ -386,6 +462,8 @@ namespace seissolgen {
     std::stringstream codestream;
     int mDone = 0;
     int mDone_old = 0;
+    int mDoneAVX2 = 0;
+    int mDoneAVX2_old = 0;
     int remainder = 0;
     int block_end = 0;
     int kb = 0;
@@ -431,12 +509,16 @@ namespace seissolgen {
     codestream << "__m256d c_2_0;" << std::endl;
     codestream << "__m256d c_2_1;" << std::endl;
     codestream << "__m256d c_2_2;" << std::endl;
+    codestream << "__m256d c_3_0;" << std::endl;
+    codestream << "__m256d c_3_1;" << std::endl;
+    codestream << "__m256d c_3_2;" << std::endl;
     codestream << "__m256d b_0;" << std::endl;
     codestream << "__m256d b_1;" << std::endl;
     codestream << "__m256d b_2;" << std::endl;
     codestream << "__m256d a_0;" << std::endl;
     codestream << "__m256d a_1;" << std::endl;
     codestream << "__m256d a_2;" << std::endl;
+    codestream << "__m256d a_3;" << std::endl;
     codestream << "__m128d b_0_128;" << std::endl;
     codestream << "__m128d b_1_128;" << std::endl;
     codestream << "__m128d b_2_128;" << std::endl;
@@ -908,13 +990,156 @@ namespace seissolgen {
 
     // calculate the maximum number of row
     // we can process with max. blocking
+    // In case of FMA, we can add another blocking stage of 16x3
+    codestream << "#ifdef __AVX2__" << std::endl;
     if (this->bGenerateExitForCK_ == true) {
+      codestream << "  int mDone, mDone_old;" << std::endl;
+      codestream << "  mDone = (M/16)*16;" << std::endl;
+      codestream << "  for(int m = 0; m < mDone; m+=16)" << std::endl;
+    } else {
+      mDoneAVX2 = (M / 16) * 16;
+      codestream << "  for(int m = 0; m < " << mDoneAVX2 << "; m+=16)" << std::endl;
+    }
+
+    codestream << "  {" << std::endl;
+    codestream << "    double* b0 = B+(n*" << ldb << ");" << std::endl;
+    codestream << "    double* b1 = B+((n+1)*" << ldb << ");" << std::endl;
+    codestream << "    double* b2 = B+((n+2)*" << ldb << ");" << std::endl;
+    codestream << "    double* a0 = A+m;" << std::endl;
+
+    if (bAdd_) {
+      if (alignC == true) {
+        codestream << "    c_0_0 = _mm256_load_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm256_load_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm256_load_pd(c2);" << std::endl;
+        codestream << "    c_1_0 = _mm256_load_pd(c0+4);" << std::endl;
+        codestream << "    c_1_1 = _mm256_load_pd(c1+4);" << std::endl;
+        codestream << "    c_1_2 = _mm256_load_pd(c2+4);" << std::endl;
+        codestream << "    c_2_0 = _mm256_load_pd(c0+8);" << std::endl;
+        codestream << "    c_2_1 = _mm256_load_pd(c1+8);" << std::endl;
+        codestream << "    c_2_2 = _mm256_load_pd(c2+8);" << std::endl;
+        codestream << "    c_3_0 = _mm256_load_pd(c0+12);" << std::endl;
+        codestream << "    c_3_1 = _mm256_load_pd(c1+12);" << std::endl;
+        codestream << "    c_3_2 = _mm256_load_pd(c2+12);" << std::endl << std::endl;
+      } else {
+        codestream << "    c_0_0 = _mm256_loadu_pd(c0);" << std::endl;
+        codestream << "    c_0_1 = _mm256_loadu_pd(c1);" << std::endl;
+        codestream << "    c_0_2 = _mm256_loadu_pd(c2);" << std::endl;
+        codestream << "    c_1_0 = _mm256_loadu_pd(c0+4);" << std::endl;
+        codestream << "    c_1_1 = _mm256_loadu_pd(c1+4);" << std::endl;
+        codestream << "    c_1_2 = _mm256_loadu_pd(c2+4);" << std::endl;
+        codestream << "    c_2_0 = _mm256_loadu_pd(c0+8);" << std::endl;
+        codestream << "    c_2_1 = _mm256_loadu_pd(c1+8);" << std::endl;
+        codestream << "    c_2_2 = _mm256_loadu_pd(c2+8);" << std::endl;
+        codestream << "    c_3_0 = _mm256_loadu_pd(c0+12);" << std::endl;
+        codestream << "    c_3_1 = _mm256_loadu_pd(c1+12);" << std::endl;
+        codestream << "    c_3_2 = _mm256_loadu_pd(c2+12);" << std::endl << std::endl;
+      }
+    } else {
+      codestream << "    c_0_0 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_0_1 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_0_2 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_1_0 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_1_1 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_1_2 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_2_0 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_2_1 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_2_2 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_3_0 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_3_1 = _mm256_setzero_pd();" << std::endl;
+      codestream << "    c_3_2 = _mm256_setzero_pd();" << std::endl << std::endl;
+    }
+
+#ifndef FULL_UNROLL
+
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "    for (int k = 0; k < exit_col; k++)" << std::endl;
+    } else {
+      codestream << "    for (int k = 0; k < " << K << "; k++)" << std::endl;
+    }
+
+    codestream << "    {" << std::endl;
+    avx2_inner_blocked_kernel_16(codestream, lda, alignA, false);
+#else
+
+    for (int k = 0; k < K; k++) {
+      if (this->bGenerateExitForCK_ == true) {
+        for (int o = 0; o < this->BasisfunctionsCounter_.size(); o++) {
+          if (k == this->BasisfunctionsCounter_[o]) {
+            codestream << "      if ( __builtin_expect(exit_col == " << k << ", false) ) { goto avx_sixteen_end; }" << std::endl;
+          }
+        }
+      }
+     //if (k == K-3)
+     //  avx2_inner_blocked_kernel_16(codestream, lda, alignA, true);
+     //else
+       avx2_inner_blocked_kernel_16(codestream, lda, alignA, false);
+#endif
+#ifndef FULL_UNROLL
+    codestream << "    }" << std::endl;
+#else
+  }
+
+  if (this->bGenerateExitForCK_ == true && K > 4) {
+    codestream << "avx_sixteen_end:" << std::endl;
+  }
+
+#endif
+
+    if (alignC == true) {
+      codestream << "    _mm256_store_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm256_store_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm256_store_pd(c2, c_0_2);" << std::endl;
+      codestream << "    _mm256_store_pd(c0+4, c_1_0);" << std::endl;
+      codestream << "    _mm256_store_pd(c1+4, c_1_1);" << std::endl;
+      codestream << "    _mm256_store_pd(c2+4, c_1_2);" << std::endl;
+      codestream << "    _mm256_store_pd(c0+8, c_2_0);" << std::endl;
+      codestream << "    _mm256_store_pd(c1+8, c_2_1);" << std::endl;
+      codestream << "    _mm256_store_pd(c2+8, c_2_2);" << std::endl;
+      codestream << "    _mm256_store_pd(c0+12, c_3_0);" << std::endl;
+      codestream << "    _mm256_store_pd(c1+12, c_3_1);" << std::endl;
+      codestream << "    _mm256_store_pd(c2+12, c_3_2);" << std::endl;
+    } else {
+      codestream << "    _mm256_storeu_pd(c0, c_0_0);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c1, c_0_1);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c2, c_0_2);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c0+4, c_1_0);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c1+4, c_1_1);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c2+4, c_1_2);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c0+8, c_2_0);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c1+8, c_2_1);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c2+8, c_2_2);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c0+12, c_3_0);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c1+12, c_3_1);" << std::endl;
+      codestream << "    _mm256_storeu_pd(c2+12, c_3_2);" << std::endl;
+    }
+
+    codestream << "    c0+=16;" << std::endl;
+    codestream << "    c1+=16;" << std::endl;
+    codestream << "    c2+=16;" << std::endl;
+    codestream << "  }" << std::endl;
+    codestream << "#endif" << std::endl;
+
+
+    if (this->bGenerateExitForCK_ == true) {
+      codestream << "#ifdef __AVX2__" << std::endl;
+      codestream << "  mDone_old = mDone;" << std::endl;
+      codestream << "  mDone = mDone_old+(((M-mDone_old)/12)*12);" << std::endl;
+      codestream << "  for(int m = mDone_old; m < mDone; m+=12)" << std::endl;
+      codestream << "#else" << std::endl;
       codestream << "  int mDone, mDone_old;" << std::endl;
       codestream << "  mDone = (M/12)*12;" << std::endl;
       codestream << "  for(int m = 0; m < mDone; m+=12)" << std::endl;
+      codestream << "#endif" << std::endl;
     } else {
+      codestream << "#ifdef __AVX2__" << std::endl;
+      mDoneAVX2_old = mDoneAVX2;
+      mDoneAVX2 = mDoneAVX2_old + (((M - mDoneAVX2_old) / 12) * 12);
+      codestream << "  for(int m = " << mDoneAVX2_old << "; m < " << mDoneAVX2 << "; m+=12)" << std::endl;
+      codestream << "#else" << std::endl;
       mDone = (M / 12) * 12;
       codestream << "  for(int m = 0; m < " << mDone << "; m+=12)" << std::endl;
+      codestream << "#endif" << std::endl;
     }
 
     codestream << "  {" << std::endl;
@@ -1025,9 +1250,15 @@ namespace seissolgen {
       codestream << "  mDone = mDone_old+(((M-mDone_old)/8)*8);" << std::endl;
       codestream << "  for(int m = mDone_old; m < mDone; m+=8)" << std::endl;
     } else {
+      codestream << "#ifdef __AVX2__" << std::endl;
+      mDoneAVX2_old = mDoneAVX2;
+      mDoneAVX2 = mDoneAVX2_old + (((M - mDoneAVX2_old) / 8) * 8);
+      codestream << "  for(int m = " << mDoneAVX2_old << "; m < " << mDoneAVX2 << "; m+=8)" << std::endl;
+      codestream << "#else" << std::endl;
       mDone_old = mDone;
       mDone = mDone_old + (((M - mDone_old) / 8) * 8);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=8)" << std::endl;
+      codestream << "#endif" << std::endl;
     }
 
     codestream << "  {" << std::endl;
@@ -1123,9 +1354,15 @@ namespace seissolgen {
       codestream << "  mDone = mDone_old+(((M-mDone_old)/4)*4);" << std::endl;
       codestream << "  for(int m = mDone_old; m < mDone; m+=4)" << std::endl;
     } else {
+      codestream << "#ifdef __AVX2__" << std::endl;
+      mDoneAVX2_old = mDoneAVX2;
+      mDoneAVX2 = mDoneAVX2_old + (((M - mDoneAVX2_old) / 4) * 4);
+      codestream << "  for(int m = " << mDoneAVX2_old << "; m < " << mDoneAVX2 << "; m+=4)" << std::endl;
+      codestream << "#else" << std::endl;
       mDone_old = mDone;
       mDone = mDone_old + (((M - mDone_old) / 4) * 4);
       codestream << "  for(int m = " << mDone_old << "; m < " << mDone << "; m+=4)" << std::endl;
+      codestream << "#endif" << std::endl;
     }
 
     codestream << "  {" << std::endl;
@@ -1201,7 +1438,11 @@ namespace seissolgen {
     if (this->bGenerateExitForCK_ == true) {
       codestream << "  for(int m = mDone; m < M; m++)" << std::endl;
     } else {
+      codestream << "#ifdef __AVX2__" << std::endl;
+      codestream << "  for(int m = " << mDoneAVX2 << "; m < " << M << "; m++)" << std::endl;
+      codestream << "#else" << std::endl;
       codestream << "  for(int m = " << mDone << "; m < " << M << "; m++)" << std::endl;
+      codestream << "#endif" << std::endl;
     }
 
     codestream << "  {" << std::endl;
