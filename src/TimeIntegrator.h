@@ -38,19 +38,19 @@
 #warning compiling time integrator with assertions
 #endif
 
-#include <Monitoring/FlopCounter.hpp>
+#ifdef __INTEL_OFFLOAD
+#ifdef __MIC__
+#define DIRTY_EXCLUDE_ON_MIC
+#endif
+#endif
 
-#include <cstring>
-
-#include <utils/logger.h>
-
+#ifndef DIRTY_EXCLUDE_ON_MIC
 #include <Initializer/XmlParser.hpp>
 #include <Initializer/MemoryManager.h>
+#endif
 #include <Initializer/preProcessorMacros.fpp>
 
-#include <generated_code/matrix_kernels/dense_matrices.hpp_include>
-#include <generated_code/matrix_kernels/star_matrices_3d.hpp_include>
-#include <generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include>
+#pragma offload_attribute(push, target(mic))
 
 namespace seissol {
   namespace kernels {
@@ -117,6 +117,14 @@ class seissol::kernels::TimeIntegrator {
                             bool i_sparse );
 
   public:
+#ifdef __INTEL_OFFLOAD
+    /**
+     * Constructor, which initializes the time integrator with only dense matrices
+     **/
+    TimeIntegrator();
+#endif
+
+#ifndef DIRTY_EXCLUDE_ON_MIC
     /**
      * Constructor, which initializes the time integrator according to the matrix setup in the given XML-file.
      *
@@ -125,6 +133,7 @@ class seissol::kernels::TimeIntegrator {
      **/
     TimeIntegrator( const seissol::XmlParser                   &i_matrixReader,
                     const seissol::initializers::MemoryManager &i_memoryManager );
+#endif
 
     /**
      * Computes the time derivatives.
@@ -228,5 +237,7 @@ class seissol::kernels::TimeIntegrator {
     }
 
 };
+
+#pragma offload_attribute(pop)
 
 #endif

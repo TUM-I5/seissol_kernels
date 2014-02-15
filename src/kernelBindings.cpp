@@ -30,6 +30,14 @@
  * @section DESCRIPTION
  * Binds the boundary and volume integrator to C for usage in Fortran.
  **/
+#ifdef __INTEL_OFFLOAD
+#ifdef __MIC__
+#define DIRTY_EXCLUDE_ON_MIC
+#endif
+#endif
+
+#ifndef DIRTY_EXCLUDE_ON_MIC
+
 #include "BoundaryIntegrator.h"
 #include "VolumeIntegrator.h"
 #include "TimeIntegrator.h"
@@ -154,3 +162,4 @@ extern "C" {
                                           o_timeIntegratedUnknowns );
   }
 }
+#endif
