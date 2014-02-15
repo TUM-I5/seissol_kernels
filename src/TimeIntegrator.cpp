@@ -34,7 +34,9 @@
 #include <Monitoring/FlopCounter.hpp>
 #include <utils/logger.h>
 
+#ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
+#endif
 #include <cstring>
 #include <assert.h>
 
@@ -43,7 +45,9 @@
 #ifndef __MIC__
 #include <generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include>
 #endif
+#ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)
+#endif
 
 #include <Solver/kernels/TimeIntegrator.h>
 

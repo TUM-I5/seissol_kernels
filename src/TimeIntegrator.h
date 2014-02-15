@@ -50,7 +50,9 @@
 #endif
 #include <Initializer/preProcessorMacros.fpp>
 
+#ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
+#endif
 
 namespace seissol {
   namespace kernels {
@@ -238,6 +240,8 @@ class seissol::kernels::TimeIntegrator {
 
 };
 
+#ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)
+#endif
 
 #endif
