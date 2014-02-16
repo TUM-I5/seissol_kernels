@@ -30,7 +30,26 @@
  * @section DESCRIPTION
  * Volume integration in SeisSol.
  **/
-#include "VolumeIntegrator.h"
+
+#include <Monitoring/FlopCounter.hpp>
+#include <utils/logger.h>
+
+#ifdef __INTEL_OFFLOAD
+#pragma offload_attribute(push, target(mic))
+#endif
+#include <cstring>
+#include <assert.h>
+
+#include <generated_code/matrix_kernels/dense_matrices.hpp_include>
+#include <generated_code/matrix_kernels/star_matrices_3d.hpp_include>
+#ifndef __MIC__
+#include <generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include>
+#endif
+#ifdef __INTEL_OFFLOAD
+#pragma offload_attribute(pop)
+#endif
+
+#include <Solver/kernels/VolumeIntegrator.h>
 
 void seissol::kernels::VolumeIntegrator::setUpMatrixKernel( unsigned int i_id,
                                                             bool i_sparse ) {
@@ -72,6 +91,7 @@ void seissol::kernels::VolumeIntegrator::setUpMatrixKernel( unsigned int i_id,
   }
 }
 
+#ifndef DIRTY_EXCLUDE_ON_MIC
 seissol::kernels::VolumeIntegrator::VolumeIntegrator( const seissol::XmlParser                   &i_matrixReader,
                                                       const seissol::initializers::MemoryManager &i_memoryManager ) {
   /*
@@ -117,6 +137,19 @@ seissol::kernels::VolumeIntegrator::VolumeIntegrator( const seissol::XmlParser  
   // set up the star matrix kernel
   setUpMatrixKernel( 3, true );
 }
+#endif
+
+#ifdef __INTEL_OFFLOAD
+seissol::kernels::VolumeIntegrator::VolumeIntegrator() {
+  // set up the stiffness matrices as dense matrices
+  for( int l_i = 0; l_i < 3; l_i++) {
+    setUpMatrixKernel( l_i, false );
+  }
+
+  // set up the star matrix kernel
+  setUpMatrixKernel( 3, true );
+}
+#endif
 
 void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
                                                                 double *i_stiffnessMatrices[3],
