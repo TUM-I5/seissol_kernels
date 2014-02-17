@@ -30,8 +30,55 @@
  * @section DESCRIPTION
  * Boundary integration in SeisSol.
  **/
-#include "BoundaryIntegrator.h"
 
+#include <Monitoring/FlopCounter.hpp>
+#include <utils/logger.h>
+
+#ifdef __INTEL_OFFLOAD
+#pragma offload_attribute(push, target(mic))
+#endif
+#include <vector>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#ifndef __INTEL_OFFLOAD
+#ifndef __MIC__
+#include <generated_code/matrix_kernels/flux_matrices_3d.hpp_include>
+#endif
+#endif
+#include <generated_code/matrix_kernels/dense_matrices.hpp_include>
+#ifdef __INTEL_OFFLOAD
+#pragma offload_attribute(pop)
+#endif
+
+#include <Solver/kernels/BoundaryIntegrator.h>
+
+#ifdef __INTEL_OFFLOAD
+#define CONCAT_HELPER_4(a,b,c,d) a ## b ## c ## d
+#define CONCAT_4(a,b,c,d) CONCAT_HELPER_4(a,b,c,d)
+#define CONCAT_HELPER_6(a,b,c,d,e,f) a ## b ## c ## d ## e ## f
+#define CONCAT_6(a,b,c,d,e,f) CONCAT_HELPER_6(a,b,c,d, e, f)
+void seissol::kernels::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
+                                                              bool i_sparse ) {
+  // assert we are not out of bounds
+  assert( i_id < 53 );
+
+  // We do all mutlitplications with dense kernes:
+
+  if( i_id == 52 ){ // jacobian
+    m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFVARIABLES );
+  }
+  else{ // flux matrix
+    // assert only sparse flux kernels are requested
+    assert(i_sparse == false);
+    m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );
+  }
+}
+#undef CONCAT_HELPER_4
+#undef CONCAT_4
+#undef CONCAT_HELPER_6
+#undef CONCAT_6
+#else
 void seissol::kernels::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
                                                               bool i_sparse ) {
   // assert we are not out of bounds
@@ -39,9 +86,10 @@ void seissol::kernels::BoundaryIntegrator::setUpMatrixKernel( unsigned int i_id,
 
   // include the generated initialization code
 #include <generated_code/initialization/boundary_matrix_kernels.hpp_include>
-
 }
+#endif
 
+#ifndef DIRTY_EXCLUDE_ON_MIC
 seissol::kernels::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlParser &i_matrixReader,
                                                           const seissol::initializers::MemoryManager &i_memoryManager ) {
   /*
@@ -94,6 +142,19 @@ seissol::kernels::BoundaryIntegrator::BoundaryIntegrator( const seissol::XmlPars
   setUpMatrixKernel( l_matrixIds.back(),
                      l_matrixSparsities[l_matrixIds.back()] );
 }
+#endif
+
+#ifdef __INTEL_OFFLOAD
+seissol::kernels::BoundaryIntegrator::BoundaryIntegrator() {
+  // set up the flux matrices as dense matrices
+  for( int l_i = 0; l_i < 52; l_i++) {
+    setUpMatrixKernel( l_i, false );
+  }
+
+  // set up the jacobian matrix kernel
+  setUpMatrixKernel( 52, false );
+}
+#endif
 
 void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double   i_timeIntegratedUnknownsElement[2][NUMBEROFUNKNOWNS],
                                                                           double  *i_timeIntegratedUnknownsNeighbors[4],
