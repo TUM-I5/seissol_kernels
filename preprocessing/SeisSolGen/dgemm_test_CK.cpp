@@ -213,7 +213,11 @@ int main(int argc, char* argv[]) {
   gettimeofday(&end, NULL);
   total = sec(start, end);
 
-  std::cout << total << "s for initrinsics" << std::endl;
+  std::cout << total << "s for intrinsics" << std::endl;
+#if ORDER_NUMBER == 56
+  double gflops = 2.0*((56.0*36.0*9.0)+(35.0*20.0*9.0)+(20.0*12.0*9.0)+(10.0*4.0*9.0)+(4.0*4.0*9.0))*(double)REPS;
+  std::cout << (gflops/(1000000000.0))/total << " GFLOPS for intrinsics" << std::endl;
+#endif
 
   // check result
   double max_error = 0.0;
