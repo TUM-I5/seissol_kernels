@@ -49,7 +49,7 @@
 #pragma offload_attribute(pop)
 #endif
 
-#include <Solver/kernels/TimeIntegrator.h>
+#include "TimeIntegrator.h"
 
 
 void seissol::kernels::TimeIntegrator::setUpMatrixKernel( unsigned int i_id,
@@ -227,6 +227,35 @@ void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double  i_u
   }
 }
 
+void seissol::kernels::TimeIntegrator::computeTimeEvaluation( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                                                              const double &i_expansionPoint,
+                                                              const double &i_evaluationPoint,
+                                                                    double  o_unknowns[NUMBEROFUNKNOWNS] ) {
+  // assert that non-backward evaluation in time
+  assert( i_expansionPoint >= i_evaluationPoint );
+
+  // initialization of factors in the Taylor series expansion (1st term)
+  double l_taylorSeriesDelta  = i_evaluationPoint - i_expansionPoint;
+  double l_taylorSeriesFactor = 1.0; 
+
+  // set unknowns to unkowns at time of expansion point (0th derivative)
+  for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {
+    o_unknowns[l_entry] = i_timeDerivatives[0][l_entry];
+  }
+ 
+ 
+  // evaluate taylor series expansion at evvaluation point
+  for(int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) { 
+    //   Remark: the negative sign of the derivative is include here
+    l_taylorSeriesFactor = -( l_taylorSeriesFactor*l_taylorSeriesDelta ) / double(l_order);
+
+    // update the unknowns by the contribution of this derivative
+    for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {
+      o_unknowns[l_entry] += l_taylorSeriesFactor * i_timeDerivatives[l_order][l_entry];
+    }
+  }
+}
+
 void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
                                                             const double &i_deltaTLower,
                                                             const double &i_deltaTUpper,
@@ -235,9 +264,8 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_time
   assert( i_deltaTUpper > i_deltaTLower );
 
   // initialization of factors in the Taylor series expansion (0th term)
-  double l_taylorSeriesFactorLower = i_deltaTLower;
-  double l_taylorSeriesFactorUpper = i_deltaTUpper;
-  double l_taylorSeriesFactor = l_taylorSeriesFactorUpper - l_taylorSeriesFactorLower; 
+  double l_taylorSeriesDelta = i_deltaTUpper - i_deltaTLower;
+  double l_taylorSeriesFactor = l_taylorSeriesDelta; 
 
   // update the time integrated unknowns by the contribution of the 0th derivative
   for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {
@@ -249,9 +277,7 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double  i_time
   for(int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) { 
     // compute $\frac{(\Delta t^\text{up})^{j+1} - (\Delta t^\text{lo}^{j+1})}{(j+1)!}$ for the current term (l_order == j in the code)
     //   Remark: the negative sign of the derivative is include here
-    l_taylorSeriesFactorLower = -l_taylorSeriesFactorLower * i_deltaTLower / double(l_order + 1);
-    l_taylorSeriesFactorUpper = -l_taylorSeriesFactorUpper * i_deltaTUpper / double(l_order + 1); 
-    l_taylorSeriesFactor = ( l_taylorSeriesFactorUpper - l_taylorSeriesFactorLower);
+    l_taylorSeriesFactor = -( l_taylorSeriesFactor*l_taylorSeriesDelta ) / double(l_order + 1);
 
     // update the time integrated unknowns by the contribution of this derivative
     for(int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++) {

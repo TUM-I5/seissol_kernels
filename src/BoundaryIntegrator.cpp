@@ -51,7 +51,7 @@
 #pragma offload_attribute(pop)
 #endif
 
-#include <Solver/kernels/BoundaryIntegrator.h>
+#include "BoundaryIntegrator.h"
 
 #ifdef __INTEL_OFFLOAD
 #define CONCAT_HELPER_4(a,b,c,d) a ## b ## c ## d

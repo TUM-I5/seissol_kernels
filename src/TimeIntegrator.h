@@ -175,6 +175,19 @@ class seissol::kernels::TimeIntegrator {
      }
 
     /**
+     * Evaluates the taylor series expansion at the given evaluation point.
+     *
+     * @param i_timeDerivatives time derivatives.
+     * @param i_expansionPoint expansion point of the taylor series (point in time when the time derivatives were computed from).
+     * @param i_evaluationPoint point in time when the taylor series is evaluated.
+     * @param o_unknowns unknowns at the time of the evaluation point.
+     **/
+    void computeTimeEvaluation( const double  i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                                const double &i_expansionPoint,
+                                const double &i_evaluationPoint,
+                                      double  o_unknowns[NUMBEROFUNKNOWNS] );
+
+    /**
      * Computes the time integrated unknowns from previously computed time derivatives.
      *   Part of the local time stepping scheme.
      *

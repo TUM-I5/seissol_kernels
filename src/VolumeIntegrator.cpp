@@ -49,7 +49,7 @@
 #pragma offload_attribute(pop)
 #endif
 
-#include <Solver/kernels/VolumeIntegrator.h>
+#include "VolumeIntegrator.h"
 
 void seissol::kernels::VolumeIntegrator::setUpMatrixKernel( unsigned int i_id,
                                                             bool i_sparse ) {
