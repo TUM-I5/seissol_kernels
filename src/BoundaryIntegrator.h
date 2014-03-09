@@ -34,10 +34,6 @@
 #ifndef BOUNDARYINTEGRATOR_H_
 #define BOUNDARYINTEGRATOR_H_
 
-#ifndef NDEBUG
-#warning compiling boundary integrator with assertions
-#endif
-
 #ifdef __INTEL_OFFLOAD
 #ifdef __MIC__
 #define DIRTY_EXCLUDE_ON_MIC

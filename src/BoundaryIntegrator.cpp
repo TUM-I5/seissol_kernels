@@ -34,6 +34,10 @@
 #include <Monitoring/FlopCounter.hpp>
 #include <utils/logger.h>
 
+#ifndef NDEBUG
+#pragma message "compiling boundary integrator with assertions"
+#endif
+
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
 #endif

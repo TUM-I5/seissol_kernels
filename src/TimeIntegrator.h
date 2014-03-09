@@ -34,10 +34,6 @@
 #ifndef TIMEINTEGRATOR_H_
 #define TIMEINTEGRATOR_H_
 
-#ifndef NDEBUG
-#warning compiling time integrator with assertions
-#endif
-
 #ifdef __INTEL_OFFLOAD
 #ifdef __MIC__
 #define DIRTY_EXCLUDE_ON_MIC
