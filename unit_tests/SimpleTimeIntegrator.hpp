@@ -153,10 +153,8 @@ class unit_test::SimpleTimeIntegrator {
       TS_ASSERT( i_deltaT[1] > i_deltaT[0] );
 
       // initialization of Taylor series factors
-      real l_taylorSeriesFactors[2];
-      l_taylorSeriesFactors[0] = i_deltaT[0];
-      l_taylorSeriesFactors[1] = i_deltaT[1];
-      real l_taylorSeriesFactor = l_taylorSeriesFactors[1] - l_taylorSeriesFactors[0];
+      real l_taylorSeriesDelta = i_deltaT[1] - i_deltaT[0];
+      real l_taylorSeriesFactor = l_taylorSeriesDelta;
 
       // update time integrated unknowns with zeroth derivatives
       for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
@@ -166,9 +164,7 @@ class unit_test::SimpleTimeIntegrator {
       // iterate over order in time
       for( int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) {
         // compute factor of the taylor series
-        l_taylorSeriesFactors[0] = -l_taylorSeriesFactors[0] * i_deltaT[0] / real(l_order+1);
-        l_taylorSeriesFactors[1] = -l_taylorSeriesFactors[1] * i_deltaT[1] / real(l_order+1);
-        l_taylorSeriesFactor = l_taylorSeriesFactors[1] - l_taylorSeriesFactors[0];
+        l_taylorSeriesFactor = -l_taylorSeriesFactor * l_taylorSeriesDelta / real(l_order+1);
        
         // update time integrated unknowns
         for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {

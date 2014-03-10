@@ -205,26 +205,17 @@ void seissol::kernels::VolumeIntegrator::computeVolumeIntegral( double i_timeInt
 
   // TODO: Switch to a loop when the memory manager is able to take care about the star matrices.
 
-  // reset temporary matrix
-  memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
-
   // calculate $K_\xi.I(Q_k, t^n, t^{n+1}$ and $(K_\xi.I(Q_k, t^n, t^{n+1}).A^*$
   m_matrixKernels[0] ( i_stiffnessMatrices[0], i_timeIntegratedUnknowns, l_partialProduct,
                        l_partialProduct,       i_aStar,                  io_unknowns       ); // prefetches
   m_matrixKernels[3] ( l_partialProduct,       i_aStar,                  io_unknowns,
                        i_stiffnessMatrices[1], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
 
-  // reset temporary matrix
-  memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
-
   // calculate $K_\eta.I(Q_k, t^n, t^{n+1}$ and $(K_\eta.I(Q_k, t^n, t^{n+1}).B^*$
   m_matrixKernels[1] ( i_stiffnessMatrices[1], i_timeIntegratedUnknowns, l_partialProduct,
                        l_partialProduct,       i_bStar,                  io_unknowns       ); // prefetches
   m_matrixKernels[3] ( l_partialProduct,       i_bStar,                  io_unknowns,
                        i_stiffnessMatrices[2], i_timeIntegratedUnknowns, l_partialProduct  ); // prefetches
-
-  // reset temporary matrix
-  memset( l_partialProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_partialProduct) );
 
   // calculate $K_\zeta.I(Q_k, t^n, t^{n+1}$ and $(K_\zeta.I(Q_k, t^n, t^{n+1}).C^*$
   m_matrixKernels[2] ( i_stiffnessMatrices[2], i_timeIntegratedUnknowns, l_partialProduct,

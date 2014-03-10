@@ -202,26 +202,17 @@ void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double  i_u
     l_nonZeroBlockSizeStar  = l_nonZeroBlockSizeStar * (l_nonZeroBlockSizeStar + 1) * (l_nonZeroBlockSizeStar + 2);
     l_nonZeroBlockSizeStar /= 6;
 
-    // reset partial sum
-    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
-
     // calculate $K_\xi.Q_k$ and $(K_\xi.Q_k).A*$
     m_matrixKernels[0] ( i_stiffnessMatrices[0], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
                          NULL,                   NULL,                         NULL                                                     ); // TODO: prefetches
     m_matrixKernels[3] ( l_partialSum,           i_aStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
                          NULL,                   NULL,                         NULL                                                     ); // TODO: prefetches
 
-    // reset partial sum
-    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
-
     // calculate $K_\eta.Q_k$ and $(K_\eta.Q_k).B*$
     m_matrixKernels[1] ( i_stiffnessMatrices[1], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
                          NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
     m_matrixKernels[3] ( l_partialSum,           i_bStar,                      o_timeDerivatives[l_order], l_nonZeroBlockSizeStar,
                          NULL,                   NULL,                         NULL                                                     ); //TODO: prefetches
-
-    // reset partial sum
-    memset( l_partialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_partialSum ) );
 
     // calculate $K_\zeta.Q_k$ and calculate $(K_\zeta.Q_k).C*$
     m_matrixKernels[2] ( i_stiffnessMatrices[2], o_timeDerivatives[l_order-1], l_partialSum,               l_nonZeroBlockSizeStiffness,
@@ -411,8 +402,7 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double   i_unk
     if (l_order > 1)
       memcpy( l_differentiatedUnknowns, l_secondPartialSum, NUMBEROFUNKNOWNS*sizeof(*l_secondPartialSum) );
 
-    // reset temporary matrices
-    memset( l_firstPartialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_firstPartialSum ) );
+    // reset second partial sum
     memset( l_secondPartialSum, 0, NUMBEROFUNKNOWNS*sizeof(*l_secondPartialSum) );
 
     // calculate $K_\xi.Q_k$ and $(K_\xi.Q_k).A*$
@@ -421,17 +411,11 @@ void seissol::kernels::TimeIntegrator::computeTimeIntegral( const double   i_unk
     m_matrixKernels[3] ( l_firstPartialSum,      i_aStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
                          i_stiffnessMatrices[1], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
 
-    // reset first partial sum
-    memset( l_firstPartialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_firstPartialSum ) );
-
     // calculate $K_\eta.Q_k$ and $(K_\eta.Q_k).B*$
     m_matrixKernels[1] ( i_stiffnessMatrices[1], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,
                          l_firstPartialSum,      i_bStar,                  l_secondPartialSum                               ); // prefetches
     m_matrixKernels[3] ( l_firstPartialSum,      i_bStar,                  l_secondPartialSum, l_nonZeroBlockSizeStar,
                          i_stiffnessMatrices[2], l_differentiatedUnknowns, l_firstPartialSum                                ); // prefetches
-
-    // reset first partial sum
-    memset( l_firstPartialSum,  0, NUMBEROFUNKNOWNS*sizeof(*l_firstPartialSum ) );
 
     // calculate $K_\zeta.Q_k$ and calculate $(K_\zeta.Q_k).C*$
     m_matrixKernels[2] ( i_stiffnessMatrices[2], l_differentiatedUnknowns, l_firstPartialSum,  l_nonZeroBlockSizeStiffness,

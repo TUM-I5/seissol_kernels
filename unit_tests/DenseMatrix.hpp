@@ -38,8 +38,7 @@
 #include <Initializer/XmlParser.hpp>
 
 const int s_maximumOrder = 6;
-// TODO: Add a zero tolerance, which matches the size of the matrix: It doesn't make sense to compare values > 10,000.0 with a zero tolerance of 10e-15..
-const double s_zeroTolerance = 10e-10;
+const double s_zeroTolerance = 10e-13;
 
 namespace unit_test {
   class DenseMatrix;
@@ -73,7 +72,7 @@ class unit_test::DenseMatrix {
      **/
     void setRandomValues( int i_length, double *o_array ) {
       for( int l_i = 0; l_i < i_length; l_i++) {
-        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*5.0;
+        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*0.1;
       }
     }
 
@@ -183,7 +182,7 @@ class unit_test::DenseMatrix {
     }
 
     /**
-     * Executes C += A.B with a simple for-loop.
+     * Executes C += A.B or C = A.B with a simple for-loop.
      *
      * @param i_m #(dense rows) of the left matrix
      * @param i_n #(dense columns) of the right matrix
@@ -191,9 +190,18 @@ class unit_test::DenseMatrix {
      * @o_a pointer to matrix A.
      * @o_b pointer to matrix B. 
      * @o_c pointer to matrix C.
+     * @i_add true: C += A.B, false C = A.B
      **/
     void executeStandardMultiplication(       int     i_m,       int     i_n, int     i_k,
-                                        const double *i_a, const double *i_b, double *io_c ) {
+                                        const double *i_a, const double *i_b, double *io_c,
+                                              bool    i_add = true ) {
+      // set result matrix to zero first of required
+      if( i_add == false ) {
+        for( int l_positionC = 0; l_positionC < i_m * i_n; l_positionC++ ) {
+          io_c[l_positionC] = 0;
+        }
+      }
+
       for( int l_m = 0; l_m < i_m; l_m++ ) {
         for( int l_n = 0; l_n < i_n; l_n++ ) {
           for( int l_k = 0; l_k < i_k; l_k++ ) {
@@ -235,7 +243,12 @@ class unit_test::DenseMatrix {
     void checkResult( int i_length, double* i_array1, double* i_array2 ) {
       // check every value individually
       for( int l_i = 0; l_i < i_length; l_i++) {
-        TS_ASSERT_DELTA(i_array1[l_i], i_array2[l_i], s_zeroTolerance);
+        if( std::abs(i_array2[l_i]) > 10e-10 ) { 
+          TS_ASSERT_DELTA( (double) ( (long double) i_array1[l_i] / (long double) i_array2[l_i]), 1.0, s_zeroTolerance);
+        }
+        else {
+          TS_ASSERT_DELTA( i_array1[l_i], i_array2[l_i], s_zeroTolerance );
+        }
       }
     }
 

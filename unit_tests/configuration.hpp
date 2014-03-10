@@ -91,7 +91,7 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       m_minimumOrder = 2;
       m_maximumOrder = 6;
 
-      m_zeroTolerance = 10e-10;
+      m_zeroTolerance = 10e-13;
     }
 
     /**

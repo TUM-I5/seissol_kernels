@@ -4,7 +4,7 @@
 // @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 // @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
 // 
-// @date 2014-02-10 12:28:19.873463
+// @date 2014-03-10 17:03:01.476330
 // 
 // @section LICENSE
 // This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
@@ -44,6 +44,10 @@ inline void generatedMatrixMultiplication_kXiDivM_9_4(double* values, double* B,
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 4; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*4)+0]);
@@ -86,6 +90,10 @@ inline void generatedMatrixMultiplication_kEtaDivM_9_4(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 4; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*4)+0]);
@@ -129,6 +137,10 @@ inline void generatedMatrixMultiplication_kZetaDivM_9_4(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 4; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*4)+0]);
@@ -182,6 +194,10 @@ inline void generatedMatrixMultiplication_kXiDivMT_9_4(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -248,6 +264,10 @@ inline void generatedMatrixMultiplication_kEtaDivMT_9_4(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -330,6 +350,10 @@ inline void generatedMatrixMultiplication_kZetaDivMT_9_4(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*4)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -428,6 +452,10 @@ inline void generatedMatrixMultiplication_kXiDivM_9_10(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 10; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*10)+0]);
@@ -566,6 +594,10 @@ inline void generatedMatrixMultiplication_kEtaDivM_9_10(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 10; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*10)+0]);
@@ -737,6 +769,10 @@ inline void generatedMatrixMultiplication_kZetaDivM_9_10(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 10; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*10)+0]);
@@ -938,6 +974,10 @@ inline void generatedMatrixMultiplication_kXiDivMT_9_10(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -1128,6 +1168,10 @@ inline void generatedMatrixMultiplication_kEtaDivMT_9_10(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -1396,6 +1440,10 @@ inline void generatedMatrixMultiplication_kZetaDivMT_9_10(double* values, double
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*10)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -1708,6 +1756,10 @@ inline void generatedMatrixMultiplication_kXiDivM_9_20(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 20; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*20)+0]);
@@ -2172,6 +2224,10 @@ inline void generatedMatrixMultiplication_kEtaDivM_9_20(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 20; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*20)+0]);
@@ -2757,6 +2813,10 @@ inline void generatedMatrixMultiplication_kZetaDivM_9_20(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 20; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*20)+0]);
@@ -3443,6 +3503,10 @@ inline void generatedMatrixMultiplication_kXiDivMT_9_20(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -3966,6 +4030,10 @@ inline void generatedMatrixMultiplication_kEtaDivMT_9_20(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -4747,6 +4815,10 @@ inline void generatedMatrixMultiplication_kZetaDivMT_9_20(double* values, double
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*20)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -5651,6 +5723,10 @@ inline void generatedMatrixMultiplication_kXiDivM_9_35(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 35; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*35)+0]);
@@ -6970,6 +7046,10 @@ inline void generatedMatrixMultiplication_kEtaDivM_9_35(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 35; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*35)+0]);
@@ -8608,6 +8688,10 @@ inline void generatedMatrixMultiplication_kZetaDivM_9_35(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 35; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*35)+0]);
@@ -10534,6 +10618,10 @@ inline void generatedMatrixMultiplication_kXiDivMT_9_35(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -11859,6 +11947,10 @@ inline void generatedMatrixMultiplication_kEtaDivMT_9_35(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -13879,6 +13971,10 @@ inline void generatedMatrixMultiplication_kZetaDivMT_9_35(double* values, double
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*35)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -16192,6 +16288,10 @@ inline void generatedMatrixMultiplication_kXiDivM_9_56(double* values, double* B
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 56; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*56)+0]);
@@ -19524,6 +19624,10 @@ inline void generatedMatrixMultiplication_kEtaDivM_9_56(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 56; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*56)+0]);
@@ -23600,6 +23704,10 @@ inline void generatedMatrixMultiplication_kZetaDivM_9_56(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < 56; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #if defined(__SSE3__) || defined(__AVX256__)
 #if defined(__SSE3__) && defined(__AVX256__)
 __m256d b0 = _mm256_broadcast_sd(&B[(i*56)+0]);
@@ -28283,6 +28391,10 @@ inline void generatedMatrixMultiplication_kXiDivMT_9_56(double* values, double* 
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -31406,6 +31518,10 @@ inline void generatedMatrixMultiplication_kEtaDivMT_9_56(double* values, double*
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif
@@ -36127,6 +36243,10 @@ inline void generatedMatrixMultiplication_kZetaDivMT_9_56(double* values, double
 #pragma nounroll
 for (int i = 0; i < 9; i++)
 {
+  #pragma simd
+  for (int m = 0; m < exit_col; m++) {
+    C[(i*56)+m] = 0.0;
+  }
 #ifndef NDEBUG
 num_flops += 0;
 #endif

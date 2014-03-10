@@ -258,9 +258,6 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
       /*
        * Element local contribution.
        */
-      // set temporary product to zero
-      memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));
-
       // compute element local contribution
       m_matrixKernels[l_localFace]( i_fluxMatrices[l_localFace],  i_timeIntegratedUnknownsElement[0],             l_temporaryProduct,
                                     l_temporaryProduct,           i_nApNm1[l_localFace],                          io_unknowns         ); // prefetches
@@ -274,9 +271,6 @@ void seissol::kernels::BoundaryIntegrator::computeBoundaryIntegral(       double
      */
     // no neighboring element contribution in the case of absorbing and dynamic rupture boundary conditions
     if( i_boundaryConditions[l_localFace] != 5 && i_boundaryConditions[l_localFace] != 3 ) {
-      // set temporary product to zero
-      memset(l_temporaryProduct, 0, NUMBEROFUNKNOWNS*sizeof(*l_temporaryProduct));    
-
       // assert we have a valid index.
       assert( l_id < 52 );
 

@@ -240,7 +240,7 @@ def runBenchmarks( i_pathToSeisSolGen,
 # \param i_commandLineParameters command line parameters used in the execution of SeisSolGen.
 def executeSeisSolgen( i_pathToSeisSolGen,
                        i_commandLineParameters ):
-    l_bashCommand = i_pathToSeisSolGen + ' ' + i_commandLineParameters + ' 1'
+    l_bashCommand = i_pathToSeisSolGen + ' ' + i_commandLineParameters
     l_logger.log('generating matrix kernels using '+l_bashCommand, 2)
     l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd='.', stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     l_logger.log( l_bashProcess.communicate()[0], 3)
@@ -257,7 +257,8 @@ def executeSeisSolgen( i_pathToSeisSolGen,
 #     sizeOfDenseLeadingDimension  - size of the leading dimension
 #     aderZeroBlocks               - recursively appearing blocks of zeros appearing in the ADER time integration
 #                                    True: matrix is part of the ADER time integration and zero blocks occur recursively
-#                                    False: otherwise  
+#                                    False: otherwise
+#     add                          - True: C += A.B, False: C = A.B
 #
 # \param i_pathToMatrices path to the directory, which contains the matrices.
 # \param i_numberOfQuantities number of quantities (elastics = 9, attenuation > 9)
@@ -439,7 +440,8 @@ def getSparseMatrices( i_pathToMatrices,
                              numberOfDenseRows            = l_numberOfBasisFunctions,
                              numberOfDenseColumns         = l_numberOfQuantities,
                              sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
-                             aderZeroBlocks               = False
+                             aderZeroBlocks               = False,
+                             add                          = True
                            )
                      )
     # star matrix multiplications in the time integration kernel
@@ -461,7 +463,8 @@ def getSparseMatrices( i_pathToMatrices,
                                      numberOfDenseRows            = l_numberOfBasisFunctions,
                                      numberOfDenseColumns         = l_numberOfQuantities,
                                      sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
-                                     aderZeroBlocks               = False
+                                     aderZeroBlocks               = False,
+                                     add                          = False
                                    )
                              )
       # increase matrix id
@@ -482,7 +485,8 @@ def getSparseMatrices( i_pathToMatrices,
                                numberOfDenseRows            = l_numberOfBasisFunctions,
                                numberOfDenseColumns         = l_numberOfQuantities,
                                sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
-                               aderZeroBlocks               = False
+                               aderZeroBlocks               = False,
+                               add                          = False
                              )
                        )
   # done, return the matrices
@@ -498,6 +502,7 @@ def getSparseMatrices( i_pathToMatrices,
 #     ldA                          - size of the leading dimension of the left matrix
 #     ldB                          - size of the leading dimension of the right matrix
 #     ldC                          - size of the leading dimnesion of the result matrix
+#     add                          - True: C += A.B, False: C = A.B
 #
 #   Sketch (C = A.B)
 #                    B
@@ -563,7 +568,8 @@ def getDenseMatrices( i_numberOfQuantities = 9,
                                               ldA        = l_m, \
                                               ldB        = l_k, \
                                               ldC        = l_m, \
-                                              denseType  = l_denseType
+                                              denseType  = l_denseType, \
+                                              add        = False
                                           )]
 
     # generate kernels for the flux solver
@@ -588,7 +594,8 @@ def getDenseMatrices( i_numberOfQuantities = 9,
                                             ldA        = l_m, \
                                             ldB        = l_k, \
                                             ldC        = l_m, \
-                                            denseType  = 'dense'
+                                            denseType  = 'dense', \
+                                            add        = True
                                         )]
 
   return l_denseMatrices
@@ -655,7 +662,8 @@ def generateMatrixKernels( i_pathToSeisSolGen,
                               ' '+str(l_matrix['k'])+\
                               ' '+str(l_matrix['ldA'])+\
                               ' '+str(l_matrix['ldB'])+\
-                              ' '+str(l_matrix['ldC'])
+                              ' '+str(l_matrix['ldC'])+\
+                              ' '+str(int(l_matrix['add']))
     # generate code C++-code for the current matrix
     executeSeisSolgen( i_pathToSeisSolGen,\
                        l_commandLineParameters )
@@ -677,7 +685,8 @@ def generateMatrixKernels( i_pathToSeisSolGen,
                               ' '+l_matrix['multiplicationSide']+\
                               ' '+l_matrix['numberOfDenseRows']+\
                               ' '+l_matrix['numberOfDenseColumns']+\
-                              ' '+l_matrix['sizeOfDenseLeadingDimension']
+                              ' '+l_matrix['sizeOfDenseLeadingDimension']+\
+                              ' '+str(int(l_matrix['add']))
     # generate code C++-code for the current matrix
     executeSeisSolgen( i_pathToSeisSolGen,\
                        l_commandLineParameters )

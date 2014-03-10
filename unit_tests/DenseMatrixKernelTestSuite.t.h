@@ -83,8 +83,9 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
      * @param i_m #(dense rows) of the left matrix
      * @param i_n #(dense columns) of the left matrix
      * @param i_k #(dense columns) of the right matrix
+     * @param i_add true: C += A.B, false: C = A.B
      **/
-    void testGeneratedMultiplication( int i_m, int i_n, int i_k ){
+    void testGeneratedMultiplication( int i_m, int i_n, int i_k, bool i_add = true ){
       // matrices for operation C = A.B 
       double *l_a, *l_b, *l_c1, *l_c2;
 
@@ -94,7 +95,7 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
       executeGeneratedMultiplication( i_m, i_n, i_k, l_a, l_b, l_c1 );
 
       // do the default multiplication
-      m_denseMatrix.executeStandardMultiplication( i_m, i_n, i_k, l_a, l_b, l_c2 );
+      m_denseMatrix.executeStandardMultiplication( i_m, i_n, i_k, l_a, l_b, l_c2, i_add );
 
       // check result
       m_denseMatrix.checkResult( i_m * i_n, l_c1, l_c2 );
@@ -121,7 +122,7 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
         l_k = l_numberOfBasisFunctions;
         
         // test dense flux kernel
-        testGeneratedMultiplication(l_m, l_n, l_k);
+        testGeneratedMultiplication(l_m, l_n, l_k, false);
       }
     }
 

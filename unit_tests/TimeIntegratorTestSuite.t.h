@@ -139,7 +139,7 @@ class unit_test::TimeIntegratorTestSuite: public CxxTest::TestSuite {
         m_denseMatrix.setRandomValues( 2,
                                        l_deltaT );
         l_deltaT[0] = std::abs( l_deltaT[0] );
-        l_deltaT[1] = std::abs( l_deltaT[1] )+ 10;
+        l_deltaT[1] = std::abs( l_deltaT[1] )+ 0.5;
 
         /*
          * LTS: Compute the time derivatives.
