@@ -1801,6 +1801,10 @@ namespace seissolgen {
     codestream << "for (int n = 0; n < " << N << "; n++)" << std::endl;
     codestream << "{" << std::endl;
 
+    if (this->bAdd_ == false) {
+      codestream << "  for(int m = 0; m < " << M << "; m++) { C[(n*" << ldc << ")+m] = 0.0; }" << std::endl << std::endl;
+    }
+
     if (this->bGenerateExitForCK_ == true) {
       codestream << "  for (int k = 0; k < exit_col; k++)" << std::endl;
     } else {
