@@ -4,7 +4,7 @@
 // @author Alexander Breuer (breuera AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 // @author Alexander Heinecke (heinecke AT in.tum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
 // 
-// @date 2014-03-10 17:03:01.466770
+// @date 2014-03-13 22:33:41.486302
 // 
 // @section LICENSE
 // This software was developed at Technische Universitaet Muenchen, who is the owner of the software.
@@ -1138,6 +1138,8 @@ for(int n = 0; n < 9; n+=3)
 #if !defined(__SSE3__) && !defined(__AVX__)
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 4; m++) { C[(n*4)+m] = 0.0; }
+
   for (int k = 0; k < 4; k++)
   {
     for(int m = 0; m < 4; m++)
@@ -2323,6 +2325,8 @@ switch(exit_col)
 }
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 4; m++) { C[(n*4)+m] = 0.0; }
+
   for (int k = 0; k < exit_col; k++)
   {
     for(int m = 0; m < M; m++)
@@ -6753,6 +6757,8 @@ for(int n = 0; n < 9; n+=3)
 #if !defined(__SSE3__) && !defined(__AVX__)
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 10; m++) { C[(n*10)+m] = 0.0; }
+
   for (int k = 0; k < 10; k++)
   {
     for(int m = 0; m < 10; m++)
@@ -9156,6 +9162,8 @@ switch(exit_col)
 }
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 10; m++) { C[(n*10)+m] = 0.0; }
+
   for (int k = 0; k < exit_col; k++)
   {
     for(int m = 0; m < M; m++)
@@ -15586,6 +15594,8 @@ for(int n = 0; n < 9; n+=3)
 #if !defined(__SSE3__) && !defined(__AVX__)
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 20; m++) { C[(n*20)+m] = 0.0; }
+
   for (int k = 0; k < 20; k++)
   {
     for(int m = 0; m < 20; m++)
@@ -19998,6 +20008,8 @@ switch(exit_col)
 }
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 20; m++) { C[(n*20)+m] = 0.0; }
+
   for (int k = 0; k < exit_col; k++)
   {
     for(int m = 0; m < M; m++)
@@ -29428,6 +29440,8 @@ for(int n = 0; n < 9; n+=3)
 #if !defined(__SSE3__) && !defined(__AVX__)
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 35; m++) { C[(n*35)+m] = 0.0; }
+
   for (int k = 0; k < 35; k++)
   {
     for(int m = 0; m < 35; m++)
@@ -36849,6 +36863,8 @@ switch(exit_col)
 }
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 35; m++) { C[(n*35)+m] = 0.0; }
+
   for (int k = 0; k < exit_col; k++)
   {
     for(int m = 0; m < M; m++)
@@ -51006,6 +51022,8 @@ _mm512_store_pd(C + m + 8*56, c_8);
 #if !defined(__SSE3__) && !defined(__AVX__) && !defined(__MIC__)
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 56; m++) { C[(n*56)+m] = 0.0; }
+
   for (int k = 0; k < 56; k++)
   {
     for(int m = 0; m < 56; m++)
@@ -62923,6 +62941,8 @@ switch(exit_col)
 }
 for (int n = 0; n < 9; n++)
 {
+  for(int m = 0; m < 56; m++) { C[(n*56)+m] = 0.0; }
+
   for (int k = 0; k < exit_col; k++)
   {
     for(int m = 0; m < M; m++)
