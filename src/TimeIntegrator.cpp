@@ -31,6 +31,8 @@
  * Time integration in SeisSol.
  **/
 
+#include "TimeIntegrator.h"
+
 #include <Monitoring/FlopCounter.hpp>
 #include <utils/logger.h>
 
@@ -38,23 +40,15 @@
 #pragma message "compiling time integrator with assertions"
 #endif
 
-#ifdef __INTEL_OFFLOAD
-#pragma offload_attribute(push, target(mic))
-#endif
 #include <cstring>
 #include <assert.h>
+#include <stdint.h>
 
 #include <generated_code/matrix_kernels/dense_matrices.hpp_include>
 #include <generated_code/matrix_kernels/star_matrices_3d.hpp_include>
 #ifndef __MIC__
 #include <generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include>
 #endif
-#ifdef __INTEL_OFFLOAD
-#pragma offload_attribute(pop)
-#endif
-
-#include "TimeIntegrator.h"
-
 
 void seissol::kernels::TimeIntegrator::setUpMatrixKernel( unsigned int i_id,
                                                           bool i_sparse ) {
@@ -96,7 +90,6 @@ void seissol::kernels::TimeIntegrator::setUpMatrixKernel( unsigned int i_id,
   }
 }
 
-#ifndef DIRTY_EXCLUDE_ON_MIC
 seissol::kernels::TimeIntegrator::TimeIntegrator( const seissol::XmlParser                   &i_matrixReader,
                                                   const seissol::initializers::MemoryManager &i_memoryManager ) {
   /*
@@ -142,19 +135,6 @@ seissol::kernels::TimeIntegrator::TimeIntegrator( const seissol::XmlParser      
   // set up the star matrix kernel
   setUpMatrixKernel( 3, true );
 }
-#endif
-
-#ifdef __INTEL_OFFLOAD
-seissol::kernels::TimeIntegrator::TimeIntegrator() {
-  // set up the stiffness matrices as dense matrices
-  for( int l_i = 0; l_i < 3; l_i++) {
-    setUpMatrixKernel( l_i, false );
-  }
-
-  // set up the star matrix kernel
-  setUpMatrixKernel( 3, true );
-}
-#endif
 
 void seissol::kernels::TimeIntegrator::computeTimeDerivatives( const double  i_unknowns[NUMBEROFUNKNOWNS],
                                                                      double *i_stiffnessMatrices[3],

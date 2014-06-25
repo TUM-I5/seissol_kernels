@@ -34,21 +34,9 @@
 #ifndef BOUNDARYINTEGRATOR_H_
 #define BOUNDARYINTEGRATOR_H_
 
-#ifdef __INTEL_OFFLOAD
-#ifdef __MIC__
-#define DIRTY_EXCLUDE_ON_MIC
-#endif
-#endif
-
-#ifndef DIRTY_EXCLUDE_ON_MIC
-#include <Initializer/XmlParser.hpp>
 #include <Initializer/MemoryManager.h>
-#endif
+#include <Initializer/XmlParser.hpp>
 #include <Initializer/preProcessorMacros.fpp>
-
-#ifdef __INTEL_OFFLOAD
-#pragma offload_attribute(push, target(mic))
-#endif
 
 namespace seissol {
   namespace kernels {
@@ -120,14 +108,6 @@ class seissol::kernels::BoundaryIntegrator {
                             bool i_sparse );
 
   public:
-#ifdef __INTEL_OFFLOAD
-    /**
-     * Constructor, which initializes the volume integrator with only dense matrices
-     **/
-    BoundaryIntegrator();
-#endif
-
-#ifndef DIRTY_EXCLUDE_ON_MIC
     /**
      * Constructor, which initializes the solver according to the matrix setup in the given XML-file.
      *
@@ -136,7 +116,6 @@ class seissol::kernels::BoundaryIntegrator {
      **/
     BoundaryIntegrator( const seissol::XmlParser                   &i_matrixReader,
                         const seissol::initializers::MemoryManager &i_memoryManager );
-#endif
 
     /**
      * Computes the boundary integral of a single element.
@@ -212,8 +191,5 @@ class seissol::kernels::BoundaryIntegrator {
     
 };
 
-#ifdef __INTEL_OFFLOAD
-#pragma offload_attribute(pop)
 #endif
 
-#endif
