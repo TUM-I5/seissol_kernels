@@ -119,7 +119,7 @@ l_commandLineParser.add_argument('--generateStarMatrixInitializationCode',
                                  action='store_true',
                                  help='generates Fortran Code, which initializes a flat star matrix given the full matrix.')
 
-l_commandLineParser.add_argument('--generateBoundaryMatrixKernelsInitializationCode',
+l_commandLineParser.add_argument('--generateMatrixKernelsInitializationCode',
                                  action='store_true',
                                  help='generates C Code, which initializes the function pointers to the kernels of the matrices appearing in the boundary integration.')
                                  
@@ -211,9 +211,9 @@ if l_commandLineArguments.runBenchmarks:
   l_logger.log('running benchmarks')
   l_seisSolGen.runBenchmarks('MatrixGen', 'matrices', 'build_log.txt')
 
-if l_commandLineArguments.generateBoundaryMatrixKernelsInitializationCode:
-  l_seisSolGen.generateBoundaryMatrixKernelsInitializationCode( i_pathToMatrices='matrices',
-                                                           i_pathToOutputFile='generated_code/initialization/boundary_matrix_kernels.hpp_include' )
+if l_commandLineArguments.generateMatrixKernelsInitializationCode:
+  l_seisSolGen.generateMatrixKernelsInitializationCode( i_pathToMatrices='matrices',
+                                                        i_pathToOutputFile='generated_code/initialization/bind_matrix_kernels.hpp_include' )
   
 if l_commandLineArguments.generateMatrixKernels:
   l_seisSolGen.generateMatrixKernels( i_pathToSeisSolGen = 'SeisSolGen/generator.exe',

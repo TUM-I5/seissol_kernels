@@ -5,7 +5,7 @@
 # @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 #
 # @section LICENSE
-# Copyright (c) 2013, SeisSol Group
+# Copyright (c) 2013-2014, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,9 +39,16 @@
 
 cmake_minimum_required( VERSION 2.6 )
 
+option( VECTOR_INSTRUCTION_SET "Vectorization instruction set: avx, avx2 or mic" )
+option( CONVERGENCE_ORDER      "Convergence order of the ADER-DG scheme" )
+
+add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
+
 # set number of basis functions
-add_definitions( -DNUMBEROFBASISFUNCTIONS=20
+add_definitions( -DNUMBER_OF_ALIGNED_BASIS_FUNCTIONS=56
+                 -DNUMBEROFBASISFUNCTIONS=56
                  -DNUMBEROFVARIABLES=9
+                 -DNUMBER_OF_QUANTITIES=9
                  -DGENERATEDKERNELS )
 
 # use intel compilers
@@ -50,11 +57,39 @@ CMAKE_FORCE_C_COMPILER(icc "Intel C Compiler")
 CMAKE_FORCE_CXX_COMPILER(icpc "Intel C++ Compiler")
 CMAKE_FORCE_Fortran_COMPILER(ifort "Intel Fortran Compiler")
 
+# build the architecture dependent matrix kernels as library
+if( ${VECTOR_INSTRUCTION_SET} STREQUAL avx )
+  message( "-- using 32-bit aligned matrix kernels" )
+
+  add_library( matrix_kernels
+               submodules/seissol/Monitoring/FlopCounter.cpp
+               preprocessing/generated_code/matrix_kernels/dgemm_32.cpp )
+  add_definitions( -DALIGNMENT=32
+                   -m${VECTOR_INSTRUCTION_SET} )
+elseif( ${VECTOR_INSTRUCTION_SET} STREQUAL avx2 OR ${VECTOR_INSTRUCTION_SET} STREQUAL mic )
+  message( "-- using 64-bit aligned matrix kernels" )
+
+  add_library( matrix_kernels
+               submodules/seissol/Monitoring/FlopCounter.cpp
+               preprocessing/generated_code/matrix_kernels/dgemm_64.cpp )
+#TODO: add proper avx2 command
+  add_definitions( -DALIGNMENT=64
+                   -m${VECTOR_INSTRUCTION_SET} )
+else()
+  message( WARNING "vector instruction set ${VECTOR_INSTRUCTION_SET} not supported" )
+  message( "-- using 32-bit alignment and compiler generated kernels" )
+  add_definitions( -DALIGNMENT=32 )
+  add_library( matrix_kernels
+               submodules/seissol/Monitoring/FlopCounter.cpp
+               preprocessing/generated_code/matrix_kernels/dgemm_32.cpp )
+endif()
+
 # enable C++11
 ADD_DEFINITIONS( -std=c++11 )
 
 # add submodules
-include_directories( submodules
+include_directories( src
+                     submodules
                      submodules/seissol
                    )
 
@@ -68,11 +103,16 @@ add_library( memoryManager
              submodules/seissol/Initializer/MemoryAllocator.cpp
              submodules/seissol/Initializer/MemoryManager.cpp )
 
-# add integrators
-add_library( integrators
+# add kernels
+add_library( time_kernel
+             src/Time.cpp )
+
+add_library( volume_kernel
              submodules/seissol/Monitoring/FlopCounter.cpp
-             src/TimeIntegrator.cpp
-             src/VolumeIntegrator.cpp
+             src/VolumeIntegrator.cpp )
+
+add_library( flux_kernel
+             submodules/seissol/Monitoring/FlopCounter.cpp
              src/BoundaryIntegrator.cpp )
 
 # add unit tests
@@ -99,12 +139,25 @@ if(CXXTEST_FOUND)
                   )
   target_link_libraries( matrixKernelsUnitTests memoryManager pugiXml )
 
-  # unit tests for the integrators
-  CXXTEST_ADD_TEST( integratorsUnitTests
-                    integrators.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/TimeIntegratorTestSuite.t.h 
+  # unit tests for the time kernel
+  CXXTEST_ADD_TEST( time_unit_tests
+                    timeUnitTests.cpp
+                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/TimeKernelTestSuite.t.h  
+                  )
+
+  # unit tests for the volume kernel
+  CXXTEST_ADD_TEST( volume_unit_tests
+                    volumeUnitTests.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/VolumeIntegratorTestSuite.t.h
+                  )
+
+  # unit tests for the flux kernel
+  CXXTEST_ADD_TEST( flux_unit_tests
+                    fluxUnitTests.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BoundaryIntegratorTestSuite.t.h     
                   )
-  target_link_libraries( integratorsUnitTests integrators memoryManager pugiXml )  
+
+  target_link_libraries( time_unit_tests   time_kernel   memoryManager pugiXml matrix_kernels )
+  target_link_libraries( volume_unit_tests volume_kernel memoryManager pugiXml matrix_kernels )  
+  target_link_libraries( flux_unit_tests   flux_kernel   memoryManager pugiXml matrix_kernels )  
 endif()

@@ -42,6 +42,7 @@
 #define SIMPLETIMEINTEGRATOR_HPP_
 
 #include <Initializer/typedefs.hpp>
+#include <seissol/Initializer/preProcessorMacros.fpp>
 
 #include "DenseMatrix.hpp"
 
@@ -113,11 +114,12 @@ class unit_test::SimpleTimeIntegrator {
 
         // stiffness matrix multiplication
         m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
-                                                     m_transposedStiffnessMatrices[0], o_timeDerivatives[l_order-1], l_temporaryProduct ); 
+                                                     m_transposedStiffnessMatrices[0], o_timeDerivatives[l_order-1], l_temporaryProduct );
 
         // star matrix multiplcation
         m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
-                                                     l_temporaryProduct, i_aStar, o_timeDerivatives[l_order] );                                      
+                                                     l_temporaryProduct, i_aStar, o_timeDerivatives[l_order] );   
+                              
         /*
          * reference coordinate: \f$ \eta \f$
          */
@@ -143,7 +145,7 @@ class unit_test::SimpleTimeIntegrator {
 
         // star matrix multiplcation
         m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
-                                                     l_temporaryProduct, i_cStar, o_timeDerivatives[l_order] );                                      
+                                                     l_temporaryProduct, i_cStar, o_timeDerivatives[l_order] );
       } 
     }
 
@@ -160,25 +162,62 @@ class unit_test::SimpleTimeIntegrator {
       // assert integration forward in time
       TS_ASSERT( i_deltaT[1] > i_deltaT[0] );
 
-      // initialization of Taylor series factors
-      real l_taylorSeriesDelta = i_deltaT[1] - i_deltaT[0];
-      real l_taylorSeriesFactor = l_taylorSeriesDelta;
+      // initialization of Taylor series scalars
+      real l_firstTerm  = (real)  1;
+      real l_secondTerm = (real)  1;
+      real l_factorial  = (real) -1;
+      real l_scalar;
 
-      // update time integrated unknowns with zeroth derivatives
+      // reset time integrated deegrees of freeomd with zeroth derivatives
       for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
-        o_timeIntegratedUnknowns[l_entry] = l_taylorSeriesFactor * i_timeDerivatives[0][l_entry];
+        o_timeIntegratedUnknowns[l_entry] = 0;
       }
 
       // iterate over order in time
-      for( int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) {
+      for( int l_order = 0; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) {
         // compute factor of the taylor series
-        l_taylorSeriesFactor = -l_taylorSeriesFactor * l_taylorSeriesDelta / real(l_order+1);
+        l_firstTerm  *=  i_deltaT[1];
+        l_secondTerm *=  i_deltaT[0];
+        l_factorial  *= -(real)(l_order+1);
+
+        l_scalar  = l_firstTerm - l_secondTerm;
+        l_scalar /= l_factorial;
        
         // update time integrated unknowns
         for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
-          o_timeIntegratedUnknowns[l_entry] += l_taylorSeriesFactor * i_timeDerivatives[l_order][l_entry];
+          o_timeIntegratedUnknowns[l_entry] += l_scalar * i_timeDerivatives[l_order][l_entry];
         } 
       }
     }
+
+   /**
+    * Compute the extrapolation of the DOFs based on the Taylor series expansion. Extrapolation is computed at the expansion point plus a \f$ \Delta_t \f$.
+    *
+    * @param i_timeDerivatives time derivatives of the Taylor series expansion.
+    * @param i_deltaT \f$ \Delta_t \f$ from the expansion point to the extrapolation point.
+    * @param o_timeExtrapolated time extrapolated degrees of freedom.
+    **/
+   void computeExtrapolation( const real i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+                                    real i_deltaT,
+                                    real o_timeExtrapolated[NUMBEROFUNKNOWNS] ) {
+      // copy 0th derivative to extrapolation
+      for( unsigned int l_dof = 0; l_dof < NUMBEROFUNKNOWNS; l_dof++ ) {
+        o_timeExtrapolated[l_dof] = i_timeDerivatives[0][l_dof];
+      }
+
+      real l_scalar = (real) 1;
+
+      // iterate of all derivatives
+      for( unsigned int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
+        l_scalar *= -i_deltaT;
+        l_scalar /= (real) l_derivative;
+
+        // add the contribution of this derivative
+        for( unsigned int l_dof =0; l_dof < NUMBEROFUNKNOWNS; l_dof++ ) {
+          o_timeExtrapolated[l_dof] += l_scalar * i_timeDerivatives[l_derivative][l_dof];
+        }
+      }
+   }
+
 };
 #endif

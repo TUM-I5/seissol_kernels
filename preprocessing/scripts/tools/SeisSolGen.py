@@ -498,6 +498,266 @@ def getSparseMatrices( i_pathToMatrices,
   # done, return the matrices
   return l_sparseMatrices
 
+# Get the number of basis function for the given convergence order
+#
+# \param i_order convegence order.
+def getNumberOfBasisFunctions( i_order ):
+  return i_order*(i_order+1)*(i_order+2)/6
+
+# Get the number of basis function for the given convergence order and floating point precision
+# aligned to the given alignment
+#
+# \param i_order convergence order.
+# \param i_alignment target alignment.
+# \param i_precision floating point precision. 
+def getAlignedNumberOfBasisFunctions( i_order,
+                                      i_alignment,
+                                      i_precision = 8 ):
+
+  # compute the #remaing non-zeros for the recursive scheme
+  l_numberOfNonZeroBasisFunctions = getNumberOfBasisFunctions( i_order )
+
+  l_nonZeroBits = l_numberOfNonZeroBasisFunctions * i_precision
+
+  # align the per-derivative non-zeros to memory
+  l_alignedBits =  l_nonZeroBits +\
+                  (i_alignment-(l_nonZeroBits % i_alignment))%i_alignment
+
+  l_alignedBasisFunctions = l_alignedBits / i_precision
+
+  return l_alignedBasisFunctions
+
+# Gets the leading dimension for the recursive computation of the time derivatives.
+# Each step of the recursion has an associated order.
+#
+# Example for O = 4, 64 bit alignment and double precision
+#
+# || 20 basis functions | 4 entries alignment | 10 basis functions | 6 entries alignment || 4 basis functions | 4 entries alignment || 1 basis function | 7 entries alignment ||  
+#
+# This leads in total to a leading dimension of 20+4+10+6+4+4+1+7=56 for the associated order 4, 10+6+4+4+1+7=32 for the associated order 3 and so on. 
+# Note that no entry is stored for the 3rd derivative,
+#
+# \param i_associatedOrder associated order of the time derivative
+# \param i_alignment memory alignment in bits.
+# \param i_precision floating point precision.
+#
+def getLeadingDimensionOfTimeDerivatives( i_associatedOrder,
+                                          i_alignment,
+                                          i_precision = 8 ):
+  l_leadingDimension = 0
+  # iterate over all remaning time derivatives
+  for l_timeDerivative in range(1, i_associatedOrder+1):
+    l_leadingDimension = l_leadingDimension + getAlignedNumberOfBasisFunctions( i_order     = l_timeDerivative,
+                                                                                i_alignment = i_alignment,
+                                                                                i_precision = i_precision )
+
+  return l_leadingDimension
+
+# Gets the dense matrices for the stiffness matrix computation in the time kernel.
+#
+# \param i_alignment assumed memory alignment of the stiffness matrices and time derivatives of the DOFs.
+# \param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+# \param i_numberOfQuantities #(quantities).
+def getDenseStiffTimeMatrices( i_alignment,
+                               i_degreesOfBasisFunctions,
+                               i_numberOfQuantities ):
+  l_denseMatrices = []
+
+  for l_degree in i_degreesOfBasisFunctions:
+    l_order = l_degree + 1
+
+    # generate dense matrix kernels for stiffness and star matrices in the time kernel
+    # We have to compute O-1 derivatives; zeroth derivative is equal to the DOFs
+    #
+    # Remark: We can't exploit the hierachical character of the basis functions
+    #         because the leading dimension of the stiffness matrices changes with the decreasing associated order.
+    for l_computedDerivatives in range(0,l_order-1):
+
+      # associated order of the derivatives
+      l_associatedOrder = l_order - l_computedDerivatives
+
+      # remaining non zero basis function for the associated order
+      l_nonZeroBasisFunctions = (l_associatedOrder)*(l_associatedOrder+1)*(l_associatedOrder+2)/6
+
+      # DGEMM specification
+      # m     = #(aligned basis functions of the associated order-1)
+      # n     = #(quantities)
+      # k     = #(basis functions)
+      # ld(A) = #(aligned basis function of the order-1)
+      # ld(B) = #(aligned basis function of the associated order)
+      # ld(C) = #(aligned basis functions of the associated order-1)
+      l_m   = getAlignedNumberOfBasisFunctions(   i_order           = l_associatedOrder-1,
+                                                  i_alignment       = i_alignment ); 
+      l_n   = i_numberOfQuantities
+      l_k   = l_nonZeroBasisFunctions
+      l_ldA = getAlignedNumberOfBasisFunctions(   i_order           = l_order-1,
+                                                  i_alignment       = i_alignment );
+      l_ldB =  getAlignedNumberOfBasisFunctions(  i_order           = l_associatedOrder,
+                                                  i_alignment       = i_alignment )
+      l_ldC = getAlignedNumberOfBasisFunctions(   i_order           = l_associatedOrder-1,
+                                                  i_alignment       = i_alignment ); 
+
+      l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                          + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                          + "_beta0";
+
+      # Add matrix to dictionary
+      l_denseMatrices = l_denseMatrices + [ dict(\
+                                              routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
+                                              m          = l_m, \
+                                              n          = l_n, \
+                                              k          = l_k, \
+                                              ldA        = l_ldA, \
+                                              ldB        = l_ldB, \
+                                              ldC        = l_ldC, \
+                                              add        = False
+                                            )]
+
+  return l_denseMatrices
+
+# Gets the dense matrices for the stiffness matrix computation in the volume kernel.
+#
+# \param i_alignment assumed memory alignment of the stiffness matrices and time integrated DOFs.
+# \param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+# \param i_numberOfQuantities #(quantities).
+def getDenseStiffVolumeMatrices( i_alignment,
+                                 i_degreesOfBasisFunctions,
+                                 i_numberOfQuantities ):
+  l_denseMatrices = []
+  
+  for l_degree in i_degreesOfBasisFunctions:
+    l_order = l_degree + 1
+
+    # generate stiffness matrix kernels for the volume kernel
+    #
+    # DGEMM specification
+    # m     = #(aligned basis functions)
+    # n     = #(quantities)
+    # k     = #(basis functions of the order-1)
+    # ld(A) = #(aligned basis functions)
+    # ld(B) = #(aligned basis functions)
+    # ld(C) = #(aligned basus functions) 
+    l_m   = getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+    l_n   = i_numberOfQuantities
+    l_k   = getNumberOfBasisFunctions(        i_order = l_order - 1                            )
+    l_ldA = getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+    l_ldB = getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+    l_ldC = getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+
+    l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                        + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                        + "_beta0";
+
+    # Add matrix to dictionary
+    l_denseMatrices = l_denseMatrices + [ dict(\
+                                            routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
+                                            m          = l_m, \
+                                            n          = l_n, \
+                                            k          = l_k, \
+                                            ldA        = l_ldA, \
+                                            ldB        = l_ldB, \
+                                            ldC        = l_ldC, \
+                                            add        = False
+                                         )]
+
+  return l_denseMatrices
+
+# Gets the dense matrices for flux matrix computation in the flux kernel.
+#
+# \param i_alignment assumed memory alignment of the flux matrices and time integrated DOFs.
+# \param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+# \param i_numberOfQuantities #(quantities).
+def getDenseFluxMatrices( i_alignment,
+                          i_degreesOfBasisFunctions,
+                          i_numberOfQuantities ):
+  l_denseMatrices = []
+  
+  for l_degree in i_degreesOfBasisFunctions:
+    l_order = l_degree + 1
+
+    # generate stiffness matrix kernels for the flux kernel
+    #
+    # DGEMM specification
+    # m     = #(aligned basis functions)
+    # n     = #(quantities)
+    # k     = #(basis functions of the order)
+    # ld(A) = #(aligned basis functions)
+    # ld(B) = #(aligned basis functions)
+    # ld(C) = #(aligned basus functions) 
+    l_m   = getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+    l_n   = i_numberOfQuantities
+    l_k   = getNumberOfBasisFunctions(        i_order = l_order                            )
+    l_ldA = getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+    l_ldB = getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+    l_ldC = getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+
+    l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                        + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                        + "_beta0";
+
+    # Add matrix to dictionary
+    l_denseMatrices = l_denseMatrices + [ dict(\
+                                            routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
+                                            m          = l_m, \
+                                            n          = l_n, \
+                                            k          = l_k, \
+                                            ldA        = l_ldA, \
+                                            ldB        = l_ldB, \
+                                            ldC        = l_ldC, \
+                                            add        = False
+                                        )]
+  return l_denseMatrices
+
+# Gets the dense matrices for star matrix and flux solver comptation.
+#
+# \param i_alignment assumed memory alignment of (time integrated, derivatives of) DOFs.
+# \param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+# \param i_numberOfQuantities #(quantities).
+def getDenseStarSolverMatrices( i_alignment,
+                                i_degreesOfBasisFunctions,
+                                i_numberOfQuantities ):
+  l_denseMatrices = []
+  
+  for l_degree in i_degreesOfBasisFunctions:
+    l_order = l_degree + 1
+
+    # generate star matrix and flux matrix kernels for the volume and flux kernels
+    #
+    # DGEMM specification
+    # m     = #(aligned basis functions of the order)
+    # n     = #(quantities)
+    # k     = #(quantities)
+    # ld(A) = #(aligned basis functions of the order)
+    # ld(B) = #(quantities)
+    # ld(C) = #(aligned basis functions of the order)
+    l_m   = getAlignedNumberOfBasisFunctions( i_order     = l_order,
+                                              i_alignment = i_alignment ); 
+    l_n   = i_numberOfQuantities
+    l_k   = i_numberOfQuantities
+    l_ldA = getAlignedNumberOfBasisFunctions( i_order     = l_order,
+                                              i_alignment = i_alignment );
+    l_ldB = i_numberOfQuantities
+    l_ldC = getAlignedNumberOfBasisFunctions( i_order     = l_order,
+                                              i_alignment = i_alignment ); 
+
+    l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                        + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                        + "_beta1";
+
+    # Add matrix to dictionary
+    l_denseMatrices = l_denseMatrices + [ dict(\
+                                            routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
+                                            m          = l_m, \
+                                            n          = l_n, \
+                                            k          = l_k, \
+                                            ldA        = l_ldA, \
+                                            ldB        = l_ldB, \
+                                            ldC        = l_ldC, \
+                                            add        = True
+                                        )]
+
+  return l_denseMatrices
+
 # Returns a list of dense*dense matrix kernels for near dense matrices in SeisSol.
 #   Each matrix is specified by:
 #     fileNameOfGeneratedKernel    - base name of generated matrix kernel
@@ -524,93 +784,63 @@ def getSparseMatrices( i_pathToMatrices,
 #   *     *  *              *
 #   *******  ****************
 #
+# \param i_alignments alignments to generate kernels for.
 # \param i_numberOfQuantities number of quantities (elastics = 9, attenuation > 9)
 # \param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
 # \return dictionary conatinig the dense matrices described abover.
-def getDenseMatrices( i_numberOfQuantities = 9,
-                      i_maximumDegreeOfBasisFunctions = 6 ):
+def getDenseMatrices( i_alignments,
+                      i_numberOfQuantities = 9,
+                      i_maximumDegreeOfBasisFunctions = 8 ):
   
   # list which holds the different matrix structures
   l_denseMatrices = []
 
-  # file where the generated code is stored
-  l_fileNameOfGeneratedKernel = 'dense_matrices.hpp_include'
+  # iterate over different alignments:
+  # SSE - 16 bit
+  # AVX - 32 bit
+  # MIC - 64 bit 
+  for l_alignment in i_alignments:
+    l_minimumGlobalDegree   = 0
+    l_minimumLocalDegree    = 0
 
-  # iterate of basis functions degree
-  for l_degree in range(1,i_maximumDegreeOfBasisFunctions):
-    # compute number of basis functions
-    l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
+    # increase minimum degree in case of 32 and 64 bit alignment
+    # same kernel for order 1-3; remark ld(A) of the stiffness matrices is basis(O-1)
+    if( l_alignment >= 32 ):
+      l_minimumGlobalDegree = 2
+      l_minimumLocalDegree  = 1
 
-    l_logger.log( 'adding dense matrices: '+str(l_degree)+' (degree of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+str(i_numberOfQuantities)+' (#quantities)', 3)
+    l_alignedDgemm = []
+    l_alignedDgemm = l_alignedDgemm + getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
+                                                                   i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                   i_numberOfQuantities      = i_numberOfQuantities )
 
-    # generate kernels for flux matrices
-    #   m = #(basis functions)
-    #   n = #(quantities)
-    #   k = #(basis functions)
-    l_m = l_numberOfBasisFunctions
-    l_n = i_numberOfQuantities
-    l_k = l_numberOfBasisFunctions
+    l_alignedDgemm = l_alignedDgemm + getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
+                                                                   i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                   i_numberOfQuantities      = i_numberOfQuantities )
 
-    # where to store the dense matrix kernels
-    l_fileNameOfGeneratedKernel    = 'dense_matrices.hpp_include'
+    l_alignedDgemm = l_alignedDgemm + getDenseFluxMatrices(        i_alignment = l_alignment,
+                                                                   i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                   i_numberOfQuantities      = i_numberOfQuantities )
 
-    # generate a dense kernel for boundary and volume (dense) and one for the time integration (denseCK)
-    for l_denseType in ['dense', 'denseCK']:
-      # generate function name
-      l_routineNameOfGeneratedKernel = 'generatedMatrixMultiplication_'+ 'dense'
-      if l_denseType == 'denseCK':
-         l_routineNameOfGeneratedKernel =  l_routineNameOfGeneratedKernel + 'Ader'
+    l_alignedDgemm = l_alignedDgemm + getDenseStarSolverMatrices(  i_alignment               = l_alignment,
+                                                                   i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                   i_numberOfQuantities      = i_numberOfQuantities )
 
-      l_routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel + '_'+str(l_m)+'_'+str(l_n)+'_'+str(l_k)
+    # file where the generated code is stored
+    l_fileNameOfGeneratedKernel = 'dgemm_' + str(l_alignment)
+    for l_matrix in range(len(l_alignedDgemm)):
+      l_alignedDgemm[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
 
-      # Add matrix to dictionary
-      #   TODO: We use leading dimensions equal to standard column wise storage
-      l_denseMatrices = l_denseMatrices + [ dict(\
-                                              fileNameOfGeneratedKernel    = l_fileNameOfGeneratedKernel, \
-                                              routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
-                                              m          = l_m, \
-                                              n          = l_n, \
-                                              k          = l_k, \
-                                              ldA        = l_m, \
-                                              ldB        = l_k, \
-                                              ldC        = l_m, \
-                                              denseType  = l_denseType, \
-                                              add        = False
-                                          )]
-
-    # generate kernels for the flux solver
-    # m = #(basis functions)
-    # n = #(quantities)
-    # k = #(quantities)   
-    l_m = l_numberOfBasisFunctions
-    l_n = i_numberOfQuantities
-    l_k = i_numberOfQuantities
-
-    # generate function name
-    l_routineNameOfGeneratedKernel = 'generatedMatrixMultiplication_'+ 'dense_'+str(l_m)+'_'+str(l_n)+'_'+str(l_k)
-
-    # Add matrix to dictionary
-    #   TODO: We use leading dimensions equal to standard column wise storage
-    l_denseMatrices = l_denseMatrices + [ dict(\
-                                            fileNameOfGeneratedKernel    = l_fileNameOfGeneratedKernel, \
-                                            routineNameOfGeneratedKernel = l_routineNameOfGeneratedKernel, \
-                                            m          = l_m, \
-                                            n          = l_n, \
-                                            k          = l_k, \
-                                            ldA        = l_m, \
-                                            ldB        = l_k, \
-                                            ldC        = l_m, \
-                                            denseType  = 'dense', \
-                                            add        = True
-                                        )]
+    # add the alignment to all matrices
+    l_denseMatrices = l_denseMatrices + l_alignedDgemm 
 
   return l_denseMatrices
 
 # Generates matrix kernels.
 #
-# @param i_pathToSeisSolGen path to executable of the code generator.
-# @param i_pathToMatrices path to directory, which contains the matrices in CSC-MatrixMarket-format.
-# @param i_pathToOutputDirectory path to directory where the generated code will be written to.
+# \param i_pathToSeisSolGen path to executable of the code generator.
+# \param i_pathToMatrices path to directory, which contains the matrices in CSC-MatrixMarket-format.
+# \param i_pathToOutputDirectory path to directory where the generated code will be written to.
 def generateMatrixKernels( i_pathToSeisSolGen,
                            i_pathToMatrices,
                            i_pathToOutputDirectory ):
@@ -619,16 +849,21 @@ def generateMatrixKernels( i_pathToSeisSolGen,
                '\n matrix directory='+i_pathToMatrices+
                '\n output directory='+i_pathToOutputDirectory)
 
+  l_alignments = [16,32, 64]
+
   # get dense matrices
-  l_denseMatrices = getDenseMatrices()
+  l_denseMatrices = getDenseMatrices( i_alignments = l_alignments )
 
   # get sparse matrices
   l_sparseMatrices = getSparseMatrices(i_pathToMatrices)
 
-  l_fileNames = [ 'dense_matrices.hpp_include',
-                  'star_matrices_3d.hpp_include',
+  l_fileNames = [ 'star_matrices_3d.hpp_include',
                   'flux_matrices_3d.hpp_include',
                   'stiffness_matrices_3d.hpp_include' ]
+
+  for l_alignment in l_alignments:
+    l_fileNames = l_fileNames + ['dgemm_'+str(l_alignment)+".h"]
+    l_fileNames = l_fileNames + ['dgemm_'+str(l_alignment)+".cpp"]
 
   # create new files and write header information
   for l_file in l_fileNames:
@@ -645,7 +880,11 @@ def generateMatrixKernels( i_pathToSeisSolGen,
     l_includeGuardName = re.sub("[^a-zA-Z]","",  l_file).upper() # remove non letters, uppercase
     l_includeCommand = '#ifndef ' + l_includeGuardName + '\n' \
                        '#define ' + l_includeGuardName + '\n\n' \
-                       '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'
+                       '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'\
+                       '#include <cstddef>\n'\
+                       '#ifndef NDEBUG\n'\
+                       'extern unsigned long long num_flops;\n'\
+                       '#endif\n\n'
     l_outputFile = open(l_pathToOutputFile ,'a')
 
     # TODO: Remove this code once we have different compile units
@@ -657,10 +896,16 @@ def generateMatrixKernels( i_pathToSeisSolGen,
 
   # generate code for all dense matrices
   for l_matrix in l_denseMatrices:
-    # output file
-    l_pathToOutputFile = i_pathToOutputDirectory+'/'+l_matrix['fileNameOfGeneratedKernel']
+    # write header
+    l_header = open(i_pathToOutputDirectory+'/'+l_matrix['fileNameOfGeneratedKernel']+'.h', 'a')
+    l_header.write( 'void ' + l_matrix['routineNameOfGeneratedKernel']+'(double *i_A, double *i_B, double *io_C,'\
+                                                                        'double *i_APrefetch, double *i_BPrefetch, double *i_CPrefetch );\n' )
+    l_header.close()
 
-    l_type = l_matrix['denseType']
+    # output file
+    l_pathToOutputFile = i_pathToOutputDirectory+'/'+l_matrix['fileNameOfGeneratedKernel']+'.cpp'
+
+    l_type = 'dense'
     l_commandLineParameters = l_type + ' ' + l_pathToOutputFile+\
                               ' '+l_matrix['routineNameOfGeneratedKernel']+\
                               ' '+str(l_matrix['m'])+\
@@ -711,12 +956,15 @@ def generateMatrixKernels( i_pathToSeisSolGen,
     l_outputFile.write('\n#endif')
     l_outputFile.close()
 
-# Generates code, which initializes the flux matrix function pointers for the boundary integrator.
+# Generates code, which initializes the matrix function pointers for in the time, volume and flux kernel.
 #
-# @param i_pathToMatrices path to directory containing the matrices.
-# @param i_pathToOutputFile path to file, which will hold the initialization code.
-def generateBoundaryMatrixKernelsInitializationCode( i_pathToMatrices,
-                                          i_pathToOutputFile ):
+# TODO: This implementation is limited to DGEMM
+#
+# \param i_pathToMatrices path to directory containing the matrices.
+# \param i_pathToOutputFile path to file, which will hold the initialization code.
+def generateMatrixKernelsInitializationCode( i_pathToMatrices,
+                                             i_pathToOutputFile,
+                                             i_maximumDegreeOfBasisFunctions = 8 ):
   l_logger.log('generating flux matrix initialization code' )
 
   # holds the generated source code
@@ -727,61 +975,67 @@ def generateBoundaryMatrixKernelsInitializationCode( i_pathToMatrices,
 
   # write license
   l_logger.writeFileHeader(i_pathToOutputFile, '// ')
-  
-  # get sparse matrices of degree 2 only, because we are interested in the base names only
-  l_matrices = getSparseMatrices( i_pathToMatrices = i_pathToMatrices,
-                                  i_numberOfQuantities = 9,
-                                  i_maximumDegreeOfBasisFunctions = 2 )
 
-  # use dense kernel if not sparse
-  l_sourceCode = l_sourceCode + '// preprocessor helping function to convert integer constants to strings\n'\
-                              +  '#define CONCAT_HELPER_4(a,b,c,d) a ## b ## c ## d\n'\
-                              +  '#define CONCAT_4(a,b,c,d) CONCAT_HELPER_4(a,b,c,d)\n'\
-                              +  '#define CONCAT_HELPER_6(a,b,c,d,e,f) a ## b ## c ## d ## e ## f\n'\
-                              +  '#define CONCAT_6(a,b,c,d,e,f) CONCAT_HELPER_6(a,b,c,d, e, f)\n'\
-                              +  '#ifndef __MIC__\n'\
-                              +  '// dense flux kernel\n'\
-                              +  'if( i_sparse == false && i_id < 52 ){\n'\
-                              +  '  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );\n'\
-                              +  '}\n'\
-  # iterate of flux matrice
-  for l_matrix in l_matrices:
-    if 'fP' in l_matrix['name'] or 'fM' in l_matrix['name']:
-      l_sourceCode = l_sourceCode + '// sparse flux kernel\n'\
-                                  + 'else if( i_id == ' + str(l_matrix['id']) + '){\n'\
-                                  + '  m_matrixKernels[i_id] = CONCAT_4( generatedMatrixMultiplication_'+ l_matrix['name'] +'_, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );\n'\
-                                  + '}\n'
+  l_sourceCode = l_sourceCode + '#if ALIGNMENT!=32 && ALIGNMENT!=64\n'\
+                              + '#error TODO missing fallback code\n'\
+                              + '#endif\n\n'
 
-  # add code for dense jacobian
-  l_sourceCode = l_sourceCode + '// dense jacobian kernel\n'\
-                              + 'else if( i_id == 52 ){\n'\
-                              + '  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFVARIABLES );\n'\
-                              + '}\n'
+  # iterate over supported alignments
+  for l_alignment in [32, 64]:
+    # set architecture dependent includes
+    if l_alignment == 32:
+      l_sourceCode = l_sourceCode + '#if ALIGNMENT==32\n\n'
+    if l_alignment == 64:
+      l_sourceCode = l_sourceCode + '#if ALIGNMENT==64\n\n'
 
-  # we didn't find our matrix
-  l_sourceCode = l_sourceCode + '// something went wrong: we dont have a kernel for this matrix\n'\
-                              + 'else{\n'\
-                              + '  assert(false);\n'\
-                              + '}\n'
-  
-  # add dense only for Intel MIC
-  l_sourceCode = l_sourceCode + '#else\n'\
-                              + '// dense only for Intel MIC\n'\
-                              + 'if( i_id == 52 ){ // jacobian\n'\
-                              + '  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFVARIABLES );\n'\
-                              + '}\n'\
-                              + 'else{ // flux matrix\n'\
-                              + '  // assert only sparse flux kernels are requested\n'\
-                              + '  assert(i_sparse == false);\n'\
-                              + '  m_matrixKernels[i_id] = CONCAT_6( generatedMatrixMultiplication_dense_, NUMBEROFBASISFUNCTIONS, _, NUMBEROFVARIABLES, _, NUMBEROFBASISFUNCTIONS );\n'\
-                              + '}\n'\
-                              + '#endif\n'
+    # iterate over convergence orders
+    for l_order in range(1, i_maximumDegreeOfBasisFunctions + 1):
+      l_sourceCode = l_sourceCode + '#if CONVERGENCE_ORDER==' + str(l_order) + '\n'
 
-  # undefine helper functions
-  l_sourceCode = l_sourceCode +  '#undef CONCAT_HELPER_4\n'\
-                              +  '#undef CONCAT_4\n'\
-                              +  '#undef CONCAT_HELPER_6\n'\
-                              +  '#undef CONCAT_6\n'
+      # iterate over kernels
+      for l_kernel in ['TIME_KERNEL', 'VOLUME_KERNEL', 'FLUX_KERNEL']:
+        l_matrixId = 0
+
+        if( l_kernel == 'TIME_KERNEL' ):
+          l_globalDgemm = getDenseStiffTimeMatrices(  i_alignment               = l_alignment,
+                                                      i_degreesOfBasisFunctions = [l_order-1],
+                                                      i_numberOfQuantities      = 9 )
+          l_localDgemm  = getDenseStarSolverMatrices( i_alignment               = l_alignment,
+                                                      i_degreesOfBasisFunctions = reversed(range(l_order-1)),
+                                                      i_numberOfQuantities      = 9 )
+          assert( len(l_globalDgemm) == len(l_localDgemm) )
+
+        if( l_kernel == 'VOLUME_KERNEL' ):
+          l_globalDgemm = getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
+                                                       i_degreesOfBasisFunctions = [l_order-1],
+                                                       i_numberOfQuantities      = 9 )
+
+          l_localDgemm  = getDenseStarSolverMatrices(  i_alignment               = l_alignment,
+                                                       i_degreesOfBasisFunctions = [l_order-1],
+                                                       i_numberOfQuantities      = 9 )
+
+        if( l_kernel == 'FLUX_KERNEL' ):
+          l_globalDgemm = getDenseFluxMatrices(       i_alignment               = l_alignment,
+                                                      i_degreesOfBasisFunctions = [l_order-1],
+                                                      i_numberOfQuantities      = 9 )
+
+          l_localDgemm  = getDenseStarSolverMatrices( i_alignment               = l_alignment,
+                                                      i_degreesOfBasisFunctions = [l_order-1],
+                                                      i_numberOfQuantities      = 9 )
+
+        l_sourceCode = l_sourceCode + '\n#ifdef ' + l_kernel + '\n'
+
+        for l_operation in range(len(l_globalDgemm)):
+          l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_matrixId) + '] = ' + l_globalDgemm[l_operation]['routineNameOfGeneratedKernel'] + ';\n'
+          l_matrixId = l_matrixId + 1
+          l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_matrixId) + '] = ' + l_localDgemm[ l_operation]['routineNameOfGeneratedKernel'] + ';\n'
+          l_matrixId = l_matrixId + 1
+
+        l_sourceCode = l_sourceCode + '#endif\n'
+
+      l_sourceCode = l_sourceCode + '\n#endif\n\n'    
+
+    l_sourceCode = l_sourceCode + '#endif\n\n\n'
 
   # write code to file
   l_file = open(i_pathToOutputFile ,'a')
