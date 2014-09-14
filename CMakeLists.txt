@@ -108,8 +108,7 @@ add_library( time_kernel
              src/Time.cpp )
 
 add_library( volume_kernel
-             submodules/seissol/Monitoring/FlopCounter.cpp
-             src/VolumeIntegrator.cpp )
+             src/Volume.cpp )
 
 add_library( flux_kernel
              submodules/seissol/Monitoring/FlopCounter.cpp
@@ -148,7 +147,7 @@ if(CXXTEST_FOUND)
   # unit tests for the volume kernel
   CXXTEST_ADD_TEST( volume_unit_tests
                     volumeUnitTests.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/VolumeIntegratorTestSuite.t.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/VolumeKernelTestSuite.t.h
                   )
 
   # unit tests for the flux kernel

@@ -178,7 +178,7 @@ class seissol::kernels::Time {
      *   Use computeTimeIntegral to compute time integrated degrees of freedom from the derivatives.
      *   Use computeTimeEvaluation to evaluate the time prediction of the degrees of freedom based on the derivatives.
      *
-     * @param i_stiffnessMatrices stiffness matrices.
+     * @param i_stiffnessMatrices stiffness matrices, 0: \f$ K^\xi \f$, 1: \f$ K^\eta\f$, 2: \f K^\zeta \f$.
      * @param i_degreesOfFreedom of the current time step \f$ t^\text{cell} \f$ for which the time derivatives \f$ \frac{\partial^j}{\partial t^j} \f$ will be computed.
      * @param i_starMatrices star matrices, 0: \f$ A^*_k \f$, 1: \f$ B^*_k \f$, 2: \f$ C^*_k \f$.
      * @param o_timeDerivatives time derivatives of the degrees of freedom in compressed format.

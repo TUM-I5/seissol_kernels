@@ -40,9 +40,6 @@
 
 #include "Time.h"
 
-#include <Monitoring/FlopCounter.hpp>
-#include <utils/logger.h>
-
 #if ALIGNMENT==32
 #include <generated_code/matrix_kernels/dgemm_32.h>
 #elif ALIGNMENT==64
@@ -81,9 +78,7 @@ void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrice
                                                  const real*  i_degreesOfFreedom,
                                                        real** i_starMatrices,
                                                        real*  o_timeDerivatives ) {
-  /*
-   * Assert right alignment of all input.
-   */
+  // assert alignments
   assert( ((uintptr_t)i_degreesOfFreedom)     % ALIGNMENT == 0 );
   assert( ((uintptr_t)o_timeDerivatives)      % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[0]) % ALIGNMENT == 0 );
@@ -106,10 +101,10 @@ void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrice
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
       // compute $K_{\xi_c}.Q_k$ and $(K_{\xi_c}.Q_k).A*$
       m_matrixKernels[ (l_derivative-1)*2     ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+m_derivativesOffsets[l_derivative-1],  l_temporaryResult,
-                                                  NULL,                     NULL,                                                    NULL                                                     ); // prefetches
+                                                  NULL,                     NULL,                                                    NULL                                                  ); // prefetches
 
       m_matrixKernels[ (l_derivative-1)*2 + 1 ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+m_derivativesOffsets[l_derivative],
-                                                  NULL,                     NULL,                                                    NULL                                                     ); // prefetches
+                                                  NULL,                     NULL,                                                    NULL                                                  ); // prefetches
     }
   }
 

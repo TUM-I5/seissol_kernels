@@ -41,6 +41,7 @@
 #ifndef DENSEMATRIX_HPP_
 #define DENSEMATRIX_HPP_
 
+#include <typedefs.hpp>
 #include <Initializer/MemoryAllocator.h>
 #include <Initializer/XmlParser.hpp>
 #include <cxxtest/TestSuite.h>
@@ -387,9 +388,6 @@ class unit_test::DenseMatrix {
         }
       }
 
-      // assert we expect the correct size
-      TS_ASSERT_EQUALS( m_matrixNumberOfColumns[l_position], i_numberOfColumns );
-
       // flux solver -> random values
       if( i_id == 52 ) {
         // assert correct matrix id
@@ -406,6 +404,10 @@ class unit_test::DenseMatrix {
           TS_ASSERT_LESS_THAN_EQUALS( m_matrixColumns[l_position][l_element], i_numberOfColumns);
 
           unsigned int l_denseIndex = (m_matrixColumns[l_position][l_element]-1) * i_numberOfRows + (m_matrixRows[l_position][l_element]-1);
+
+          // assert this a valid index
+          TS_ASSERT_LESS_THAN( l_denseIndex, i_numberOfRows*i_numberOfColumns );
+
           if( i_id == 59 ) { // star matrix
             o_matrix[ l_denseIndex ] = ((double)rand()/(double)RAND_MAX)*10.0;
           }

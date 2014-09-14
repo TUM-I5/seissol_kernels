@@ -7,7 +7,7 @@
 # @author Alexander Heinecke (alexander.heinecke AT mytum.de)
 #
 # @section LICENSE
-# Copyright (c) 2013, SeisSol Group
+# Copyright (c) 2013-2014, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

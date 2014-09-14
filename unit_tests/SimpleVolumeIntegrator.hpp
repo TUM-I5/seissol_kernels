@@ -42,6 +42,7 @@
 #define SIMPLEVOLUMEINTEGRATOR_HPP_
 
 #include <Initializer/typedefs.hpp>
+#include <seissol/Initializer/preProcessorMacros.fpp>
 
 #include "DenseMatrix.hpp"
 
@@ -96,9 +97,9 @@ class unit_test::SimpleVolumeIntegrator {
      *          + M^{-1} K^\zeta I(t^{n}, t^{n+1}, Q_{k}^n) C^*_k
      *        \f]
      **/
-    void computeVolumeIntegration( const double i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
-                                   const double i_starMatrices[3][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                         double io_unknowns[NUMBEROFUNKNOWNS] ) {
+    void computeVolumeIntegration( const double     i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
+                                   double * const * i_starMatrices,
+                                   double           io_unknowns[NUMBEROFUNKNOWNS] ) {
       // temporary matrix for two-step multiplications
       double l_temporaryProduct[NUMBEROFUNKNOWNS];
 
