@@ -78,13 +78,18 @@ void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrice
                                                  const real*  i_degreesOfFreedom,
                                                        real** i_starMatrices,
                                                        real*  o_timeDerivatives ) {
-  // assert alignments
+  /*
+   * assert alignments.
+   */
   assert( ((uintptr_t)i_degreesOfFreedom)     % ALIGNMENT == 0 );
   assert( ((uintptr_t)o_timeDerivatives)      % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[0]) % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[1]) % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[2]) % ALIGNMENT == 0 );
 
+  /*
+   * compute time derivatives.
+   */
   // reset time derivatives
   // TODO: inefficient
   memset( o_timeDerivatives, 0, getAlignedTimeDerivativesSize()*sizeof(real) );
@@ -114,6 +119,9 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
                                                          real   i_evaluationPoint,
                                                    const real*  i_timeDerivatives,
                                                          real*  o_timeEvaluated ) {
+  /*
+   * assert valid input.
+   */
   // assert alignments
   assert( ((uintptr_t)i_timeDerivatives) % ALIGNMENT == 0 );
   assert( ((uintptr_t)o_timeEvaluated)   % ALIGNMENT == 0 );
@@ -121,6 +129,9 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
   // assert that non-backward evaluation in time
   assert( i_evaluationPoint >= i_expansionPoint );
 
+  /*
+   * compute extrapolation.
+   */
   // copy DOFs (scalar==1)
   memcpy( o_timeEvaluated, i_timeDerivatives, NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real) );
 
@@ -152,7 +163,9 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
                                                     real   i_integrationEnd,
                                               const real*  i_timeDerivatives,
                                                     real*  o_timeIntegrated ) {
-  // assert alignments
+  /*
+   * assert alignments.
+   */
   assert( ((uintptr_t)i_timeDerivatives)  % ALIGNMENT == 0 );
   assert( ((uintptr_t)o_timeIntegrated)   % ALIGNMENT == 0 );
 
@@ -160,6 +173,9 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
   assert( i_integrationStart + (real) 1.E-10 > i_expansionPoint   );
   assert( i_integrationEnd                   > i_integrationStart );
 
+  /*
+   * compute time integral.
+   */
   // reset time integrated degrees of freedom
   memset( o_timeIntegrated, 0, NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real) );
 
@@ -202,7 +218,7 @@ void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
                                                real  *const i_timeDofs[       4                                                            ],
                                                real         o_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] ) {
   /*
-   * assert valid input
+   * assert valid input.
    */
   // only lower 12 bits are used for lts encoding
   assert (i_ltsSetup < 4096 );
@@ -219,7 +235,7 @@ void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
 #endif
 
   /*
-   * Set/compute time integrated DOFs
+   * set/compute time integrated DOFs.
    */
   for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
     // check if the time integration is already done (-> copy)

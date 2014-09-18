@@ -74,12 +74,11 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
                          real*&  o_degreesOfFreedom ) {
 
       unsigned int l_alignedNumberOfBasisFunctions = seissol::kernels::getNumberOfAlignedBasisFunctions();
-      unsigned int l_alignedTimeDerivativesSize    = seissol::kernels::Time::getAlignedTimeDerivativesSize();
 
       // allocate memory for the stiffness matrices
       unsigned l_sizesStiff[2];
       l_sizesStiff[0] = l_alignedNumberOfBasisFunctions;
-      l_sizesStiff[1] = seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-1 );
+      l_sizesStiff[1] = seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER-1 );
 
       // allocate memory
       o_stiffnessMatrices    = (real**)    malloc( 3*sizeof(real*) );
@@ -174,6 +173,17 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
         m_denseMatrix.setRandomValues( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES,
                                        l_timeIntegrated );
 
+        // set padded values to zero
+        m_denseMatrix.setZeroBlock( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                    NUMBER_OF_QUANTITIES,
+                                    NUMBEROFBASISFUNCTIONS,
+                                    l_degreesOfFreedom );
+
+        m_denseMatrix.setZeroBlock( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                    NUMBER_OF_QUANTITIES,
+                                    NUMBEROFBASISFUNCTIONS,
+                                    l_timeIntegrated );
+
         // copy values to UT-datastructures
         m_denseMatrix.copySubMatrix( l_degreesOfFreedom,
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
@@ -202,7 +212,7 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
          * Test volume integration
          */
         // standard multiplication
-        l_simpleVolumeIntegrator.computeVolumeIntegration( l_timeIntegrated,
+        l_simpleVolumeIntegrator.computeVolumeIntegration( l_timeIntegratedUT,
                                                            l_starMatrices,
                                                            l_degreesOfFreedomUT );
 

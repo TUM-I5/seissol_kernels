@@ -209,7 +209,7 @@ class seissol::kernels::Time {
      * @param i_integrationEnd end of the integration interval.
      * @param i_timeDerivatives time derivatives.
      * @param o_timeIntegratedDofs time integrated DOFs over the interval: \f$ [ t^\text{start},  t^\text{end} ] \f$ 
-     */
+     **/
     void computeIntegral(       real   i_expansionPoint,
                                 real   i_integrationStart,
                                 real   i_integrationEnd,
@@ -236,7 +236,7 @@ class seissol::kernels::Time {
      * @param i_timeStepWidth time step width of the cell.
      * @param i_timeDofs pointers to time integrated buffers or time derivatives of the four neighboring cells.
      * @param o_timeIntegrated array containing the time integrated DOFs of the four neighboring cells.
-     */
+     **/
     void computeIntegrals( unsigned int i_ltsSetup,
                            const real   i_currentTime[    5                                                            ],
                            real         i_timeStepWidth,

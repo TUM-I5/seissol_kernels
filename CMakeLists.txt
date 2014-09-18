@@ -45,8 +45,8 @@ option( CONVERGENCE_ORDER      "Convergence order of the ADER-DG scheme" )
 add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 
 # set number of basis functions
-add_definitions( -DNUMBER_OF_ALIGNED_BASIS_FUNCTIONS=56
-                 -DNUMBEROFBASISFUNCTIONS=56
+add_definitions( -DNUMBER_OF_ALIGNED_BASIS_FUNCTIONS=12
+                 -DNUMBEROFBASISFUNCTIONS=10
                  -DNUMBEROFVARIABLES=9
                  -DNUMBER_OF_QUANTITIES=9
                  -DGENERATEDKERNELS )
@@ -111,8 +111,7 @@ add_library( volume_kernel
              src/Volume.cpp )
 
 add_library( flux_kernel
-             submodules/seissol/Monitoring/FlopCounter.cpp
-             src/BoundaryIntegrator.cpp )
+             src/Boundary.cpp )
 
 # add unit tests
 find_package( CxxTest )
@@ -153,7 +152,7 @@ if(CXXTEST_FOUND)
   # unit tests for the flux kernel
   CXXTEST_ADD_TEST( flux_unit_tests
                     fluxUnitTests.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BoundaryIntegratorTestSuite.t.h     
+                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BoundaryKernelTestSuite.t.h
                   )
 
   target_link_libraries( time_unit_tests   time_kernel   memoryManager pugiXml matrix_kernels )

@@ -90,7 +90,7 @@ class seissol::kernels::Volume {
      * @param i_timeIntegratedDegreesOfFreedom time integrated degrees of freedom.
      * @param i_starMatrices star matrices, 0: \f$ A^*_k \f$, 1: \f$ B^*_k \f$, 2: \f$ C^*_k \f$.
      * @param io_degreesOfFreedom degrees of freedom.
-     */
+     **/
     void computeIntegral( real** i_stiffnessMatrices,
                           real*  i_timeIntegratedDegreesOfFreedom,
                           real** i_starMatrices,
