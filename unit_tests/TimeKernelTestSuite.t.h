@@ -313,4 +313,150 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                   l_timeIntegrated,
                   l_timeExtrapolated );
     }
+
+    /*
+     * Tests integration of neighboring cells (buffer copy or time integration).
+     */
+    void testNeighborsIntegration() {
+      // time step width of the cell
+      real l_timeStepWidth;
+      m_denseMatrix.setRandomValues( 1, &l_timeStepWidth );
+
+      // location of the matrices
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+
+      // read matrices
+      m_denseMatrix.readMatrices( l_matricesPath );
+
+      // initialize a simple time intgrator
+      m_simpleTimeIntegrator.initialize( l_matricesPath );
+
+      // create a new time kernel
+      seissol::kernels::Time l_timeKernel;
+
+      // pointers to time buffers/derivatives
+      real *l_timeDofs[4];
+
+      // final time integrated values of neighboring cells
+      real l_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] __attribute__((aligned(ALIGNMENT)));
+      real l_timeIntegratedUT[ 4 * NUMBEROFBASISFUNCTIONS * NUMBER_OF_QUANTITIES ];
+
+      // repeat the test
+      for( int l_repeat = 0; l_repeat < m_configuration.getNumberOfRepeats(); l_repeat++) {
+        /*
+         * Setup
+         */
+        // generate a random LTS setup
+        unsigned int l_ltsSetup = ((rand() % 16)<<8);
+
+        // iterate over neighbors and allocate memory for either an time integrated buffer or time derivatives
+        for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+          if( ( l_ltsSetup >> (8 + l_neighbor) )%2 == 0 ) {
+            // allocate memory for a time integrated buffer
+            l_timeDofs[l_neighbor] = (real*) _mm_malloc( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
+
+            // fill with random values
+            m_denseMatrix.setRandomValues( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES,
+                                           l_timeDofs[l_neighbor] );
+          }
+          else {
+            // allocate memory for time derivatives
+            l_timeDofs[l_neighbor] = (real*) _mm_malloc( seissol::kernels::Time::getAlignedTimeDerivativesSize()*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
+
+            // fill with random values
+            m_denseMatrix.setRandomValues( seissol::kernels::Time::getAlignedTimeDerivativesSize()*NUMBER_OF_QUANTITIES,
+                                           l_timeDofs[l_neighbor] );
+
+            // set entries with zero-padding to zero
+            unsigned int l_firstEntry = 0;
+
+            for( unsigned int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
+              m_denseMatrix.setZeroBlock( seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ),
+                                          NUMBER_OF_QUANTITIES,
+                                          seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER-l_order ),
+                                         &l_timeDofs[l_neighbor][l_firstEntry] );
+
+              l_firstEntry += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ) * NUMBER_OF_QUANTITIES;
+            }
+          }
+        }
+
+        // current timings of all cells
+        real l_currentTime[5];
+        m_denseMatrix.setRandomValues( 5, l_currentTime );
+
+        for( int l_neighbor = 1; l_neighbor < 5; l_neighbor++ ) {
+          l_currentTime[0] = std::max( l_currentTime[0], l_currentTime[l_neighbor] );
+        }
+
+        /*
+         * time integration
+         */
+        // reference implementation
+        for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+          if( ( l_ltsSetup >> (8 + l_neighbor) )%2 == 0 ) {
+            m_denseMatrix.copySubMatrix( l_timeDofs[l_neighbor],
+                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                         NUMBER_OF_QUANTITIES,
+                                        &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES],
+                                         NUMBEROFBASISFUNCTIONS,
+                                         NUMBER_OF_QUANTITIES );
+          }
+          else {
+            // copy time derivatives to non-compressed storage scheme
+            real l_timeDerivativesUT[CONVERGENCE_ORDER][NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES];
+
+            unsigned int l_firstEntry = 0;
+
+            for( unsigned int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
+              m_denseMatrix.copySubMatrix( &l_timeDofs[l_neighbor][l_firstEntry],
+                                            seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER-l_order ),
+                                            NUMBER_OF_QUANTITIES,
+                                            seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ),
+                                            l_timeDerivativesUT[l_order],
+                                            NUMBEROFBASISFUNCTIONS,
+                                            NUMBER_OF_QUANTITIES,
+                                            NUMBEROFBASISFUNCTIONS );
+
+              l_firstEntry += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ) * NUMBER_OF_QUANTITIES;
+            }
+
+            // do the time integration
+            real l_deltaT[2];
+            l_deltaT[0] = l_currentTime[0]                   - l_currentTime[l_neighbor+1];
+            l_deltaT[1] = l_currentTime[0] + l_timeStepWidth - l_currentTime[l_neighbor+1];
+
+            m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
+                                                           l_deltaT,
+                                                          &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES] );
+          }
+        }
+
+        // optimized implementation
+        l_timeKernel.computeIntegrals( l_ltsSetup,
+                                       l_currentTime,
+                                       l_timeStepWidth,
+                                       l_timeDofs,
+                                       l_timeIntegrated );
+
+        /*
+         * check the results
+         */
+        for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+          m_denseMatrix.checkSubMatrix( &l_timeIntegrated[l_neighbor*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],
+                                        NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                        NUMBER_OF_QUANTITIES,
+                                        &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES],
+                                        NUMBEROFBASISFUNCTIONS,
+                                        NUMBER_OF_QUANTITIES );
+        }
+
+        /*
+         * Free memory
+         */
+        for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+          _mm_free( l_timeDofs[l_neighbor] );
+        }
+      }
+    }
 };

@@ -192,6 +192,45 @@ class unit_test::DenseMatrix {
 
     /*
      * Copies a submatrix of A (sizes of B) to B.
+     * If B doesn't fit in A zeros are set.
+     *
+     * @param i_A values of matrix A.
+     * @param i_aNumberOfRows number of rows of A.
+     * @param i_aNumberOfColumns number of columns of A.
+     * @param i_aLeadingDimension leading dimension of A.
+     * @param o_B values of matrix B, which will be set.
+     * @param i_bNumberOfRows number of rows of matrix B.
+     * @param i_bNumberOfColumns number of columns of matrix B.
+     * @param i_bLeadingDimension leading dimension of B.
+     */
+    void copySubMatrix( const real* i_A,
+                        const unsigned int i_aNumberOfRows,
+                        const unsigned int i_aNumberOfColumns,
+                        const unsigned int i_aLeadingDimension,
+                              real* o_B,
+                        const unsigned int i_bNumberOfRows,
+                        const unsigned int i_bNumberOfColumns,
+                        const unsigned int i_bLeadingDimension ) {
+      // set matrix B to zero
+      for( unsigned int l_index = 0; l_index < i_bLeadingDimension*i_bNumberOfColumns; l_index++ ) {
+        o_B[l_index] = (real) 0;
+      }
+
+      // copy the entries
+      for( unsigned int l_column = 0; l_column < std::min( i_aNumberOfColumns, i_bNumberOfColumns ); l_column++ ) {
+        for( unsigned int l_row = 0; l_row < std::min( i_aNumberOfRows, i_bNumberOfRows ); l_row++ ) {
+          unsigned int l_aIndex = l_column * i_aLeadingDimension + l_row;
+          unsigned int l_bIndex = l_column * i_bLeadingDimension + l_row;
+
+          o_B[l_bIndex] = i_A[l_aIndex];
+        }
+      }
+     
+    }
+
+    /*
+     * Copies a submatrix of A (sizes of B) to B.
+     * If B doesn't fit in A zeros are set.
      *
      * @param i_A values of matrix A.
      * @param i_aNumberOfRows number of rows of A.
@@ -206,20 +245,15 @@ class unit_test::DenseMatrix {
                               real* o_B,
                         const unsigned int i_bNumberOfRows,
                         const unsigned int i_bNumberOfColumns ) {
-      // assert that B is a submatrix of A
-      TS_ASSERT_LESS_THAN_EQUALS( i_bNumberOfRows,    i_aNumberOfRows    );
-      TS_ASSERT_LESS_THAN_EQUALS( i_bNumberOfColumns, i_aNumberOfColumns );
-
-      // copy the entries
-      for( unsigned int l_column = 0; l_column < i_bNumberOfColumns; l_column++ ) {
-        for( unsigned int l_row = 0; l_row < i_bNumberOfRows; l_row++ ) {
-          unsigned int l_aIndex = l_column * i_aNumberOfRows + l_row;
-          unsigned int l_bIndex = l_column * i_bNumberOfRows + l_row;
-
-          o_B[l_bIndex] = i_A[l_aIndex];
-        }
-      }
-     
+      copySubMatrix( i_A,
+                     i_aNumberOfRows,
+                     i_aNumberOfColumns,
+                     i_aNumberOfRows,
+                     o_B,
+                     i_bNumberOfRows,
+                     i_bNumberOfColumns,
+                     i_bNumberOfRows
+                   );
     }
 
     /**

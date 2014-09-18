@@ -214,7 +214,34 @@ class seissol::kernels::Time {
                                 real   i_integrationStart,
                                 real   i_integrationEnd,
                           const real*  i_timeDerivatives,
-                                real*  o_timeIntegratedDofs );
+                                real*  o_timeIntegrated );
+
+    /**
+     * Either copies the DOFs in the time buffer or integrates the DOFs via time derivatives.
+     *   Evaluation depends on bit 07-11  of the LTS setup.
+     *   0 -> copy buffer; 1 -> integrate via time derivatives
+     *     Example:
+
+     *     [     4 unused     | copy or int bits  |   "<" elements    |   ">" elements    ]
+     *     [ -    -    -    - |  0    1    1    0 |  *    *    *    * |  *    *    *    * ]
+     *     [15   14   13   12 | 11   10   09   08 | 07   06   05   04 | 03   02   01   00 ]
+     *
+     *   08 - 0: time integrated DOFs of cell 0 are copied from the buffer.
+     *   09 - 1: DOFs of cell 1 are integrated in time via time derivatives.
+     *   10 - 1: DOFs of cell 2 are integrated in time via time derivaitves.
+     *   11 - 0: time itnegrated DOFs of cell 3 are copied from the buffer.
+     *
+     * @param i_ltsSetup bitmask for the LTS setup.
+     * @param i_currentTime current time of the cell [0] and it's four neighbors [1], [2], [3] and [4].
+     * @param i_timeStepWidth time step width of the cell.
+     * @param i_timeDofs pointers to time integrated buffers or time derivatives of the four neighboring cells.
+     * @param o_timeIntegrated array containing the time integrated DOFs of the four neighboring cells.
+     */
+    void computeIntegrals( unsigned int i_ltsSetup,
+                           const real   i_currentTime[    5                                                            ],
+                           real         i_timeStepWidth,
+                           real * const i_timeDofs[       4                                                            ],
+                           real         o_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] );
 
 };
 

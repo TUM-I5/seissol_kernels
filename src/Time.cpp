@@ -157,8 +157,8 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
   assert( ((uintptr_t)o_timeIntegrated)   % ALIGNMENT == 0 );
 
   // assert that this is a forwared integration in time
-  assert( i_integrationStart > i_expansionPoint   );
-  assert( i_integrationEnd   > i_integrationStart );
+  assert( i_integrationStart + (real) 1.E-10 > i_expansionPoint   );
+  assert( i_integrationEnd                   > i_integrationStart );
 
   // reset time integrated degrees of freedom
   memset( o_timeIntegrated, 0, NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real) );
@@ -194,4 +194,48 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
     }
   }
 
+}
+
+void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
+                                               const real   i_currentTime[    5                                                            ],
+                                               real         i_timeStepWidth,
+                                               real  *const i_timeDofs[       4                                                            ],
+                                               real         o_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] ) {
+  /*
+   * assert valid input
+   */
+  // only lower 12 bits are used for lts encoding
+  assert (i_ltsSetup < 4096 );
+
+  // neighboring cells can't have a time step size smaller and larger than the one of the current cell at the same time
+  assert ( ( (i_ltsSetup >> 4) & ( (i_ltsSetup << 4) >> 4) ) == 0);
+
+#ifndef NDEBUG
+  // alignment of the time derivatives/integrated dofs
+  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    assert( ((uintptr_t)i_timeDofs[l_neighbor])       % ALIGNMENT == 0 );
+    assert( ((uintptr_t)o_timeIntegrated[l_neighbor]) % ALIGNMENT == 0 );
+  }
+#endif
+
+  /*
+   * Set/compute time integrated DOFs
+   */
+  for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+    // check if the time integration is already done (-> copy)
+    if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
+      memcpy( &o_timeIntegrated[l_neighbor * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES], // destination
+              i_timeDofs[l_neighbor],                                                                   // source
+              NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES * sizeof(real)                   // size
+            );
+    }
+    // integrate the DOFs in time via the derivatives
+    else {
+      seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1                                                          ],
+                                                i_currentTime[    0                                                                     ],
+                                                i_currentTime[    0                                                                     ] + i_timeStepWidth,
+                                                i_timeDofs[       l_neighbor                                                            ],
+                                               &o_timeIntegrated[ l_neighbor * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] );
+    }
+  }
 }
