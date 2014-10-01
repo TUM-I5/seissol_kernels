@@ -38,6 +38,9 @@
  * Typedefs, structs and macros for the implementation.
  **/
 
+#ifndef TYPEDEFS_HPP
+#define TYPEDEFS_HPP
+
 // define order of taylor series relative to the number of basis functions
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_BASIS_FUNCTIONS 4
@@ -111,5 +114,25 @@
 #define NUMBER_OF_DOFS         (NUMBER_OF_BASIS_FUNCTIONS        *NUMBER_OF_QUANTITIES)
 #define NUMBER_OF_ALIGNED_DOFS (NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES)
 
+// face types
+enum faceType {
+  // regular: inside the computational domain
+  regular,
+
+  // free surface boundary
+  freeSurface,
+
+  // dynamic rupture boundary
+  dynamicRupture,
+
+  // absorbing/outflow boundary
+  outflow,
+
+  // periodic boundary
+  periodic
+};
+
 // use double precision for floating point numbers
 typedef double real;
+
+#endif

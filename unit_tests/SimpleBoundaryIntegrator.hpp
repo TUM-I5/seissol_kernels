@@ -92,19 +92,19 @@ class unit_test::SimpleBoundaryIntegrator {
      *
      * @param i_timeIntegratedUnknownsElement time integrated unknowns of the element.
      * @param i_timeIntegratedUnknownsNeighbors time integrated unknwons of the neighboring elements.
-     * @param i_boundaryConditons boundary conditions at the faces.
+     * @param i_faceTypes types of the faces.
      * @param i_neighboringIndices oriantation of the element in relation to the neighboring element (ref. element).
      * @param i_nApNm1DivM flux solvers for elements contribution.
      * @param i_nAmNm1DivM flux solvers for the neighboring elements contributions.
      * @param io_unknowns degrees of freedom of the element, which are updated.
      **/
-    void computeBoundaryIntegration(       double i_timeIntegratedUnknownsElement[NUMBER_OF_DOFS],
-                                           double i_timeIntegratedUnknownsNeighbors[4][NUMBER_OF_DOFS],
-                                     const int    i_boundaryConditons[4],
-                                     const int    i_neighboringIndices[4][2],
-                                           double i_nApNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                           double i_nAmNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                           double io_unknowns[NUMBER_OF_DOFS] ) {
+    void computeBoundaryIntegration(       double        i_timeIntegratedUnknownsElement[NUMBER_OF_DOFS],
+                                           double        i_timeIntegratedUnknownsNeighbors[4][NUMBER_OF_DOFS],
+                                     const enum faceType i_faceTypes[4],
+                                     const int           i_neighboringIndices[4][2],
+                                           double        i_nApNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           double        i_nAmNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           double        io_unknowns[NUMBER_OF_DOFS] ) {
       //! temporary product (we have to multiply a matrix from the left and the right)
       double l_temporaryProduct[ NUMBER_OF_DOFS ];
 
@@ -125,7 +125,7 @@ class unit_test::SimpleBoundaryIntegrator {
       // compute the neighboring elements contribution
       for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
         // no contribution of the neighboring element in case of absorbing boundary conditions
-        if( i_boundaryConditons[l_localFace] != 5 ) { 
+        if( i_faceTypes[l_localFace] != outflow ) {
           // set temporary product to zero
           std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0 );
 

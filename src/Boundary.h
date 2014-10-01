@@ -86,10 +86,7 @@ class seissol::kernels::Boundary {
     /**
      * Computes the cell's local contribution to the boundary integral.
      *
-     * @param i_boundaryConditions boundary conditions of the face:
-     *        1: free surface
-     *        3: dynamic rupture
-     *        5: absorbing
+     * @param i_faceTypes types of the faces: regular, freeSurface, dynamicRupture or periodic
      * @param i_fluxMatrices 52 flux matrices in the following order:
      *        0:  \f$ F^{-, 1} \f$
      *        1 : \f$ F^{-, 2} \f$
@@ -111,19 +108,16 @@ class seissol::kernels::Boundary {
      *        the positive eigenvalues of element \f$k\f$.
      * @param io_degreesOfFreedom DOFs, which will be updated by the boundary integral.
      **/
-    void computeLocalIntegral( const int  i_boundaryConditions[4],
-                               real      *i_fluxMatrices[52],
-                               real       i_timeIntegrated[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
-                               real       i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
-                               real       io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
+    void computeLocalIntegral( const enum faceType i_faceTypes[4],
+                                     real         *i_fluxMatrices[52],
+                                     real          i_timeIntegrated[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                     real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+                                     real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
 
     /**
      * Computes the neighboring cells contribution to the boundary integral for a single cell.
      *
-     * @param i_boundaryConditions boundary conditions of the face:
-     *        1: free surface
-     *        3: dynamic rupture
-     *        5: absorbing
+     * @param i_faceTypes types of the faces: regular, freeSurface, dynamicRupture or periodic
      * @param i_neighboringIndices indices \f$j(i) \in \{0,1,2,3\}\f$ and \f$h(i) \in \{0,1,2\}\f$,
      *        which depend on the face combinations of the current elements faces \f$ i \in
      *        \{0,1,2,3\}\f$ and the neighboring faces \f$ j(i) \f$ and vertex orientation of the
@@ -152,12 +146,12 @@ class seissol::kernels::Boundary {
      *        neighbor of cell \f$k\f$, thus assembled using negative eigenvalues of element \f$k(i)\f$.
      * @param io_degreesOfFreedom DOFs, which will be updated by the boundary integral.
      **/
-    void computeNeighborsIntegral( const int  i_boundaryConditions[4],
-                                   const int  i_neighboringIndices[4][2],
-                                   real      *i_fluxMatrices[52],
-                                   real       i_timeIntegrated[4][ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
-                                   real       i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
-                                   real       io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
+    void computeNeighborsIntegral( const enum faceType i_faceTypes[4],
+                                   const int           i_neighboringIndices[4][2],
+                                         real         *i_fluxMatrices[52],
+                                         real          i_timeIntegrated[4][ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                         real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+                                         real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
 };
 
 #endif

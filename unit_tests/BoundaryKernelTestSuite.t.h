@@ -107,7 +107,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       double l_fluxSolversNeg[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
       //! boundary conditions
-      int l_boundaryConditions[4] = {0, 0, 0, 0};
+      enum faceType l_faceTypes[4] = {regular, regular, regular, regular};
 
       //! neighboring indices
       int l_neighboringIndices[4][2];
@@ -200,20 +200,20 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
         // do a simple boundary intagration
         l_simpleBoundaryIntegrator.computeBoundaryIntegration( l_timeIntegratedUT,
                                                                l_timeIntegratedNeighborsUT,
-                                                               l_boundaryConditions,
+                                                               l_faceTypes,
                                                                l_neighboringIndices,
                                                                l_fluxSolversPos,
                                                                l_fluxSolversNeg,
                                                                l_degreesOfFreedomUT );
 
         // do boundary integration with generated kernels
-        l_boundaryKernel.computeLocalIntegral(     l_boundaryConditions,
+        l_boundaryKernel.computeLocalIntegral(     l_faceTypes,
                                                    l_fluxMatrices,
                                                    l_timeIntegrated,
                                                    l_fluxSolversPos,
                                                    l_degreesOfFreedom );
 
-        l_boundaryKernel.computeNeighborsIntegral( l_boundaryConditions,
+        l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                    l_neighboringIndices,
                                                    l_fluxMatrices,
                                                    l_timeIntegratedNeighbors,
@@ -231,25 +231,25 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
         // test absorbing boundary conditions
         for( int l_face = 0; l_face < 4; l_face++ ) {
           // use absorbing boundary conditions at this face
-          l_boundaryConditions[l_face] = 5;
+          l_faceTypes[l_face] = outflow;
           
           // do a simple boundary intagration
           l_simpleBoundaryIntegrator.computeBoundaryIntegration( l_timeIntegratedUT,
                                                                  l_timeIntegratedNeighborsUT,
-                                                                 l_boundaryConditions,
+                                                                 l_faceTypes,
                                                                  l_neighboringIndices,
                                                                  l_fluxSolversPos,
                                                                  l_fluxSolversNeg,
                                                                  l_degreesOfFreedomUT );
 
           // do boundary integration with optimized matrix kernels
-          l_boundaryKernel.computeLocalIntegral(     l_boundaryConditions,
+          l_boundaryKernel.computeLocalIntegral(     l_faceTypes,
                                                      l_fluxMatrices,
                                                      l_timeIntegrated,
                                                      l_fluxSolversPos,
                                                      l_degreesOfFreedom );
 
-          l_boundaryKernel.computeNeighborsIntegral( l_boundaryConditions,
+          l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                      l_neighboringIndices,
                                                      l_fluxMatrices,
                                                      l_timeIntegratedNeighbors,

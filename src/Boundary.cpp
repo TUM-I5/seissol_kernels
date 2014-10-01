@@ -62,11 +62,11 @@ seissol::kernels::Boundary::Boundary() {
 #undef FLUX_KERNEL
 }
 
-void seissol::kernels::Boundary::computeLocalIntegral( const int  i_boundaryConditions[4],
-                                                       real      *i_fluxMatrices[52],
-                                                       real       i_timeIntegrated[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
-                                                       real       i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
-                                                       real       io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
+void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_faceTypes[4],
+                                                             real         *i_fluxMatrices[52],
+                                                             real          i_timeIntegrated[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                             real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+                                                             real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
   /*
    * assert valid input
    */
@@ -90,7 +90,7 @@ void seissol::kernels::Boundary::computeLocalIntegral( const int  i_boundaryCond
 
   for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
     // no element local contribution in the case of dynamic rupture boundary conditions
-    if( i_boundaryConditions[l_face] != 3 ) {
+    if( i_faceTypes[l_face] != dynamicRupture ) {
       // compute neighboring elements contribution
       m_matrixKernels[0]( i_fluxMatrices[l_face], i_timeIntegrated,      l_temporaryResult,
                           NULL,                   NULL,                  NULL                 ); // TODO: prefetches
@@ -102,12 +102,12 @@ void seissol::kernels::Boundary::computeLocalIntegral( const int  i_boundaryCond
   }
 }
 
-void seissol::kernels::Boundary::computeNeighborsIntegral( const int  i_boundaryConditions[4],
-                                                           const int  i_neighboringIndices[4][2],
-                                                           real      *i_fluxMatrices[52],
-                                                           real       i_timeIntegrated[4][ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
-                                                           real       i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
-                                                           real       io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
+void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i_faceTypes[4],
+                                                           const int           i_neighboringIndices[4][2],
+                                                                 real         *i_fluxMatrices[52],
+                                                                 real          i_timeIntegrated[4][ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                                 real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+                                                                 real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
   /*
    * assert valid input
    */
@@ -135,12 +135,12 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const int  i_boundary
   // iterate over faces
   for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
     // no neighboring cell contribution in the case of absorbing and dynamic rupture boundary conditions
-    if( i_boundaryConditions[l_face] != 5 && i_boundaryConditions[l_face] != 3 ) {
+    if( i_faceTypes[l_face] != outflow && i_faceTypes[l_face] != dynamicRupture ) {
       // id of the flux matrix (0-3: element local, 4-51: neighboring element)
       unsigned int l_id;
 
       // compute the neighboring elements flux matrix id.
-      if( i_boundaryConditions[l_face] != 1 ) {
+      if( i_faceTypes[l_face] != freeSurface ) {
         // derive memory and kernel index
         l_id = 4                                   // jump over flux matrices \f$ F^{-, i} \f$
               + l_face*12                          // jump over index \f$i\f$
@@ -148,7 +148,7 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const int  i_boundary
               + i_neighboringIndices[l_face][1];   // jump over index \f$h\f$
 
         // assert we have a neighboring index in the case of non-absorbing boundary conditions.
-        assert( l_id >= 4 || i_boundaryConditions[l_face] == 5 );
+        assert( l_id >= 4 || i_faceTypes[l_face] == outflow );
       }
       else { // fall back to local matrices in case of free surface boundary conditions
         l_id = l_face;
