@@ -53,7 +53,7 @@
 #endif
 
 #include <cassert>
-#include <cstdint>
+#include <stdint.h>
 
 seissol::kernels::Boundary::Boundary() {
   // intialize the function pointers to the matrix kernels

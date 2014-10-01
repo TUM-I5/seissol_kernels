@@ -54,7 +54,7 @@
 
 #include <cstring>
 #include <cassert>
-#include <cstdint>
+#include <stdint.h>
 
 seissol::kernels::Time::Time() {
   // compute the aligned number of basis functions and offsets of the derivatives
@@ -76,7 +76,7 @@ seissol::kernels::Time::Time() {
 
 void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrices,
                                                  const real*  i_degreesOfFreedom,
-                                                       real** i_starMatrices,
+                                                       real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
                                                        real*  o_timeDerivatives ) {
   /*
    * assert alignments.

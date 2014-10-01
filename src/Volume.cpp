@@ -53,7 +53,7 @@
 #endif
 
 #include <cassert>
-#include <cstdint>
+#include <stdint.h>
 
 seissol::kernels::Volume::Volume() {
   // intialize the function pointers to the matrix kernels
@@ -64,7 +64,7 @@ seissol::kernels::Volume::Volume() {
 
 void seissol::kernels::Volume::computeIntegral( real** i_stiffnessMatrices,
                                                 real*  i_timeIntegratedDegreesOfFreedom,
-                                                real** i_starMatrices,
+                                                real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
                                                 real*  io_degreesOfFreedom ) {
   // assert alignments
   assert( ((uintptr_t)i_stiffnessMatrices[0])           % ALIGNMENT == 0 );

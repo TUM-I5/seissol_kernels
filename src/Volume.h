@@ -41,9 +41,9 @@
 #ifndef VOLUME_H_
 #define VOLUME_H_
 
-#include <typedefs.hpp>
+#include "typedefs.hpp"
 #include <cassert>
-#include <common.hpp>
+#include "common.hpp"
 
 namespace seissol {
   namespace kernels {
@@ -93,7 +93,7 @@ class seissol::kernels::Volume {
      **/
     void computeIntegral( real** i_stiffnessMatrices,
                           real*  i_timeIntegratedDegreesOfFreedom,
-                          real** i_starMatrices,
+                          real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
                           real*  io_degreesOfFreedom );
 };
 

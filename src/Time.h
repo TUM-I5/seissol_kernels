@@ -41,9 +41,9 @@
 #ifndef TIME_H_
 #define TIME_H_
 
-#include <typedefs.hpp>
+#include "typedefs.hpp"
 #include <cassert>
-#include <common.hpp>
+#include "common.hpp"
 
 namespace seissol {
   namespace kernels {
@@ -185,7 +185,7 @@ class seissol::kernels::Time {
      **/
     void computeDerivatives(       real** i_stiffnessMatrices,
                              const real*  i_degreesOfFreedom,
-                                   real** i_starMatrices,
+                                   real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
                                    real*  o_timeDerivatives );
 
     /**
