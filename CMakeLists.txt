@@ -44,12 +44,8 @@ option( CONVERGENCE_ORDER      "Convergence order of the ADER-DG scheme" )
 
 add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 
-# set number of basis functions
-add_definitions( -DNUMBER_OF_ALIGNED_BASIS_FUNCTIONS=12
-                 -DNUMBEROFBASISFUNCTIONS=10
-                 -DNUMBEROFVARIABLES=9
-                 -DNUMBER_OF_QUANTITIES=9
-                 -DGENERATEDKERNELS )
+# set number of quantities
+add_definitions( -DNUMBER_OF_QUANTITIES=9 )
 
 # use intel compilers
 include(CMakeForceCompiler)
@@ -98,11 +94,6 @@ add_library( pugiXml
              submodules/pugixml/src/pugixml.cpp
            )
 
-# add memory manager
-add_library( memoryManager
-             submodules/seissol/Initializer/MemoryAllocator.cpp
-             submodules/seissol/Initializer/MemoryManager.cpp )
-
 # add kernels
 add_library( time_kernel
              src/Time.cpp )
@@ -120,22 +111,21 @@ if(CXXTEST_FOUND)
   include_directories( ${CXXTEST_INCLUDE_DIR} )
   enable_testing()
 
-  # unit tests for XML and memory
+  # unit tests for XML
   CXXTEST_ADD_TEST( setupUnitTests
                     setup.cpp
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/XmlParserTestSuite.t.h
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/MemoryAllocatorTestSuite.t.h
                   )
-  target_link_libraries( setupUnitTests memoryManager pugiXml )
+  target_link_libraries( setupUnitTests pugiXml )
 
   # unit tests for the matrix kernels
-  CXXTEST_ADD_TEST( matrixKernelsUnitTests
-                    matrixKernels.cpp
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/DenseMatrixKernelTestSuite.t.h
-                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BlockedMatrixKernelsTestSuite.t.h
-                    #${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/MatrixKernelsTestSuite.t.h
-                  )
-  target_link_libraries( matrixKernelsUnitTests memoryManager pugiXml )
+#  CXXTEST_ADD_TEST( matrixKernelsUnitTests
+#                    matrixKernels.cpp
+#                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/DenseMatrixKernelTestSuite.t.h
+#                    ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BlockedMatrixKernelsTestSuite.t.h
+#                    #${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/MatrixKernelsTestSuite.t.h
+#                  )
+#  target_link_libraries( matrixKernelsUnitTests pugiXml )
 
   # unit tests for the time kernel
   CXXTEST_ADD_TEST( time_unit_tests
@@ -155,7 +145,7 @@ if(CXXTEST_FOUND)
                     ${CMAKE_CURRENT_SOURCE_DIR}/unit_tests/BoundaryKernelTestSuite.t.h
                   )
 
-  target_link_libraries( time_unit_tests   time_kernel   memoryManager pugiXml matrix_kernels )
-  target_link_libraries( volume_unit_tests volume_kernel memoryManager pugiXml matrix_kernels )  
-  target_link_libraries( flux_unit_tests   flux_kernel   memoryManager pugiXml matrix_kernels )  
+  target_link_libraries( time_unit_tests   time_kernel   pugiXml matrix_kernels )
+  target_link_libraries( volume_unit_tests volume_kernel pugiXml matrix_kernels )  
+  target_link_libraries( flux_unit_tests   flux_kernel   pugiXml matrix_kernels )  
 endif()

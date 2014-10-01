@@ -56,7 +56,7 @@ namespace unit_test {
 class unit_test::SimpleVolumeIntegrator {
   //private:
     //! stiffness matrices (multiplied by the inverse of the mass matrix): \f$ M^{-1} K^\xi, M^{-1} K^\eta, M^{-1} K^\zeta \f$
-    double m_stiffnessMatrices[3][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
+    double m_stiffnessMatrices[3][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! dense matrix functionality
     unit_test::DenseMatrix m_denseMatrix;
@@ -74,8 +74,8 @@ class unit_test::SimpleVolumeIntegrator {
         for( unsigned int l_coordinate = 0; l_coordinate < 3; l_coordinate++ ) {
           // inistialize unit test stiffness matrix (multiplied by the inverse of the mass matrix)
           m_denseMatrix.initializeMatrix( 53+l_coordinate,
-                                          NUMBEROFBASISFUNCTIONS,
-                                          NUMBEROFBASISFUNCTIONS,
+                                          NUMBER_OF_BASIS_FUNCTIONS,
+                                          NUMBER_OF_BASIS_FUNCTIONS,
                                           m_stiffnessMatrices[l_coordinate] );
         }
     }
@@ -97,23 +97,23 @@ class unit_test::SimpleVolumeIntegrator {
      *          + M^{-1} K^\zeta I(t^{n}, t^{n+1}, Q_{k}^n) C^*_k
      *        \f]
      **/
-    void computeVolumeIntegration( const double     i_timeIntegratedUnknowns[NUMBEROFUNKNOWNS],
-                                   double * const * i_starMatrices,
-                                   double           io_unknowns[NUMBEROFUNKNOWNS] ) {
+    void computeVolumeIntegration( const double i_timeIntegratedUnknowns[NUMBER_OF_DOFS],
+                                   double const i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                   double       io_unknowns[NUMBER_OF_DOFS] ) {
       // temporary matrix for two-step multiplications
-      double l_temporaryProduct[NUMBEROFUNKNOWNS];
+      double l_temporaryProduct[NUMBER_OF_DOFS];
 
       // iterate over the three reference coordinate: \f$ \xi, \eta, \zeta \f$
       for( unsigned int l_coordinate = 0; l_coordinate < 3; l_coordinate++ ) {
         // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0 );
+        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0 );
 
         // stiffness matrix multiplication
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                      m_stiffnessMatrices[ l_coordinate ], i_timeIntegratedUnknowns, l_temporaryProduct );
 
         // star matrix multiplication
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                      l_temporaryProduct, i_starMatrices[ l_coordinate ], io_unknowns );
       }
     }

@@ -70,7 +70,6 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void allocateMemory( real**& o_stiffnessMatrices,
                          real*&  o_timeIntegrated,
-                         real**& o_starMatrices,
                          real*&  o_degreesOfFreedom ) {
 
       unsigned int l_alignedNumberOfBasisFunctions = seissol::kernels::getNumberOfAlignedBasisFunctions();
@@ -88,11 +87,6 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
 
       o_degreesOfFreedom     = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
 
-      o_starMatrices         = (real**)    malloc( 3*sizeof(real*) );
-      o_starMatrices[0]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-      o_starMatrices[1]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-      o_starMatrices[2]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-
       o_timeIntegrated       = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
     }
 
@@ -106,7 +100,6 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void freeMemory( real**& o_stiffnessMatrices,
                      real*&  o_timeIntegrated,
-                     real**& o_starMatrices,
                      real*&  o_degreesOfFreedom ) {
 
 
@@ -116,11 +109,6 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
           free( o_stiffnessMatrices    );
 
       _mm_free( o_timeIntegrated       );
-
-          free( o_starMatrices[0]      );
-          free( o_starMatrices[1]      );
-          free( o_starMatrices[2]      );
-          free( o_starMatrices         );
 
       _mm_free( o_degreesOfFreedom  );
     }
@@ -136,17 +124,19 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void testVolumeKernel() {
       // allocate memory
-      real **l_stiffnessMatrices, *l_timeIntegrated, **l_starMatrices, *l_degreesOfFreedom;
+      real **l_stiffnessMatrices, *l_timeIntegrated, *l_degreesOfFreedom;
+
+      real l_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+
       allocateMemory( l_stiffnessMatrices,
                       l_timeIntegrated,
-                      l_starMatrices,
                       l_degreesOfFreedom );
 
-      real l_timeIntegratedUT[  NUMBEROFUNKNOWNS];
-      real l_degreesOfFreedomUT[NUMBEROFUNKNOWNS];
+      real l_timeIntegratedUT[  NUMBER_OF_DOFS];
+      real l_degreesOfFreedomUT[NUMBER_OF_DOFS];
 
       // setup matrix path
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read in the matrices for our unit tests
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -176,12 +166,12 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
         // set padded values to zero
         m_denseMatrix.setZeroBlock( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                     NUMBER_OF_QUANTITIES,
-                                    NUMBEROFBASISFUNCTIONS,
+                                    NUMBER_OF_BASIS_FUNCTIONS,
                                     l_degreesOfFreedom );
 
         m_denseMatrix.setZeroBlock( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                     NUMBER_OF_QUANTITIES,
-                                    NUMBEROFBASISFUNCTIONS,
+                                    NUMBER_OF_BASIS_FUNCTIONS,
                                     l_timeIntegrated );
 
         // copy values to UT-datastructures
@@ -189,14 +179,14 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      l_degreesOfFreedomUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES );
 
         m_denseMatrix.copySubMatrix( l_timeIntegrated,
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      l_timeIntegratedUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES );
 
         for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
@@ -227,8 +217,12 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES,
                                       l_degreesOfFreedomUT,
-                                      NUMBEROFBASISFUNCTIONS,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES );
       }
+
+      freeMemory( l_stiffnessMatrices,
+                  l_timeIntegrated,
+                  l_degreesOfFreedom );
     }
 };

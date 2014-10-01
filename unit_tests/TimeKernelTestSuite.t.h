@@ -76,7 +76,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void allocateMemory( real**& o_stiffnessMatrices,
                          real*&  o_degreesOfFreedom,
-                         real**& o_starMatrices,
                          real*&  o_timeDerivatives,
                          real*&  o_timeIntegrated,
                          real*&  o_timeExtrapolated) {
@@ -97,11 +96,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       o_degreesOfFreedom     = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
 
-      o_starMatrices         = (real**)    malloc( 3*sizeof(real*) );
-      o_starMatrices[0]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-      o_starMatrices[1]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-      o_starMatrices[2]      = (real*)     malloc( NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES*sizeof(real) );
-
       o_timeDerivatives      = (real*) _mm_malloc( l_alignedTimeDerivativesSize*NUMBER_OF_QUANTITIES*sizeof(real),    ALIGNMENT );
 
       o_timeIntegrated       = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
@@ -120,7 +114,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void freeMemory( real**& o_stiffnessMatrices,
                      real*&  o_degreesOfFreedom,
-                     real**& o_starMatrices,
                      real*&  o_timeDerivatives,
                      real*&  o_timeIntegrated,
                      real*&  o_timeExtrapolated ) {
@@ -130,11 +123,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       _mm_free( o_stiffnessMatrices[1] );
       _mm_free( o_stiffnessMatrices[2] );
           free( o_stiffnessMatrices    );
-
-          free( o_starMatrices[0]      );
-          free( o_starMatrices[1]      );
-          free( o_starMatrices[2]      );
-          free( o_starMatrices         );
 
       _mm_free( o_timeDerivatives      );
       _mm_free( o_timeIntegrated       );
@@ -155,22 +143,24 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
      **/
     void testTimeKernel() {
       // allocate memory
-      real** l_stiffnessMatrices, *l_degreesOfFreedom, **l_starMatrices, *l_timeDerivatives, *l_timeIntegrated, *l_timeExtrapolated;
+      real** l_stiffnessMatrices, *l_degreesOfFreedom, *l_timeDerivatives, *l_timeIntegrated, *l_timeExtrapolated;
+
+      real l_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+
       allocateMemory( l_stiffnessMatrices,
                       l_degreesOfFreedom,
-                      l_starMatrices,
                       l_timeDerivatives,
                       l_timeIntegrated,
                       l_timeExtrapolated );
 
-      real l_degreesOfFreedomUT[NUMBEROFUNKNOWNS];
-      real l_timeIntegratedUT[  NUMBEROFUNKNOWNS];
-      real l_timeDerivativesUT[ CONVERGENCE_ORDER][NUMBEROFUNKNOWNS];
-      real l_timeExtrapolatedUT[NUMBEROFUNKNOWNS];
+      real l_degreesOfFreedomUT[NUMBER_OF_DOFS];
+      real l_timeIntegratedUT[  NUMBER_OF_DOFS];
+      real l_timeDerivativesUT[ CONVERGENCE_ORDER][NUMBER_OF_DOFS];
+      real l_timeExtrapolatedUT[NUMBER_OF_DOFS];
 
       // location of the matrices
       // TODO: for now it's all handled dense
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -205,14 +195,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      l_degreesOfFreedomUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES );
 
         m_denseMatrix.copySubMatrix( l_timeIntegrated,
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      l_timeIntegratedUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES );
 
         for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
@@ -244,14 +234,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                    l_degreesOfFreedom,
                                    l_timeDerivatives );
 
-        m_denseMatrix.checkResult( NUMBEROFUNKNOWNS,
+        m_denseMatrix.checkResult( NUMBER_OF_DOFS,
                                    l_degreesOfFreedomUT,
                                    l_timeDerivativesUT[0] );
 
         for( int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
           unsigned int l_offset = l_timeKernel.m_derivativesOffsets[l_derivative];
           m_denseMatrix.checkSubMatrix(  l_timeDerivativesUT[l_derivative],
-                                         NUMBEROFBASISFUNCTIONS,
+                                         NUMBER_OF_BASIS_FUNCTIONS,
                                          NUMBER_OF_QUANTITIES,
                                         &l_timeDerivatives[ l_offset ],
                                          l_timeKernel.m_numberOfAlignedBasisFunctions[l_derivative],
@@ -281,7 +271,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES,
                                       l_timeIntegratedUT,
-                                      NUMBEROFBASISFUNCTIONS,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES );
 
         /*
@@ -301,14 +291,13 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES,
                                       l_timeExtrapolatedUT,
-                                      NUMBEROFBASISFUNCTIONS,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES );
       }
 
       // free memory
       freeMemory( l_stiffnessMatrices,
                   l_degreesOfFreedom,
-                  l_starMatrices,
                   l_timeDerivatives,
                   l_timeIntegrated,
                   l_timeExtrapolated );
@@ -323,7 +312,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       m_denseMatrix.setRandomValues( 1, &l_timeStepWidth );
 
       // location of the matrices
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -339,7 +328,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       // final time integrated values of neighboring cells
       real l_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] __attribute__((aligned(ALIGNMENT)));
-      real l_timeIntegratedUT[ 4 * NUMBEROFBASISFUNCTIONS * NUMBER_OF_QUANTITIES ];
+      real l_timeIntegratedUT[ 4 * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ];
 
       // repeat the test
       for( int l_repeat = 0; l_repeat < m_configuration.getNumberOfRepeats(); l_repeat++) {
@@ -398,13 +387,13 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
             m_denseMatrix.copySubMatrix( l_timeDofs[l_neighbor],
                                          NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                          NUMBER_OF_QUANTITIES,
-                                        &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES],
-                                         NUMBEROFBASISFUNCTIONS,
+                                        &l_timeIntegratedUT[l_neighbor*NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],
+                                         NUMBER_OF_BASIS_FUNCTIONS,
                                          NUMBER_OF_QUANTITIES );
           }
           else {
             // copy time derivatives to non-compressed storage scheme
-            real l_timeDerivativesUT[CONVERGENCE_ORDER][NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES];
+            real l_timeDerivativesUT[CONVERGENCE_ORDER][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES];
 
             unsigned int l_firstEntry = 0;
 
@@ -414,9 +403,9 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                             NUMBER_OF_QUANTITIES,
                                             seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ),
                                             l_timeDerivativesUT[l_order],
-                                            NUMBEROFBASISFUNCTIONS,
+                                            NUMBER_OF_BASIS_FUNCTIONS,
                                             NUMBER_OF_QUANTITIES,
-                                            NUMBEROFBASISFUNCTIONS );
+                                            NUMBER_OF_BASIS_FUNCTIONS );
 
               l_firstEntry += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ) * NUMBER_OF_QUANTITIES;
             }
@@ -428,7 +417,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
             m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
                                                            l_deltaT,
-                                                          &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES] );
+                                                          &l_timeIntegratedUT[l_neighbor*NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] );
           }
         }
 
@@ -446,8 +435,8 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
           m_denseMatrix.checkSubMatrix( &l_timeIntegrated[l_neighbor*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],
                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES,
-                                        &l_timeIntegratedUT[l_neighbor*NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES],
-                                        NUMBEROFBASISFUNCTIONS,
+                                        &l_timeIntegratedUT[l_neighbor*NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],
+                                        NUMBER_OF_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES );
         }
 

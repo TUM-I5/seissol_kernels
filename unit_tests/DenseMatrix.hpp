@@ -42,7 +42,6 @@
 #define DENSEMATRIX_HPP_
 
 #include <typedefs.hpp>
-#include <Initializer/MemoryAllocator.h>
 #include <Initializer/XmlParser.hpp>
 #include <cxxtest/TestSuite.h>
 
@@ -58,9 +57,6 @@ namespace unit_test {
  **/
 class unit_test::DenseMatrix {
   //private:
-    //! aligned memory allocation
-    seissol::MemoryAllocator m_memoryAllocator;
-
     //! vectors, which hold information about our matrices
     std::vector< unsigned int > m_matrixIds;
     std::vector< std::string  > m_matrixNames;
@@ -108,7 +104,7 @@ class unit_test::DenseMatrix {
         }
       }
     }
-
+#if 0
     /**
      * Allocate memory and set random values for dense matrix multiplication setup.
      *   Remark: C1 and C2 are set to the same random values 
@@ -158,6 +154,7 @@ class unit_test::DenseMatrix {
         (*o_c2)[l_i] = (*o_c1)[l_i];
       }
     }
+#endif
 
     /**
      * Copies the non-zeros of the dense matrix to the sparse matrix.

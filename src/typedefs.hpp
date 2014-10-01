@@ -35,8 +35,81 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @section DESCRIPTION
- * Typedefs and structs for the implementation.
+ * Typedefs, structs and macros for the implementation.
  **/
+
+// define order of taylor series relative to the number of basis functions
+#if CONVERGENCE_ORDER == 2
+#define NUMBER_OF_BASIS_FUNCTIONS 4
+
+#elif CONVERGENCE_ORDER == 3
+#define NUMBER_OF_BASIS_FUNCTIONS 10
+
+#elif CONVERGENCE_ORDER == 4
+#define NUMBER_OF_BASIS_FUNCTIONS 20
+
+#elif CONVERGENCE_ORDER == 5
+#define NUMBER_OF_BASIS_FUNCTIONS 35
+
+#elif CONVERGENCE_ORDER == 6
+#define NUMBER_OF_BASIS_FUNCTIONS 56
+
+#elif CONVERGENCE_ORDER == 7
+#define NUMBER_OF_BASIS_FUNCTIONS 84
+
+#elif CONVERGENCE_ORDER == 8
+#define NUMBER_OF_BASIS_FUNCTIONS 120
+
+#else
+#error Preprocessor flag CONVERGENCE_ORDER is not in {2, 3, 4, 5, 6, 7, 8}.
+#endif
+
+// aligned number of basis functions
+#if ALIGNMENT == 32
+
+#if CONVERGENCE_ORDER == 2
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 4
+#elif CONVERGENCE_ORDER == 3
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 12
+#elif CONVERGENCE_ORDER == 4
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 20
+#elif CONVERGENCE_ORDER == 5
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 36
+#elif CONVERGENCE_ORDER == 6
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 56
+#elif CONVERGENCE_ORDER == 7
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 84
+#elif CONVERGENCE_ORDER == 8
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 120
+#endif
+
+#elif ALIGNMENT == 64
+
+#if CONVERGENCE_ORDER == 2
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 8
+#elif CONVERGENCE_ORDER == 3
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 16
+#elif CONVERGENCE_ORDER == 4
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 24
+#elif CONVERGENCE_ORDER == 5
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 40
+#elif CONVERGENCE_ORDER == 6
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 56
+#elif CONVERGENCE_ORDER == 7
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 88
+#elif CONVERGENCE_ORDER == 8
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 120
+#endif
+
+#else
+
+#error ALIGNMENT is not in {32, 64}.
+
+#endif
+
+// number of entries in dense stiffness and flux matrices.
+#define NUMBER_OF_DOFS         (NUMBER_OF_BASIS_FUNCTIONS        *NUMBER_OF_QUANTITIES)
+#define NUMBER_OF_ALIGNED_DOFS (NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES)
 
 // use double precision for floating point numbers
 typedef double real;

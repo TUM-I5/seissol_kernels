@@ -87,24 +87,24 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
      **/
     void testBoundaryKernel() {
       //! path to matrix set-up
-      std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       //! matrix of degrees of freedom
       double l_degreesOfFreedom[  NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      double l_degreesOfFreedomUT[NUMBEROFBASISFUNCTIONS           *NUMBER_OF_QUANTITIES] = {0};
+      double l_degreesOfFreedomUT[NUMBER_OF_BASIS_FUNCTIONS           *NUMBER_OF_QUANTITIES] = {0};
 
       //! matrices of time integrated unknowns
       double l_timeIntegrated[            NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
       double l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
 
-      double l_timeIntegratedUT[            NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      double l_timeIntegratedNeighborsUT[4][NUMBEROFBASISFUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegratedUT[            NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegratedNeighborsUT[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
 
       //! flux solvers matrices (positive eigenvalues): \f$ N_{k,i} A_k^+ N_{k,i}^{-1} \f$
-      double l_fluxSolversPos[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES];
+      double l_fluxSolversPos[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
       //! flux solvers matrices (negative eigenvalues): \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
-      double l_fluxSolversNeg[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES];
+      double l_fluxSolversNeg[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
       //! boundary conditions
       int l_boundaryConditions[4] = {0, 0, 0, 0};
@@ -141,35 +141,35 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       for( int l_repeat = 0; l_repeat < l_numberOfRepeats; l_repeat++) {
 
         // initialize DOFs
-        m_denseMatrix.setRandomValues( NUMBEROFUNKNOWNS,
+        m_denseMatrix.setRandomValues( NUMBER_OF_DOFS,
                                        l_degreesOfFreedomUT );
 
         // synchronize degrees of freedom
         m_denseMatrix.copySubMatrix( l_degreesOfFreedomUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      l_degreesOfFreedom,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS );
 
         // intialize time integrated DOFs and flux solvers
-        m_denseMatrix.setRandomValues( NUMBEROFUNKNOWNS,
+        m_denseMatrix.setRandomValues( NUMBER_OF_DOFS,
                                        l_timeIntegratedUT );
 
 
         for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
-          m_denseMatrix.setRandomValues( NUMBEROFUNKNOWNS,
+          m_denseMatrix.setRandomValues( NUMBER_OF_DOFS,
                                          l_timeIntegratedNeighborsUT[l_face] );
 
           m_denseMatrix.initializeMatrix( 52,
-                                          NUMBEROFVARIABLES,
-                                          NUMBEROFVARIABLES,
+                                          NUMBER_OF_QUANTITIES,
+                                          NUMBER_OF_QUANTITIES,
                                           l_fluxSolversPos[l_face] );
           m_denseMatrix.initializeMatrix( 52,
-                                          NUMBEROFVARIABLES,
-                                          NUMBEROFVARIABLES,
+                                          NUMBER_OF_QUANTITIES,
+                                          NUMBER_OF_QUANTITIES,
                                           l_fluxSolversNeg[l_face] );
 
           // initialize tet orientations
@@ -179,20 +179,20 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
         // synchronize time integrated DOFs
         m_denseMatrix.copySubMatrix( l_timeIntegratedUT,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      l_timeIntegrated,
-                                     NUMBEROFBASISFUNCTIONS,
+                                     NUMBER_OF_BASIS_FUNCTIONS,
                                      NUMBER_OF_QUANTITIES,
                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS );
         for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
           m_denseMatrix.copySubMatrix( l_timeIntegratedNeighborsUT[l_face],
-                                       NUMBEROFBASISFUNCTIONS,
+                                       NUMBER_OF_BASIS_FUNCTIONS,
                                        NUMBER_OF_QUANTITIES,
-                                       NUMBEROFBASISFUNCTIONS,
+                                       NUMBER_OF_BASIS_FUNCTIONS,
                                        l_timeIntegratedNeighbors[l_face],
-                                       NUMBEROFBASISFUNCTIONS,
+                                       NUMBER_OF_BASIS_FUNCTIONS,
                                        NUMBER_OF_QUANTITIES,
                                        NUMBER_OF_ALIGNED_BASIS_FUNCTIONS );
         }
@@ -225,7 +225,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES,
                                       l_degreesOfFreedomUT,
-                                      NUMBEROFBASISFUNCTIONS,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES );
 
         // test absorbing boundary conditions
@@ -261,7 +261,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES,
                                         l_degreesOfFreedomUT,
-                                        NUMBEROFBASISFUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES );
         }
 

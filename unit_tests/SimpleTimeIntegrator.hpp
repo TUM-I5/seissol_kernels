@@ -56,7 +56,7 @@ namespace unit_test {
 class unit_test::SimpleTimeIntegrator {
   //private:
     //! transposed stiffness matrices (multiplied by the inverse of the mass matrix): \f$ M^{-1} K^\xi, M^{-1} K^\eta, M^{-1} K^\zeta \f$
-    real m_transposedStiffnessMatrices[3][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
+    real m_transposedStiffnessMatrices[3][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! dense matrix functionality
     unit_test::DenseMatrix m_denseMatrix;
@@ -73,8 +73,8 @@ class unit_test::SimpleTimeIntegrator {
       for( unsigned int l_coordinate = 0; l_coordinate < 3; l_coordinate++ ) { 
         // initialize the transposed stiffness matrix (multiplied by the inverse of the mass matrix)
         m_denseMatrix.initializeMatrix( 56+l_coordinate,
-                                        NUMBEROFBASISFUNCTIONS,
-                                        NUMBEROFBASISFUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
                                         m_transposedStiffnessMatrices[l_coordinate] );
       }
     }
@@ -88,21 +88,21 @@ class unit_test::SimpleTimeIntegrator {
      * @param i_cStar star matrix \f$ C^*_k \f$
      * @param o_timeDerivatives time derivates.
      **/
-    void computeTimeDerivation( const real i_unknowns[NUMBEROFUNKNOWNS],
-                                const real i_aStar[NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                const real i_bStar[NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                const real i_cStar[NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                      real o_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS] ) {
+    void computeTimeDerivation( const real i_unknowns[NUMBER_OF_DOFS],
+                                const real i_aStar[NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                const real i_bStar[NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                const real i_cStar[NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                      real o_timeDerivatives[CONVERGENCE_ORDER][NUMBER_OF_DOFS] ) {
       // temporary matrix for two-step multiplication
-      real l_temporaryProduct[NUMBEROFUNKNOWNS];
+      real l_temporaryProduct[NUMBER_OF_DOFS];
      
       // copy unknowns to zeroth derivative
-      for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) { 
+      for( int l_entry = 0; l_entry < NUMBER_OF_DOFS; l_entry++ ) { 
         o_timeDerivatives[0][l_entry] = i_unknowns[l_entry];
       }   
 
       // iterate over order in time
-      for( int l_order = 1; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) { 
+      for( int l_order = 1; l_order < CONVERGENCE_ORDER; l_order++ ) { 
         // set time derivatives of this order to zero
         std::fill( o_timeDerivatives[l_order], o_timeDerivatives[l_order+1], 0); 
 
@@ -110,41 +110,41 @@ class unit_test::SimpleTimeIntegrator {
          * reference coordinate: \f$ \xi \f$
          */
         // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0); 
+        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0); 
 
         // stiffness matrix multiplication
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                      m_transposedStiffnessMatrices[0], o_timeDerivatives[l_order-1], l_temporaryProduct );
 
         // star matrix multiplcation
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                      l_temporaryProduct, i_aStar, o_timeDerivatives[l_order] );   
                               
         /*
          * reference coordinate: \f$ \eta \f$
          */
         // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0); 
+        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0); 
         
         // stiffness matrix multiplication
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                      m_transposedStiffnessMatrices[1], o_timeDerivatives[l_order-1], l_temporaryProduct ); 
 
         // star matrix multiplcation
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                      l_temporaryProduct, i_bStar, o_timeDerivatives[l_order] );                                      
         /*
          * reference coordinate: \f$ \zeta \f$
          */
         // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0); 
+        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0); 
         
         // stiffness matrix multiplication
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                      m_transposedStiffnessMatrices[2], o_timeDerivatives[l_order-1], l_temporaryProduct ); 
 
         // star matrix multiplcation
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                      l_temporaryProduct, i_cStar, o_timeDerivatives[l_order] );
       } 
     }
@@ -156,9 +156,9 @@ class unit_test::SimpleTimeIntegrator {
      * @param i_deltaT integration boundaries \f$ \Delta t^\text{lo} \f$ and \f$ \Delta t^\text{up} \f$ relative to the time level \f$ \t^\text{cell} \f$ of the cell; integration is performned over the interval \f$ [ t^\text{cell} + \Delta t^\text{lo}, t^\text{cell} + \Delta t^\text{up} ] \f$
      * @param o_timeIntegratedUnknowns unknowns integrated over the specified interval.
      **/
-    void computeTimeIntegration( const real i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+    void computeTimeIntegration( const real i_timeDerivatives[CONVERGENCE_ORDER][NUMBER_OF_DOFS],
                                  const real i_deltaT[2],
-                                       real o_timeIntegratedUnknowns[NUMBEROFUNKNOWNS] ) {
+                                       real o_timeIntegratedUnknowns[NUMBER_OF_DOFS] ) {
       // assert integration forward in time
       TS_ASSERT( i_deltaT[1] > i_deltaT[0] );
 
@@ -169,12 +169,12 @@ class unit_test::SimpleTimeIntegrator {
       real l_scalar;
 
       // reset time integrated deegrees of freeomd with zeroth derivatives
-      for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
+      for( int l_entry = 0; l_entry < NUMBER_OF_DOFS; l_entry++ ) {
         o_timeIntegratedUnknowns[l_entry] = 0;
       }
 
       // iterate over order in time
-      for( int l_order = 0; l_order < ORDEROFTAYLORSERIESEXPANSION; l_order++ ) {
+      for( int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
         // compute factor of the taylor series
         l_firstTerm  *=  i_deltaT[1];
         l_secondTerm *=  i_deltaT[0];
@@ -184,7 +184,7 @@ class unit_test::SimpleTimeIntegrator {
         l_scalar /= l_factorial;
        
         // update time integrated unknowns
-        for( int l_entry = 0; l_entry < NUMBEROFUNKNOWNS; l_entry++ ) {
+        for( int l_entry = 0; l_entry < NUMBER_OF_DOFS; l_entry++ ) {
           o_timeIntegratedUnknowns[l_entry] += l_scalar * i_timeDerivatives[l_order][l_entry];
         } 
       }
@@ -197,11 +197,11 @@ class unit_test::SimpleTimeIntegrator {
     * @param i_deltaT \f$ \Delta_t \f$ from the expansion point to the extrapolation point.
     * @param o_timeExtrapolated time extrapolated degrees of freedom.
     **/
-   void computeExtrapolation( const real i_timeDerivatives[ORDEROFTAYLORSERIESEXPANSION][NUMBEROFUNKNOWNS],
+   void computeExtrapolation( const real i_timeDerivatives[CONVERGENCE_ORDER][NUMBER_OF_DOFS],
                                     real i_deltaT,
-                                    real o_timeExtrapolated[NUMBEROFUNKNOWNS] ) {
+                                    real o_timeExtrapolated[NUMBER_OF_DOFS] ) {
       // copy 0th derivative to extrapolation
-      for( unsigned int l_dof = 0; l_dof < NUMBEROFUNKNOWNS; l_dof++ ) {
+      for( unsigned int l_dof = 0; l_dof < NUMBER_OF_DOFS; l_dof++ ) {
         o_timeExtrapolated[l_dof] = i_timeDerivatives[0][l_dof];
       }
 
@@ -213,7 +213,7 @@ class unit_test::SimpleTimeIntegrator {
         l_scalar /= (real) l_derivative;
 
         // add the contribution of this derivative
-        for( unsigned int l_dof =0; l_dof < NUMBEROFUNKNOWNS; l_dof++ ) {
+        for( unsigned int l_dof =0; l_dof < NUMBER_OF_DOFS; l_dof++ ) {
           o_timeExtrapolated[l_dof] += l_scalar * i_timeDerivatives[l_derivative][l_dof];
         }
       }
