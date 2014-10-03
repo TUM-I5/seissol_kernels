@@ -442,8 +442,11 @@ class unit_test::DenseMatrix {
           if( i_id == 59 ) { // star matrix
             o_matrix[ l_denseIndex ] = ((double)rand()/(double)RAND_MAX)*10.0;
           }
+          else if( i_id >= 56 && i_id <= 58 ) { // add minus-sign for time kernel
+            o_matrix[ l_denseIndex ] = -m_matrixValues[l_position][l_element];
+          }
           else{ // flux or stiffness matrix
-            o_matrix[ l_denseIndex ] = m_matrixValues[l_position][l_element];
+            o_matrix[ l_denseIndex ] =  m_matrixValues[l_position][l_element];
           }
         }
       }

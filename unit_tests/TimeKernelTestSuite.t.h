@@ -327,7 +327,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       real *l_timeDofs[4];
 
       // final time integrated values of neighboring cells
-      real l_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] __attribute__((aligned(ALIGNMENT)));
+      real l_timeIntegrated[4][NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
       real l_timeIntegratedUT[ 4 * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ];
 
       // repeat the test
@@ -395,20 +395,8 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
             // copy time derivatives to non-compressed storage scheme
             real l_timeDerivativesUT[CONVERGENCE_ORDER][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES];
 
-            unsigned int l_firstEntry = 0;
-
-            for( unsigned int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
-              m_denseMatrix.copySubMatrix( &l_timeDofs[l_neighbor][l_firstEntry],
-                                            seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER-l_order ),
-                                            NUMBER_OF_QUANTITIES,
-                                            seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ),
-                                            l_timeDerivativesUT[l_order],
-                                            NUMBER_OF_BASIS_FUNCTIONS,
-                                            NUMBER_OF_QUANTITIES,
-                                            NUMBER_OF_BASIS_FUNCTIONS );
-
-              l_firstEntry += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ) * NUMBER_OF_QUANTITIES;
-            }
+            seissol::kernels::convertAlignedCompressedTimeDerivatives( l_timeDofs[l_neighbor],
+                                                                       l_timeDerivativesUT );
 
             // do the time integration
             real l_deltaT[2];
@@ -432,7 +420,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
          * check the results
          */
         for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-          m_denseMatrix.checkSubMatrix( &l_timeIntegrated[l_neighbor*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],
+          m_denseMatrix.checkSubMatrix( l_timeIntegrated[l_neighbor],
                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES,
                                         &l_timeIntegratedUT[l_neighbor*NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES],

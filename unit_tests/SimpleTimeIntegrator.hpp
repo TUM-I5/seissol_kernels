@@ -163,9 +163,9 @@ class unit_test::SimpleTimeIntegrator {
       TS_ASSERT( i_deltaT[1] > i_deltaT[0] );
 
       // initialization of Taylor series scalars
-      real l_firstTerm  = (real)  1;
-      real l_secondTerm = (real)  1;
-      real l_factorial  = (real) -1;
+      real l_firstTerm  = (real) 1;
+      real l_secondTerm = (real) 1;
+      real l_factorial  = (real) 1;
       real l_scalar;
 
       // reset time integrated deegrees of freeomd with zeroth derivatives
@@ -176,9 +176,9 @@ class unit_test::SimpleTimeIntegrator {
       // iterate over order in time
       for( int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
         // compute factor of the taylor series
-        l_firstTerm  *=  i_deltaT[1];
-        l_secondTerm *=  i_deltaT[0];
-        l_factorial  *= -(real)(l_order+1);
+        l_firstTerm  *= i_deltaT[1];
+        l_secondTerm *= i_deltaT[0];
+        l_factorial  *= (real)(l_order+1);
 
         l_scalar  = l_firstTerm - l_secondTerm;
         l_scalar /= l_factorial;
@@ -209,7 +209,7 @@ class unit_test::SimpleTimeIntegrator {
 
       // iterate of all derivatives
       for( unsigned int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
-        l_scalar *= -i_deltaT;
+        l_scalar *= i_deltaT;
         l_scalar /= (real) l_derivative;
 
         // add the contribution of this derivative

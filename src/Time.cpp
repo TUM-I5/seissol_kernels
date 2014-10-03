@@ -95,10 +95,10 @@ void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrice
   memset( o_timeDerivatives, 0, getAlignedTimeDerivativesSize()*sizeof(real) );
 
   // temporary result
-  real l_temporaryResult[NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(64)));
+  real l_temporaryResult[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(64)));
 
   // copy DOFs to 0th derivative
-  memcpy( o_timeDerivatives, i_degreesOfFreedom, NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real) );
+  memcpy( o_timeDerivatives, i_degreesOfFreedom, NUMBER_OF_ALIGNED_DOFS*sizeof(real) );
 
   // compute all derivatives
   for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
@@ -133,7 +133,7 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
    * compute extrapolation.
    */
   // copy DOFs (scalar==1)
-  memcpy( o_timeEvaluated, i_timeDerivatives, NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real) );
+  memcpy( o_timeEvaluated, i_timeDerivatives, NUMBER_OF_ALIGNED_DOFS*sizeof(real) );
 
   // initialize scalars in the taylor series expansion (1st derivative)
   real l_deltaT = i_evaluationPoint - i_expansionPoint;
@@ -141,7 +141,7 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
  
   // evaluate taylor series expansion at evvaluation point
   for( unsigned int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
-    l_scalar *= -l_deltaT;
+    l_scalar *= l_deltaT;
     l_scalar /= (real) l_derivative;
 
     // update the time evaluated taylor series by the contribution of this derivative
@@ -158,11 +158,11 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
 
 }
 
-void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
-                                                    real   i_integrationStart,
-                                                    real   i_integrationEnd,
-                                              const real*  i_timeDerivatives,
-                                                    real*  o_timeIntegrated ) {
+void seissol::kernels::Time::computeIntegral(       real  i_expansionPoint,
+                                                    real  i_integrationStart,
+                                                    real  i_integrationEnd,
+                                              const real* i_timeDerivatives,
+                                                    real  o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] ) {
   /*
    * assert alignments.
    */
@@ -184,16 +184,16 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
   real l_deltaTUpper = i_integrationEnd   - i_expansionPoint;
 
   // initialization of scalars in the taylor series expansion (0th term)
-  real l_firstTerm  = (real)  1;
-  real l_secondTerm = (real)  1;
-  real l_factorial  = (real) -1;
+  real l_firstTerm  = (real) 1;
+  real l_secondTerm = (real) 1;
+  real l_factorial  = (real) 1;
   real l_scalar;
  
   // iterate over time derivatives
   for(int l_derivative = 0; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
-    l_firstTerm  *=  l_deltaTUpper;
-    l_secondTerm *=  l_deltaTLower;
-    l_factorial  *= -(real)(l_derivative+1);
+    l_firstTerm  *= l_deltaTUpper;
+    l_secondTerm *= l_deltaTLower;
+    l_factorial  *= (real)(l_derivative+1);
 
     l_scalar  = l_firstTerm - l_secondTerm;
     l_scalar /= l_factorial;
@@ -213,10 +213,10 @@ void seissol::kernels::Time::computeIntegral(       real   i_expansionPoint,
 }
 
 void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
-                                               const real   i_currentTime[    5                                                            ],
+                                               const real   i_currentTime[5],
                                                real         i_timeStepWidth,
-                                               real  *const i_timeDofs[       4                                                            ],
-                                               real         o_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] ) {
+                                               real  *const i_timeDofs[4],
+                                               real         o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] ) {
   /*
    * assert valid input.
    */
@@ -240,18 +240,18 @@ void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
   for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
     // check if the time integration is already done (-> copy)
     if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
-      memcpy( &o_timeIntegrated[l_neighbor * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES], // destination
-              i_timeDofs[l_neighbor],                                                                   // source
-              NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES * sizeof(real)                   // size
+      memcpy( o_timeIntegrated[l_neighbor],         // destination
+              i_timeDofs[l_neighbor],               // source
+              NUMBER_OF_ALIGNED_DOFS * sizeof(real) // size
             );
     }
     // integrate the DOFs in time via the derivatives
     else {
-      seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1                                                          ],
-                                                i_currentTime[    0                                                                     ],
-                                                i_currentTime[    0                                                                     ] + i_timeStepWidth,
-                                                i_timeDofs[       l_neighbor                                                            ],
-                                               &o_timeIntegrated[ l_neighbor * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] );
+      seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1],
+                                                i_currentTime[    0           ],
+                                                i_currentTime[    0           ] + i_timeStepWidth,
+                                                i_timeDofs[       l_neighbor],
+                                                o_timeIntegrated[ l_neighbor]                      );
     }
   }
 }

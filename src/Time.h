@@ -178,7 +178,7 @@ class seissol::kernels::Time {
      *   Use computeTimeIntegral to compute time integrated degrees of freedom from the derivatives.
      *   Use computeTimeEvaluation to evaluate the time prediction of the degrees of freedom based on the derivatives.
      *
-     * @param i_stiffnessMatrices stiffness matrices, 0: \f$ K^\xi \f$, 1: \f$ K^\eta\f$, 2: \f K^\zeta \f$.
+     * @param i_stiffnessMatrices negative transposed stiffness matrices (multiplied by inverse mass matrix), 0: \f$ -M^{-1} ( K^\xi )^T \f$ 1:\f$ -M^{-1} ( K^\eta )^T \f$ 2: \f$ -M^{-1} ( K^\zeta )^T \f$.
      * @param i_degreesOfFreedom of the current time step \f$ t^\text{cell} \f$ for which the time derivatives \f$ \frac{\partial^j}{\partial t^j} \f$ will be computed.
      * @param i_starMatrices star matrices, 0: \f$ A^*_k \f$, 1: \f$ B^*_k \f$, 2: \f$ C^*_k \f$.
      * @param o_timeDerivatives time derivatives of the degrees of freedom in compressed format.
@@ -210,11 +210,11 @@ class seissol::kernels::Time {
      * @param i_timeDerivatives time derivatives.
      * @param o_timeIntegratedDofs time integrated DOFs over the interval: \f$ [ t^\text{start},  t^\text{end} ] \f$ 
      **/
-    void computeIntegral(       real   i_expansionPoint,
-                                real   i_integrationStart,
-                                real   i_integrationEnd,
-                          const real*  i_timeDerivatives,
-                                real*  o_timeIntegrated );
+    void computeIntegral(       real  i_expansionPoint,
+                                real  i_integrationStart,
+                                real  i_integrationEnd,
+                          const real* i_timeDerivatives,
+                                real  o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] );
 
     /**
      * Either copies the DOFs in the time buffer or integrates the DOFs via time derivatives.
@@ -238,10 +238,10 @@ class seissol::kernels::Time {
      * @param o_timeIntegrated array containing the time integrated DOFs of the four neighboring cells.
      **/
     void computeIntegrals( unsigned int i_ltsSetup,
-                           const real   i_currentTime[    5                                                            ],
+                           const real   i_currentTime[5],
                            real         i_timeStepWidth,
-                           real * const i_timeDofs[       4                                                            ],
-                           real         o_timeIntegrated[ 4 * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ] );
+                           real * const i_timeDofs[4],
+                           real         o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] );
 
 };
 
