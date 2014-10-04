@@ -239,8 +239,8 @@ void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
    * set/compute time integrated DOFs.
    */
   for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    // collect information only in the case of regular (non-boundary, DR) faces
-    if( i_faceTypes[l_neighbor] == regular ) {
+    // collect information only in the case that neighboring element contributions are required
+    if( i_faceTypes[l_neighbor] != outflow && i_faceTypes[l_neighbor] != dynamicRupture ) {
       // check if the time integration is already done (-> copy)
       if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
         memcpy( o_timeIntegrated[l_neighbor],         // destination
