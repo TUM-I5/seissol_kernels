@@ -212,11 +212,12 @@ void seissol::kernels::Time::computeIntegral(       real  i_expansionPoint,
 
 }
 
-void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
-                                               const real   i_currentTime[5],
-                                               real         i_timeStepWidth,
-                                               real  *const i_timeDofs[4],
-                                               real         o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] ) {
+void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
+                                               const enum faceType i_faceTypes[4],
+                                               const real          i_currentTime[5],
+                                               real                i_timeStepWidth,
+                                               real  *const        i_timeDofs[4],
+                                               real                o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] ) {
   /*
    * assert valid input.
    */
@@ -238,20 +239,23 @@ void seissol::kernels::Time::computeIntegrals( unsigned int i_ltsSetup,
    * set/compute time integrated DOFs.
    */
   for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    // check if the time integration is already done (-> copy)
-    if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
-      memcpy( o_timeIntegrated[l_neighbor],         // destination
-              i_timeDofs[l_neighbor],               // source
-              NUMBER_OF_ALIGNED_DOFS * sizeof(real) // size
-            );
-    }
-    // integrate the DOFs in time via the derivatives
-    else {
-      seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1],
-                                                i_currentTime[    0           ],
-                                                i_currentTime[    0           ] + i_timeStepWidth,
-                                                i_timeDofs[       l_neighbor],
-                                                o_timeIntegrated[ l_neighbor]                      );
+    // collect information only in the case of regular (non-boundary, DR) faces
+    if( i_faceTypes[l_neighbor] == regular ) {
+      // check if the time integration is already done (-> copy)
+      if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
+        memcpy( o_timeIntegrated[l_neighbor],         // destination
+                i_timeDofs[l_neighbor],               // source
+                NUMBER_OF_ALIGNED_DOFS * sizeof(real) // size
+              );
+      }
+      // integrate the DOFs in time via the derivatives
+      else {
+        seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1],
+                                                  i_currentTime[    0           ],
+                                                  i_currentTime[    0           ] + i_timeStepWidth,
+                                                  i_timeDofs[       l_neighbor],
+                                                  o_timeIntegrated[ l_neighbor]                      );
+      }
     }
   }
 }

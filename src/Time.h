@@ -232,16 +232,18 @@ class seissol::kernels::Time {
      *   11 - 0: time itnegrated DOFs of cell 3 are copied from the buffer.
      *
      * @param i_ltsSetup bitmask for the LTS setup.
+     * @param i_faceTypes face types of the neighboring cells.
      * @param i_currentTime current time of the cell [0] and it's four neighbors [1], [2], [3] and [4].
      * @param i_timeStepWidth time step width of the cell.
      * @param i_timeDofs pointers to time integrated buffers or time derivatives of the four neighboring cells.
      * @param o_timeIntegrated array containing the time integrated DOFs of the four neighboring cells.
      **/
-    void computeIntegrals( unsigned int i_ltsSetup,
-                           const real   i_currentTime[5],
-                           real         i_timeStepWidth,
-                           real * const i_timeDofs[4],
-                           real         o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] );
+    void computeIntegrals( unsigned int        i_ltsSetup,
+                           const enum faceType i_faceTypes[4],
+                           const real          i_currentTime[5],
+                           real                i_timeStepWidth,
+                           real * const        i_timeDofs[4],
+                           real                o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] );
 
 };
 

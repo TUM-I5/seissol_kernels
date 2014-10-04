@@ -323,6 +323,9 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       // create a new time kernel
       seissol::kernels::Time l_timeKernel;
 
+      //! face types
+      enum faceType l_faceTypes[4] = {regular, regular, regular, regular};
+
       // pointers to time buffers/derivatives
       real *l_timeDofs[4];
 
@@ -411,6 +414,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
         // optimized implementation
         l_timeKernel.computeIntegrals( l_ltsSetup,
+                                       l_faceTypes,
                                        l_currentTime,
                                        l_timeStepWidth,
                                        l_timeDofs,

@@ -106,7 +106,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       //! flux solvers matrices (negative eigenvalues): \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
       double l_fluxSolversNeg[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
-      //! boundary conditions
+      //! face types
       enum faceType l_faceTypes[4] = {regular, regular, regular, regular};
 
       //! neighboring indices
