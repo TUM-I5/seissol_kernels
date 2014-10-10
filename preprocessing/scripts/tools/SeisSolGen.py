@@ -271,7 +271,7 @@ def executeSeisSolgen( i_pathToSeisSolGen,
 # \param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
 def getSparseMatrices( i_pathToMatrices,
                        i_numberOfQuantities = 9,
-                       i_maximumDegreeOfBasisFunctions = 6 ): #TODO: 7
+                       i_maximumDegreeOfBasisFunctions = 6 ):
   l_logger.log('getting matrices', 2)
 
   # list which holds the different matrix structures
@@ -815,7 +815,7 @@ def getDenseMatrices( i_alignments,
                                                                    i_numberOfQuantities      = i_numberOfQuantities )
 
     l_alignedDgemm = l_alignedDgemm + getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
-                                                                   i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                   i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
                                                                    i_numberOfQuantities      = i_numberOfQuantities )
 
     l_alignedDgemm = l_alignedDgemm + getDenseFluxMatrices(        i_alignment = l_alignment,
@@ -965,7 +965,7 @@ def generateMatrixKernels( i_pathToSeisSolGen,
 def generateMatrixKernelsInitializationCode( i_pathToMatrices,
                                              i_pathToOutputFile,
                                              i_maximumDegreeOfBasisFunctions = 8 ):
-  l_logger.log('generating flux matrix initialization code' )
+  l_logger.log('generating dense matrix initialization code' )
 
   # holds the generated source code
   l_sourceCode = ''

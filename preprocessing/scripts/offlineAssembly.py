@@ -183,7 +183,7 @@ for l_file in l_matrixFiles:
         l_matrixConverter.generateMatrixInitializationCode('matrices/'+l_file, l_baseName, 'initializeFlatStarMatrixColumnMajor', 'csc' ,'generated_code/initialization')
 
 if l_commandLineArguments.convertToXml:
-  l_sparseDenseSwitches = numpy.arange(0, 1.01, 0.01).tolist()
+  l_sparseDenseSwitches = [1.0] #numpy.arange(0, 1.01, 0.01).tolist()
 
   for l_sparseDenseSwitch in l_sparseDenseSwitches:
     l_matrixConverter.convertToXml( i_pathToMatrices='matrices',

@@ -434,12 +434,12 @@ end do
     l_logger.log('converting matrices in folder \''+i_pathToMatrices )
 
     # #(basis functions) we write XML files for
-    l_numberOfBasisFunctionsList = [4, 10, 20, 35, 56];
+    l_numberOfBasisFunctionsList = [4, 10, 20, 35, 56, 84];
 
     # get sparse matrices
     l_matrices = l_seisSolGen.getSparseMatrices( i_pathToMatrices = i_pathToMatrices,
                                                  i_numberOfQuantities = 9,
-                                                 i_maximumDegreeOfBasisFunctions = 7 )
+                                                 i_maximumDegreeOfBasisFunctions = 6 )
 
     # iterate over basis functions
     #   Remark: Each matrix is a subset of the matrix for the next degree.

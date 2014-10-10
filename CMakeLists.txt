@@ -85,6 +85,7 @@ ADD_DEFINITIONS( -std=c++11 )
 
 # add submodules
 include_directories( src
+                     unit_tests
                      submodules
                      submodules/seissol
                    )
