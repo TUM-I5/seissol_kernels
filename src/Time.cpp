@@ -66,6 +66,8 @@ seissol::kernels::Time::Time() {
       m_derivativesOffsets[l_order]  =  m_numberOfAlignedBasisFunctions[l_order-1] * NUMBER_OF_QUANTITIES;
       m_derivativesOffsets[l_order] +=  m_derivativesOffsets[l_order-1];
     }
+
+    m_dummyOffsets[l_order] = l_order%2 * NUMBER_OF_ALIGNED_DOFS;
   }
 
   // intialize the function pointers to the matrix kernels
@@ -74,42 +76,78 @@ seissol::kernels::Time::Time() {
 #undef TIME_KERNEL
 }
 
-void seissol::kernels::Time::computeDerivatives(       real** i_stiffnessMatrices,
-                                                 const real*  i_degreesOfFreedom,
-                                                       real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                                       real*  o_timeDerivatives ) {
+void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
+                                                real** i_stiffnessMatrices,
+                                          const real*  i_degreesOfFreedom,
+                                                real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                                real*  o_timeIntegrated,
+                                                real*  o_timeDerivatives ) {
   /*
    * assert alignments.
    */
   assert( ((uintptr_t)i_degreesOfFreedom)     % ALIGNMENT == 0 );
-  assert( ((uintptr_t)o_timeDerivatives)      % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[0]) % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[1]) % ALIGNMENT == 0 );
   assert( ((uintptr_t)i_stiffnessMatrices[2]) % ALIGNMENT == 0 );
+  assert( ((uintptr_t)o_timeIntegrated )      % ALIGNMENT == 0 );
+  assert( ((uintptr_t)o_timeDerivatives)      % ALIGNMENT == 0 || o_timeDerivatives == NULL );
 
   /*
-   * compute time derivatives.
+   * Fall back to integration only if no derivatives are requested
    */
-  // reset time derivatives
-  // TODO: inefficient
-  memset( o_timeDerivatives, 0, getAlignedTimeDerivativesSize()*sizeof(real) );
+  real l_derivativesBuffer[NUMBER_OF_ALIGNED_DOFS*2] __attribute__((aligned(ALIGNMENT)));
+  unsigned int *l_derivativesOffsets;
+
+  if( o_timeDerivatives == NULL ) {
+    o_timeDerivatives = l_derivativesBuffer;
+    l_derivativesOffsets = m_dummyOffsets;
+  }
+  else {
+    l_derivativesOffsets = m_derivativesOffsets;
+  }
+
+  /*
+   * compute ADER scheme.
+   */
+  // scalars in the taylor-series expansion
+  real l_scalar = i_timeStepWidth;
 
   // temporary result
   real l_temporaryResult[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(64)));
 
-  // copy DOFs to 0th derivative
-  memcpy( o_timeDerivatives, i_degreesOfFreedom, NUMBER_OF_ALIGNED_DOFS*sizeof(real) );
+  // initialize time integrated DOFs and derivatives
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof++ ) {
+    o_timeDerivatives[l_dof] = i_degreesOfFreedom[l_dof];
+    o_timeIntegrated[l_dof]  = i_degreesOfFreedom[l_dof] * l_scalar;
+  }
 
-  // compute all derivatives
+  // compute all derivatives and contributions to the time integrated DOFs
   for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
+    // reset derivatives to zero
+    memset( o_timeDerivatives+l_derivativesOffsets[l_derivative],
+            0,
+            m_numberOfAlignedBasisFunctions[l_derivative]*NUMBER_OF_QUANTITIES*sizeof(real) );
+
     // iterate over dimensions 
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
       // compute $K_{\xi_c}.Q_k$ and $(K_{\xi_c}.Q_k).A*$
-      m_matrixKernels[ (l_derivative-1)*2     ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+m_derivativesOffsets[l_derivative-1],  l_temporaryResult,
+      m_matrixKernels[ (l_derivative-1)*2     ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+l_derivativesOffsets[l_derivative-1],  l_temporaryResult,
                                                   NULL,                     NULL,                                                    NULL                                                  ); // prefetches
 
-      m_matrixKernels[ (l_derivative-1)*2 + 1 ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+m_derivativesOffsets[l_derivative],
+      m_matrixKernels[ (l_derivative-1)*2 + 1 ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+l_derivativesOffsets[l_derivative],
                                                   NULL,                     NULL,                                                    NULL                                                  ); // prefetches
+    }
+
+    // update scalar for this derivative
+    l_scalar *= i_timeStepWidth / real(l_derivative+1);
+
+    // update time integrated DOFs
+    for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
+      for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[l_derivative]; l_basisFunction++ ) {
+        o_timeIntegrated[ l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS + l_basisFunction ] += l_scalar * o_timeDerivatives[   l_derivativesOffsets[l_derivative]
+                                                                                                                            + l_quantity*m_numberOfAlignedBasisFunctions[l_derivative]
+                                                                                                                            + l_basisFunction  ];
+      }
     }
   }
 

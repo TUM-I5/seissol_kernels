@@ -214,8 +214,12 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
         }
 
         /*
-         * Test time derivatives
+         * Test hybrid ADER computation: time derivatives and time integrated DOFs in one step.
          */
+        // time step width of this cell
+        real l_cellDeltaT[2];
+        l_cellDeltaT[0] = 0; m_denseMatrix.setRandomValues( 1, &l_cellDeltaT[1] );
+
         // reference implementation
         m_simpleTimeIntegrator.computeTimeDerivation( l_degreesOfFreedomUT,
                                                       l_starMatrices[0],
@@ -223,11 +227,17 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                                       l_starMatrices[2],
                                                       l_timeDerivativesUT );
 
+        m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
+                                                       l_cellDeltaT,
+                                                       l_timeIntegratedUT );
+
         // optimized implementation
-        l_timeKernel.computeDerivatives( l_stiffnessMatrices,
-                                         l_degreesOfFreedom,
-                                         l_starMatrices,
-                                         l_timeDerivatives );
+        l_timeKernel.computeAder( l_cellDeltaT[1],
+                                  l_stiffnessMatrices,
+                                  l_degreesOfFreedom,
+                                  l_starMatrices,
+                                  l_timeIntegrated,
+                                  l_timeDerivatives );
 
         // check the results
         m_denseMatrix.checkResult( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES,
@@ -248,8 +258,16 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                          NUMBER_OF_QUANTITIES );
         }
 
+        m_denseMatrix.checkSubMatrix( l_timeIntegrated,
+                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                      NUMBER_OF_QUANTITIES,
+                                      l_timeIntegratedUT,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
+                                      NUMBER_OF_QUANTITIES );
+
+
         /*
-         * Test time integration
+         * Test time integration from derivatives
          */
         real l_time[3]; real l_deltaT[2];
         m_denseMatrix.setRandomValues( 3, l_time );
@@ -275,7 +293,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_QUANTITIES );
 
         /*
-         * Test time extrapolation
+         * Test time extrapolation from derivatives
          */
         l_timeKernel.computeExtrapolation( l_time[0],
                                            l_time[1],
@@ -291,6 +309,37 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES,
                                       l_timeExtrapolatedUT,
+                                      NUMBER_OF_BASIS_FUNCTIONS,
+                                      NUMBER_OF_QUANTITIES );
+
+        /*
+         * Test pure time integration.
+         */
+        l_cellDeltaT[0] = 0; m_denseMatrix.setRandomValues( 1, &l_cellDeltaT[1] );
+
+        // reference implementation
+        m_simpleTimeIntegrator.computeTimeDerivation( l_degreesOfFreedomUT,
+                                                      l_starMatrices[0],
+                                                      l_starMatrices[1],
+                                                      l_starMatrices[2],
+                                                      l_timeDerivativesUT );
+
+        m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
+                                                       l_cellDeltaT,
+                                                       l_timeIntegratedUT );
+
+        // optimized implementation
+        l_timeKernel.computeAder( l_cellDeltaT[1],
+                                  l_stiffnessMatrices,
+                                  l_degreesOfFreedom,
+                                  l_starMatrices,
+                                  l_timeIntegrated );
+
+        // check the results
+        m_denseMatrix.checkSubMatrix( l_timeIntegrated,
+                                      NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                      NUMBER_OF_QUANTITIES,
+                                      l_timeIntegratedUT,
                                       NUMBER_OF_BASIS_FUNCTIONS,
                                       NUMBER_OF_QUANTITIES );
       }

@@ -111,6 +111,14 @@ class seissol::kernels::Time {
     unsigned int m_derivativesOffsets[CONVERGENCE_ORDER];
 
     /**
+     * Dummy offsets for non-derivative ADER calls.
+     *
+     * * (index modulo 2 == 0) is always zero.
+     * * (index modulo 2 == 1) is always NUMBER_OF_ALIGNED_DOFS
+     **/
+    unsigned int m_dummyOffsets[CONVERGENCE_ORDER];
+
+    /**
      * Collection of matrix kernels, which perform the matrix product \f$ C += A.B\f$,
      * where \f$ A \f$ is a global transposed stiffness matrix (case a) or B a star matrix (case b).
      * Each dense kernel (TODO: sparse implementation) has hardcoded BLAS-specifiers (M, N, K, ld(A), ld(B), ld(C), beta) exploiting the recursive structure.
@@ -173,20 +181,25 @@ class seissol::kernels::Time {
     Time();
 
     /**
-     * Computes the time derivatives.
-     *   Storage format is compressed (storing only non-zeros).
+     * Computes the ADER procedure.
+     *   This is a hybrid call: output are the time integrated DOFs and (optional) the time derivatives.
+     *   Storage format of the derivatives is compressed (storing only aligned non-zeros).
      *   Use computeTimeIntegral to compute time integrated degrees of freedom from the derivatives.
      *   Use computeTimeEvaluation to evaluate the time prediction of the degrees of freedom based on the derivatives.
      *
+     * @param i_timeStepWidth time step width for the integration in time.
      * @param i_stiffnessMatrices negative transposed stiffness matrices (multiplied by inverse mass matrix), 0: \f$ -M^{-1} ( K^\xi )^T \f$ 1:\f$ -M^{-1} ( K^\eta )^T \f$ 2: \f$ -M^{-1} ( K^\zeta )^T \f$.
      * @param i_degreesOfFreedom of the current time step \f$ t^\text{cell} \f$ for which the time derivatives \f$ \frac{\partial^j}{\partial t^j} \f$ will be computed.
      * @param i_starMatrices star matrices, 0: \f$ A^*_k \f$, 1: \f$ B^*_k \f$, 2: \f$ C^*_k \f$.
-     * @param o_timeDerivatives time derivatives of the degrees of freedom in compressed format.
+     * @param i_timeIntegrated time integrated DOFs.
+     * @param o_timeDerivatives (optional) time derivatives of the degrees of freedom in compressed format. If NULL only time integrated DOFs are returned.
      **/
-    void computeDerivatives(       real** i_stiffnessMatrices,
-                             const real*  i_degreesOfFreedom,
-                                   real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                   real*  o_timeDerivatives );
+    void computeAder(       real   i_timeStepWidth,
+                            real** i_stiffnessMatrices,
+                      const real*  i_degreesOfFreedom,
+                            real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                            real*  o_timeIntegrated,
+                            real*  o_timeDerivatives = NULL );
 
     /**
      * Evaluates the taylor series expansion at the given evaluation point.
