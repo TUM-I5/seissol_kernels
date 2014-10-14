@@ -47,12 +47,6 @@ add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 # set number of quantities
 add_definitions( -DNUMBER_OF_QUANTITIES=9 )
 
-# use intel compilers
-include(CMakeForceCompiler)
-CMAKE_FORCE_C_COMPILER(icc "Intel C Compiler")
-CMAKE_FORCE_CXX_COMPILER(icpc "Intel C++ Compiler")
-CMAKE_FORCE_Fortran_COMPILER(ifort "Intel Fortran Compiler")
-
 # build the architecture dependent matrix kernels as library
 if( ${VECTOR_INSTRUCTION_SET} STREQUAL avx )
   message( "-- using 32-bit aligned matrix kernels" )
