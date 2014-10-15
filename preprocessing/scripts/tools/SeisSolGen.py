@@ -849,7 +849,7 @@ def generateMatrixKernels( i_pathToSeisSolGen,
                '\n matrix directory='+i_pathToMatrices+
                '\n output directory='+i_pathToOutputDirectory)
 
-  l_alignments = [16,32, 64]
+  l_alignments = [16, 32, 64]
 
   # get dense matrices
   l_denseMatrices = getDenseMatrices( i_alignments = l_alignments )
@@ -976,20 +976,17 @@ def generateMatrixKernelsInitializationCode( i_pathToMatrices,
   # write license
   l_logger.writeFileHeader(i_pathToOutputFile, '// ')
 
-  l_sourceCode = l_sourceCode + '#if ALIGNMENT!=32 && ALIGNMENT!=64\n'\
+  l_sourceCode = l_sourceCode + '#if ALIGNMENT!=16 && ALIGNMENT!=32 && ALIGNMENT!=64\n'\
                               + '#error TODO missing fallback code\n'\
                               + '#endif\n\n'
 
   # iterate over supported alignments
-  for l_alignment in [32, 64]:
+  for l_alignment in [16, 32, 64]:
     # set architecture dependent includes
-    if l_alignment == 32:
-      l_sourceCode = l_sourceCode + '#if ALIGNMENT==32\n\n'
-    if l_alignment == 64:
-      l_sourceCode = l_sourceCode + '#if ALIGNMENT==64\n\n'
+    l_sourceCode = l_sourceCode + '#if ALIGNMENT==' + str(l_alignment) + '\n\n'
 
     # iterate over convergence orders
-    for l_order in range(1, i_maximumDegreeOfBasisFunctions + 1):
+    for l_order in range(2, i_maximumDegreeOfBasisFunctions + 1):
       l_sourceCode = l_sourceCode + '#if CONVERGENCE_ORDER==' + str(l_order) + '\n'
 
       # iterate over kernels

@@ -4,7 +4,7 @@
 // @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 // @author Alexander Heinecke (alexander.heinecke AT mytum.de, http://www5.in.tum.de/wiki/index.php/Alexander_Heinecke,_M.Sc.,_M.Sc._with_honors)
 // 
-// @date 2014-08-18 18:03:28.442921
+// @date 2014-10-15 16:25:42.515132
 // 
 // @section LICENSE
 // Copyright (c) 2012-2014, SeisSol Group
@@ -38,28 +38,191 @@
 // 
 // @section DESCRIPTION
 // Remark: This file was generated.
-#if ALIGNMENT!=32 && ALIGNMENT!=64
+#if ALIGNMENT!=16 && ALIGNMENT!=32 && ALIGNMENT!=64
 #error TODO missing fallback code
 #endif
 
-#if ALIGNMENT==32
+#if ALIGNMENT==16
 
-#if CONVERGENCE_ORDER==1
+#if CONVERGENCE_ORDER==2
 
 #ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m2_n9_k4_ldA2_ldB4_ldC2_beta0;
+m_matrixKernels[1] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
 #endif
 
 #ifdef VOLUME_KERNEL
-m_matrixKernels[0] = dgemm_m4_n9_k0_ldA4_ldB4_ldC4_beta0;
-m_matrixKernels[1] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
-#endif
-
-#ifdef FLUX_KERNEL
 m_matrixKernels[0] = dgemm_m4_n9_k1_ldA4_ldB4_ldC4_beta0;
 m_matrixKernels[1] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
 #endif
 
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m4_n9_k4_ldA4_ldB4_ldC4_beta0;
+m_matrixKernels[1] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
 #endif
+
+#endif
+
+#if CONVERGENCE_ORDER==3
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m4_n9_k10_ldA4_ldB10_ldC4_beta0;
+m_matrixKernels[1] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[2] = dgemm_m2_n9_k4_ldA4_ldB4_ldC2_beta0;
+m_matrixKernels[3] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m10_n9_k4_ldA10_ldB10_ldC10_beta0;
+m_matrixKernels[1] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m10_n9_k10_ldA10_ldB10_ldC10_beta0;
+m_matrixKernels[1] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+#endif
+
+#endif
+
+#if CONVERGENCE_ORDER==4
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m10_n9_k20_ldA10_ldB20_ldC10_beta0;
+m_matrixKernels[1] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+m_matrixKernels[2] = dgemm_m4_n9_k10_ldA10_ldB10_ldC4_beta0;
+m_matrixKernels[3] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[4] = dgemm_m2_n9_k4_ldA10_ldB4_ldC2_beta0;
+m_matrixKernels[5] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m20_n9_k10_ldA20_ldB20_ldC20_beta0;
+m_matrixKernels[1] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m20_n9_k20_ldA20_ldB20_ldC20_beta0;
+m_matrixKernels[1] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+#endif
+
+#endif
+
+#if CONVERGENCE_ORDER==5
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m20_n9_k35_ldA20_ldB36_ldC20_beta0;
+m_matrixKernels[1] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+m_matrixKernels[2] = dgemm_m10_n9_k20_ldA20_ldB20_ldC10_beta0;
+m_matrixKernels[3] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+m_matrixKernels[4] = dgemm_m4_n9_k10_ldA20_ldB10_ldC4_beta0;
+m_matrixKernels[5] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[6] = dgemm_m2_n9_k4_ldA20_ldB4_ldC2_beta0;
+m_matrixKernels[7] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m36_n9_k20_ldA36_ldB36_ldC36_beta0;
+m_matrixKernels[1] = dgemm_m36_n9_k9_ldA36_ldB9_ldC36_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m36_n9_k35_ldA36_ldB36_ldC36_beta0;
+m_matrixKernels[1] = dgemm_m36_n9_k9_ldA36_ldB9_ldC36_beta1;
+#endif
+
+#endif
+
+#if CONVERGENCE_ORDER==6
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m36_n9_k56_ldA36_ldB56_ldC36_beta0;
+m_matrixKernels[1] = dgemm_m36_n9_k9_ldA36_ldB9_ldC36_beta1;
+m_matrixKernels[2] = dgemm_m20_n9_k35_ldA36_ldB36_ldC20_beta0;
+m_matrixKernels[3] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+m_matrixKernels[4] = dgemm_m10_n9_k20_ldA36_ldB20_ldC10_beta0;
+m_matrixKernels[5] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+m_matrixKernels[6] = dgemm_m4_n9_k10_ldA36_ldB10_ldC4_beta0;
+m_matrixKernels[7] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[8] = dgemm_m2_n9_k4_ldA36_ldB4_ldC2_beta0;
+m_matrixKernels[9] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m56_n9_k35_ldA56_ldB56_ldC56_beta0;
+m_matrixKernels[1] = dgemm_m56_n9_k9_ldA56_ldB9_ldC56_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m56_n9_k56_ldA56_ldB56_ldC56_beta0;
+m_matrixKernels[1] = dgemm_m56_n9_k9_ldA56_ldB9_ldC56_beta1;
+#endif
+
+#endif
+
+#if CONVERGENCE_ORDER==7
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m56_n9_k84_ldA56_ldB84_ldC56_beta0;
+m_matrixKernels[1] = dgemm_m56_n9_k9_ldA56_ldB9_ldC56_beta1;
+m_matrixKernels[2] = dgemm_m36_n9_k56_ldA56_ldB56_ldC36_beta0;
+m_matrixKernels[3] = dgemm_m36_n9_k9_ldA36_ldB9_ldC36_beta1;
+m_matrixKernels[4] = dgemm_m20_n9_k35_ldA56_ldB36_ldC20_beta0;
+m_matrixKernels[5] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+m_matrixKernels[6] = dgemm_m10_n9_k20_ldA56_ldB20_ldC10_beta0;
+m_matrixKernels[7] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+m_matrixKernels[8] = dgemm_m4_n9_k10_ldA56_ldB10_ldC4_beta0;
+m_matrixKernels[9] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[10] = dgemm_m2_n9_k4_ldA56_ldB4_ldC2_beta0;
+m_matrixKernels[11] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m84_n9_k56_ldA84_ldB84_ldC84_beta0;
+m_matrixKernels[1] = dgemm_m84_n9_k9_ldA84_ldB9_ldC84_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m84_n9_k84_ldA84_ldB84_ldC84_beta0;
+m_matrixKernels[1] = dgemm_m84_n9_k9_ldA84_ldB9_ldC84_beta1;
+#endif
+
+#endif
+
+#if CONVERGENCE_ORDER==8
+
+#ifdef TIME_KERNEL
+m_matrixKernels[0] = dgemm_m84_n9_k120_ldA84_ldB120_ldC84_beta0;
+m_matrixKernels[1] = dgemm_m84_n9_k9_ldA84_ldB9_ldC84_beta1;
+m_matrixKernels[2] = dgemm_m56_n9_k84_ldA84_ldB84_ldC56_beta0;
+m_matrixKernels[3] = dgemm_m56_n9_k9_ldA56_ldB9_ldC56_beta1;
+m_matrixKernels[4] = dgemm_m36_n9_k56_ldA84_ldB56_ldC36_beta0;
+m_matrixKernels[5] = dgemm_m36_n9_k9_ldA36_ldB9_ldC36_beta1;
+m_matrixKernels[6] = dgemm_m20_n9_k35_ldA84_ldB36_ldC20_beta0;
+m_matrixKernels[7] = dgemm_m20_n9_k9_ldA20_ldB9_ldC20_beta1;
+m_matrixKernels[8] = dgemm_m10_n9_k20_ldA84_ldB20_ldC10_beta0;
+m_matrixKernels[9] = dgemm_m10_n9_k9_ldA10_ldB9_ldC10_beta1;
+m_matrixKernels[10] = dgemm_m4_n9_k10_ldA84_ldB10_ldC4_beta0;
+m_matrixKernels[11] = dgemm_m4_n9_k9_ldA4_ldB9_ldC4_beta1;
+m_matrixKernels[12] = dgemm_m2_n9_k4_ldA84_ldB4_ldC2_beta0;
+m_matrixKernels[13] = dgemm_m2_n9_k9_ldA2_ldB9_ldC2_beta1;
+#endif
+
+#ifdef VOLUME_KERNEL
+m_matrixKernels[0] = dgemm_m120_n9_k84_ldA120_ldB120_ldC120_beta0;
+m_matrixKernels[1] = dgemm_m120_n9_k9_ldA120_ldB9_ldC120_beta1;
+#endif
+
+#ifdef FLUX_KERNEL
+m_matrixKernels[0] = dgemm_m120_n9_k120_ldA120_ldB120_ldC120_beta0;
+m_matrixKernels[1] = dgemm_m120_n9_k9_ldA120_ldB9_ldC120_beta1;
+#endif
+
+#endif
+
+#endif
+
+
+#if ALIGNMENT==32
 
 #if CONVERGENCE_ORDER==2
 
@@ -240,23 +403,6 @@ m_matrixKernels[1] = dgemm_m120_n9_k9_ldA120_ldB9_ldC120_beta1;
 
 
 #if ALIGNMENT==64
-
-#if CONVERGENCE_ORDER==1
-
-#ifdef TIME_KERNEL
-#endif
-
-#ifdef VOLUME_KERNEL
-m_matrixKernels[0] = dgemm_m8_n9_k0_ldA8_ldB8_ldC8_beta0;
-m_matrixKernels[1] = dgemm_m8_n9_k9_ldA8_ldB9_ldC8_beta1;
-#endif
-
-#ifdef FLUX_KERNEL
-m_matrixKernels[0] = dgemm_m8_n9_k1_ldA8_ldB8_ldC8_beta0;
-m_matrixKernels[1] = dgemm_m8_n9_k9_ldA8_ldB9_ldC8_beta1;
-#endif
-
-#endif
 
 #if CONVERGENCE_ORDER==2
 

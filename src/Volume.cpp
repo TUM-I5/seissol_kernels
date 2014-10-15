@@ -40,7 +40,9 @@
 
 #include "Volume.h"
 
-#if ALIGNMENT==32
+#if ALIGNMENT==16
+#include <generated_code/matrix_kernels/dgemm_16.h>
+#elif ALIGNMENT==32
 #include <generated_code/matrix_kernels/dgemm_32.h>
 #elif ALIGNMENT==64
 #include <generated_code/matrix_kernels/dgemm_64.h>

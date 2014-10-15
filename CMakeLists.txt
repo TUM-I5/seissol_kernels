@@ -48,7 +48,15 @@ add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 add_definitions( -DNUMBER_OF_QUANTITIES=9 )
 
 # build the architecture dependent matrix kernels as library
-if( ${VECTOR_INSTRUCTION_SET} STREQUAL avx )
+if( ${VECTOR_INSTRUCTION_SET} STREQUAL sse3 )
+  message( "-- using 16-bit aligned matrix kernels" )
+
+  add_library( matrix_kernels
+               submodules/seissol/Monitoring/FlopCounter.cpp
+               preprocessing/generated_code/matrix_kernels/dgemm_16.cpp )
+  add_definitions( -DALIGNMENT=16
+                   -m${VECTOR_INSTRUCTION_SET} )
+elseif( ${VECTOR_INSTRUCTION_SET} STREQUAL avx )
   message( "-- using 32-bit aligned matrix kernels" )
 
   add_library( matrix_kernels
