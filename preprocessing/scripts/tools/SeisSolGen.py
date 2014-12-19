@@ -829,6 +829,7 @@ def getDenseMatrices( i_alignments,
     # file where the generated code is stored
     l_fileNameOfGeneratedKernel = 'dgemm_' + str(l_alignment)
     for l_matrix in range(len(l_alignedDgemm)):
+      l_alignedDgemm[l_matrix]['alignment'] = l_alignment
       l_alignedDgemm[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
 
     # add the alignment to all matrices
@@ -915,6 +916,13 @@ def generateMatrixKernels( i_pathToSeisSolGen,
                               ' '+str(l_matrix['ldB'])+\
                               ' '+str(l_matrix['ldC'])+\
                               ' '+str(int(l_matrix['add']))
+    if( l_matrix['alignment'] == 16 ):
+      l_commandLineParameters += ' sse3'
+    elif( l_matrix['alignment'] == 32 ):
+      l_commandLineParameters += ' avx'
+    elif( l_matrix['alignment'] == 64 ):
+      l_commandLineParameters += ' avx512'
+
     # generate code C++-code for the current matrix
     executeSeisSolgen( i_pathToSeisSolGen,\
                        l_commandLineParameters )
