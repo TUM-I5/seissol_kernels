@@ -96,6 +96,9 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       //! matrices of time integrated unknowns
       double l_timeIntegrated[            NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
       double l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
+      double* l_timeIntegratedNeighborsPT[4];
+      l_timeIntegratedNeighborsPT[0] = l_timeIntegratedNeighbors[0]; l_timeIntegratedNeighborsPT[1] = l_timeIntegratedNeighbors[1];
+      l_timeIntegratedNeighborsPT[2] = l_timeIntegratedNeighbors[2]; l_timeIntegratedNeighborsPT[3] = l_timeIntegratedNeighbors[3];
 
       double l_timeIntegratedUT[            NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
       double l_timeIntegratedNeighborsUT[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
@@ -216,7 +219,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
         l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                    l_neighboringIndices,
                                                    l_fluxMatrices,
-                                                   l_timeIntegratedNeighbors,
+                                                   l_timeIntegratedNeighborsPT,
                                                    l_fluxSolversNeg,
                                                    l_degreesOfFreedom );
 
@@ -252,7 +255,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
           l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                      l_neighboringIndices,
                                                      l_fluxMatrices,
-                                                     l_timeIntegratedNeighbors,
+                                                     l_timeIntegratedNeighborsPT,
                                                      l_fluxSolversNeg,
                                                      l_degreesOfFreedom );
 

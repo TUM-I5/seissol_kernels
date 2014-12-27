@@ -107,7 +107,7 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
 void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i_faceTypes[4],
                                                            const int           i_neighboringIndices[4][2],
                                                                  real         *i_fluxMatrices[52],
-                                                                 real          i_timeIntegrated[4][ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                                 real         *i_timeIntegrated[4],
                                                                  real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
                                                                  real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
   /*
@@ -121,7 +121,7 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
 
   // alignment of the time integrated dofs
   for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    assert( ((uintptr_t)&i_timeIntegrated[l_neighbor]) % ALIGNMENT == 0 );
+    assert( ((uintptr_t)i_timeIntegrated[l_neighbor]) % ALIGNMENT == 0 );
   }
 #endif
 
