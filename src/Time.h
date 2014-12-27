@@ -230,7 +230,7 @@ class seissol::kernels::Time {
                                 real  o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] );
 
     /**
-     * Either copies the DOFs in the time buffer or integrates the DOFs via time derivatives.
+     * Either copies pointers to the DOFs in the time buffer or integrates the DOFs via time derivatives.
      *   Evaluation depends on bit 07-11  of the LTS setup.
      *   0 -> copy buffer; 1 -> integrate via time derivatives
      *     Example:
@@ -249,14 +249,16 @@ class seissol::kernels::Time {
      * @param i_currentTime current time of the cell [0] and it's four neighbors [1], [2], [3] and [4].
      * @param i_timeStepWidth time step width of the cell.
      * @param i_timeDofs pointers to time integrated buffers or time derivatives of the four neighboring cells.
-     * @param o_timeIntegrated array containing the time integrated DOFs of the four neighboring cells.
+     * @param i_integrationBuffer memory where the time integration goes if derived from derivatives. Ensure thread safety!
+     * @param o_timeIntegrated pointers to the time integrated DOFs of the four neighboring cells (either local integration buffer or integration buffer of input).
      **/
     void computeIntegrals( unsigned int        i_ltsSetup,
                            const enum faceType i_faceTypes[4],
                            const real          i_currentTime[5],
                            real                i_timeStepWidth,
                            real * const        i_timeDofs[4],
-                           real                o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] );
+                           real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
+                           real *              o_timeIntegrated[4] );
 
 };
 

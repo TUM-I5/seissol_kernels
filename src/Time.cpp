@@ -257,7 +257,8 @@ void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
                                                const real          i_currentTime[5],
                                                real                i_timeStepWidth,
                                                real  *const        i_timeDofs[4],
-                                               real                o_timeIntegrated[4][NUMBER_OF_ALIGNED_DOFS] ) {
+                                               real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
+                                               real  *             o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] ) {
   /*
    * assert valid input.
    */
@@ -268,10 +269,10 @@ void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
   assert ( ( (i_ltsSetup >> 4) & ( (i_ltsSetup << 4) >> 4) ) == 0);
 
 #ifndef NDEBUG
-  // alignment of the time derivatives/integrated dofs
+  // alignment of the time derivatives/integrated dofs and the buffer
   for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    assert( ((uintptr_t)i_timeDofs[l_neighbor])       % ALIGNMENT == 0 );
-    assert( ((uintptr_t)o_timeIntegrated[l_neighbor]) % ALIGNMENT == 0 );
+    assert( ((uintptr_t)i_timeDofs[l_neighbor])          % ALIGNMENT == 0 );
+    assert( ((uintptr_t)o_integrationBuffer[l_neighbor]) % ALIGNMENT == 0 );
   }
 #endif
 
@@ -281,20 +282,19 @@ void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
   for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
     // collect information only in the case that neighboring element contributions are required
     if( i_faceTypes[l_neighbor] != outflow && i_faceTypes[l_neighbor] != dynamicRupture ) {
-      // check if the time integration is already done (-> copy)
+      // check if the time integration is already done (-> copy pointer)
       if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
-        memcpy( o_timeIntegrated[l_neighbor],         // destination
-                i_timeDofs[l_neighbor],               // source
-                NUMBER_OF_ALIGNED_DOFS * sizeof(real) // size
-              );
+        o_timeIntegrated[l_neighbor] = i_timeDofs[l_neighbor];
       }
-      // integrate the DOFs in time via the derivatives
+      // integrate the DOFs in time via the derivatives and set pointer to local buffer
       else {
         seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1],
                                                   i_currentTime[    0           ],
                                                   i_currentTime[    0           ] + i_timeStepWidth,
                                                   i_timeDofs[       l_neighbor],
-                                                  o_timeIntegrated[ l_neighbor]                      );
+                                                  o_integrationBuffer[ l_neighbor]                  );
+
+        o_timeIntegrated[l_neighbor] = o_integrationBuffer[ l_neighbor];
       }
     }
   }

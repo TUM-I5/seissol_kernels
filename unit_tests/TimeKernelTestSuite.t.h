@@ -379,8 +379,8 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       real *l_timeDofs[4];
 
       // final time integrated values of neighboring cells
-      real l_timeIntegrated[4][NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      real l_timeIntegratedUT[ 4 * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ];
+      real *l_timeIntegrated[4];
+      real  l_timeIntegratedUT[ 4 * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES ];
 
       // repeat the test
       for( int l_repeat = 0; l_repeat < m_configuration.getNumberOfRepeats(); l_repeat++) {
@@ -462,11 +462,13 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
         }
 
         // optimized implementation
+        real l_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
         l_timeKernel.computeIntegrals( l_ltsSetup,
                                        l_faceTypes,
                                        l_currentTime,
                                        l_timeStepWidth,
                                        l_timeDofs,
+                                       l_integrationBuffer,
                                        l_timeIntegrated );
 
         /*
