@@ -6,7 +6,7 @@
 # @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 #
 # @section LICENSE
-# Copyright (c) 2013, SeisSol Group
+# Copyright (c) 2013-2015, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -94,53 +94,6 @@ class MatrixConverter():
   ###
   ### Global functions
   ###
-
-  # Converts a given full matrix to compressed sparse row and compressed sparse column format
-  #   An "_csr" and "_csc" will be appended to the base name.
-  #
-  # \param i_pathToFullMatrix path to the full matrix (format: matrix market).
-  # \param i_baseName base name of the sparse output.
-  # \param i_pathToOutputDirectory path to the output directory.
-  def convertFullToSparse(  self,
-                            i_pathToFullMatrix,
-                            i_baseName,
-                            i_pathToOutputDirectory ):
-    l_logger.log('converting to CSR and CSC: '+i_pathToFullMatrix, 2)
-
-    # read the full matrix
-    l_fullMatrix = mmread(i_pathToFullMatrix)
-
-    # convert the full matrix to a list of lists
-    l_fullMatrix = lil_matrix(l_fullMatrix)
-    
-    # generate a list containing the matrix as tuples: (row, column, value)
-    l_sparseMatrix = l_fullMatrix.todok().keys()
-    for l_i in range(len(l_sparseMatrix)):
-      l_sparseMatrix[l_i] = l_sparseMatrix[l_i] + (l_fullMatrix.todok().values()[l_i],)
-      
-    # sort csc and csr in a dictionary
-    l_sortedMatrices = {}
-    l_sortedMatrices['csc'] = sorted( l_sparseMatrix, key = lambda e: (e[1], e[0] ) )
-    l_sortedMatrices['csr'] = sorted( l_sparseMatrix, key = lambda e: (e[0], e[1] ) )
-    
-    # convert to coordinate format
-    for l_format in ['csc', 'csr']:
-      # data structure containing a list for rows, columns and data
-      l_row = []
-      l_col = []
-      l_data = []
-      
-      for l_element in l_sortedMatrices[l_format]:
-        l_row = l_row +   [l_element[0]]
-        l_col = l_col +   [l_element[1]]
-        l_data = l_data + [l_element[2]]
-      
-      # create coordinate format matrix
-      l_sortedMatrices[l_format] = coo_matrix( (l_data, (l_row,l_col)), shape=l_fullMatrix.shape)
-
-    # write csr and csc
-    mmwrite(i_pathToOutputDirectory+'/'+i_baseName+'_csr', l_sortedMatrices['csr'])
-    mmwrite(i_pathToOutputDirectory+'/'+i_baseName+'_csc', l_sortedMatrices['csc'])
 
   # Plot the sparsity pattern of a given full matrix.
   #
@@ -398,28 +351,45 @@ end do
   def readMatrixMarket( self,
                         i_pathToMatrix,
                       ):
-    # read the full matrix
-    l_matrixEntries = mmread( i_pathToMatrix )
+    l_matrixFile = open(i_pathToMatrix)
 
-    # convert matrix to coordinate format
-    l_matrixEntries = coo_matrix(l_matrixEntries)
+    # jump over header
+    if(    l_matrixFile.readline() != "%%MatrixMarket matrix array real general\n" ):
+      print( 'aborting, wrong matrix market format' )
+      exit(1)
 
-    # get #rows and #columns
-    l_numberOfRows = l_matrixEntries.shape[0]
-    l_numberOfColumns = l_matrixEntries.shape[1]
+    l_dimensions = l_matrixFile.readline().split()
+    l_numberOfRows    = int( l_dimensions[0] )
+    l_numberOfColumns = int( l_dimensions[1] )
 
-    # get #nnz
-    l_numberOfNonZeros = l_matrixEntries.nnz
+    l_row = 1; l_column = 1;
 
-    # get row, columns and values
-    l_rows    = l_matrixEntries.row
-    l_columns = l_matrixEntries.col
-    l_values  = l_matrixEntries.data
+    l_values = []
+    l_rows   = []
+    l_columns = []
+
+    while( True ):
+      l_value = l_matrixFile.readline().rstrip("\n");
+
+      if not l_value:
+        assert( l_row    == 1                   );
+        assert( l_column == l_numberOfColumns+1 );
+        break
+      
+      if( l_value != "0." ):
+        l_values = l_values + [l_value]
+        l_rows = l_rows       + [l_row]
+        l_columns = l_columns + [l_column]
+
+      l_row = l_row + 1
+      if( l_row > l_numberOfRows ):
+        l_row = 1
+        l_column = l_column + 1
 
     # return everythin
     return { '#rows':    l_numberOfRows,
              '#columns': l_numberOfColumns,
-             '#nnz':     l_numberOfNonZeros,
+             '#nnz':     len( l_values ),
              'rows':     l_rows,
              'columns':  l_columns,
              'values':   l_values }
@@ -429,8 +399,7 @@ end do
   # \param i_pathToMatrices path to the dense matrix (format: matrix market).
   def convertToXml(  self,
                      i_pathToMatrices,
-                     i_pathToOutputDirectory,
-                     i_sparseDenseSwitch = 0.2 ):
+                     i_pathToOutputDirectory ):
     l_logger.log('converting matrices in folder \''+i_pathToMatrices )
 
     # #(basis functions) we write XML files for
@@ -439,7 +408,7 @@ end do
     # get sparse matrices
     l_matrices = l_seisSolGen.getSparseMatrices( i_pathToMatrices = i_pathToMatrices,
                                                  i_numberOfQuantities = 9,
-                                                 i_maximumDegreeOfBasisFunctions = 6 )
+                                                 i_maximumDegreeOfBasisFunctions = 7 )
 
     # iterate over basis functions
     #   Remark: Each matrix is a subset of the matrix for the next degree.
@@ -447,7 +416,7 @@ end do
     #           the same matrix should be handled sparse or dense.
     for l_numberOfBasisFunctions in l_numberOfBasisFunctionsList:
       # generate file name
-      l_pathToOutputFile = i_pathToOutputDirectory+'/matrices_'+("%0.2f" % i_sparseDenseSwitch)+'_'+str(l_numberOfBasisFunctions)+'.xml'
+      l_pathToOutputFile = i_pathToOutputDirectory+'/matrices_'+str(l_numberOfBasisFunctions)+'.xml'
 
       l_logger.log('writing: '+ l_pathToOutputFile, 2);
 
@@ -479,30 +448,22 @@ end do
           assert(False)
 
         # assert dimensions match
-        assert( l_matrixStructure['rows'].size      == l_matrixStructure['rows'].size )
-        assert( l_matrixStructure['columns'].size   == l_matrixStructure['values'].size  )
-
-        # TODO: add proper sparse/dense switch here
-        if( l_matrixStructure['#nnz'] / float( l_matrixStructure['#rows'] * l_matrixStructure['#columns'] ) > i_sparseDenseSwitch ):
-          l_sparse = 'false'
-        else:
-          l_sparse = 'true'
+        assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['rows']   ) )
+        assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['values'] ) )
 
         l_xmlFile.start( l_matrixType,
           # add matrix meta information
                          name    = l_matrix['name'],
                          id      = str(l_matrix['id']),
-                         sparse  = l_sparse,
                          rows    = str(l_matrixStructure['#rows']),
                          columns = str(l_matrixStructure['#columns']) )
-
       
-        for l_entry in xrange( l_matrixStructure['rows'].size ):
+        for l_entry in xrange( len( l_matrixStructure['rows'] ) ):
           # add this matrix entry
           l_xmlFile.element( "entry",
-                             row    = str(l_matrixStructure['rows'][l_entry]+1),
-                             column = str(l_matrixStructure['columns'][l_entry]+1),
-                             value  = repr(l_matrixStructure['values'][l_entry]) )
+                             row    = str(l_matrixStructure['rows'][l_entry]),
+                             column = str(l_matrixStructure['columns'][l_entry]),
+                             value  = l_matrixStructure['values'][l_entry] )
 
         #print l_matrixEntries
         l_xmlFile.end(l_matrixType)
@@ -519,7 +480,6 @@ end do
       # \f$  N_{k,i} A_k^+ N_{k,i}^{-1} \f$ and \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
       l_xmlFile.element( 'fluxSolver',
                          id='52',
-                         sparse='false',
                          rows='9',
                          columns='9' )
 
@@ -532,16 +492,15 @@ end do
           # add matrix meta information
           l_xmlFile.start( 'starMatrix',
                            id      = str(l_matrix['id']),
-                           sparse  = 'true', # TODO: Always sparse, dense switch?
                            rows    = str(l_matrixStructure['#rows']),
                            columns = str(l_matrixStructure['#columns']) )
 
       
-          for l_entry in xrange( l_matrixStructure['rows'].size ):
+          for l_entry in xrange( len(l_matrixStructure['rows']) ):
             # add this matrix entry
             l_xmlFile.element( "entry",
-                               row    = str(l_matrixStructure['rows'][l_entry]+1),
-                               column = str(l_matrixStructure['columns'][l_entry]+1)
+                               row    = str(l_matrixStructure['rows'][l_entry]),
+                               column = str(l_matrixStructure['columns'][l_entry])
                              )
           l_xmlFile.end('starMatrix')
           

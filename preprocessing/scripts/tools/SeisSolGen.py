@@ -7,7 +7,7 @@
 # @author Alexander Heinecke (alexander.heinecke AT mytum.de)
 #
 # @section LICENSE
-# Copyright (c) 2013-2014, SeisSol Group
+# Copyright (c) 2013-2015, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,200 +46,6 @@ import re
 import subprocess
 import tools.Logger as l_logger
 
-# Run a single SeisSolGen benchmark
-# TODO: This routine is outdated and references to an old version of the code generator.
-#
-# \param i_pathToSeisSolGen path to the code generator.
-# \param i_pathToBuildLogFile path to the log file of the build processes.
-# \param i_commandLineParameters command line parameters given to the code generator.
-# \param i_archiveFileName name of the file, where the generated code is stored.
-def runSingleBenchmark( i_pathToSeisSolGen,
-                        i_buildLogFile,
-                        i_commandLineParameters,
-                        i_archiveFileName ):
-  # initialize build log
-  l_buildLog = ''
-
-  # generate code C++-code for the current matrix
-  l_bashCommand = './generator.exe ' + i_commandLineParameters + ' 1'
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  l_buildLog += l_bashProcess.communicate()[0]
-
-  # archive the generated code
-  l_bashCommand = 'cp generated_matmul.imp generated_code/'+i_archiveFileName
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  l_buildLog += l_bashProcess.communicate()[0]
-        
-  # clean the current build
-  l_bashCommand = 'make benchclean'
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,)
-  l_buildLog += l_bashProcess.communicate()[0]
-
-  # build the benchmark for the current matrix
-  l_bashCommand = 'make bench'
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,)
-  l_buildLog += l_bashProcess.communicate()[0]
-
-  i_buildLogFile.write(l_buildLog)
-
-  # run the benchmark
-  l_bashCommand = './benchmark.exe ' + i_commandLineParameters
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  print l_bashProcess.communicate()[0]
-
-# Run SeisSolGen benchmarks
-# TODO: This routine is outdated and references to an old version of the code generator.
-#
-# \param i_pathToSeisSolGen path to the code generator.
-# \param i_pathToMatrices path to the matrices in Matrix Market format
-def runBenchmarks( i_pathToSeisSolGen,
-                   i_pathToMatrices,
-                   i_pathToBuildLogFile ):
-  
-  # open the build log file
-  l_buildLogFile = open(i_pathToBuildLogFile, 'w')
-
-  log('** bulding the code generator')
-
-  # log for the build commands
-  l_buildLog = '*********** generator ***********\n'
-
-  l_bashCommand = 'make clean'
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  l_buildLog += l_bashProcess.communicate()[0]
-
-  l_bashCommand = 'make'
-  l_bashProcess = subprocess.Popen(l_bashCommand.split(), cwd=i_pathToSeisSolGen, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  l_buildLog += l_bashProcess.communicate()[0]
-
-  # write code generator log
-  l_buildLogFile.write(l_buildLog)
-
-  #old single right routine
-  '''
-  # star matrix
-  l_file = 'starMatrix_3D_csc.mtx'
-  l_pathToFile = i_pathToMatrices+'/'+l_file
-  for l_degree in range(1,6):
-    l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
-
-    log('*** generating code and running benchmarks for '+l_file+', numerical order: ' + str(l_degree) )
-
-    l_buildLog = '*********** ' + l_file + ' - '+ str(l_degree) + ' ***********\n'
-    l_buildLogFile.write(l_buildLog)
-
-    # command line parameter (filename, isCSR(0/1), nDenseRows, nDenseCols, nDenseLD, isLeft(0/1))
-    l_commandLineParameters = ' ../'+l_pathToFile+' 0 '+l_numberOfBasisFunctions+' 9 '+l_numberOfBasisFunctions+' 0'
-
-    # run benchmark for this matrix
-    runSingleBenchmark( i_pathToSeisSolGen, l_buildLogFile, l_commandLineParameters, l_file.replace('_csc.mtx','')+'_'+str(l_degree)+'.imp' )
-   '''
-
-  # stiffness matrices
-  # get and sort the matrix files
-  l_matrixFiles = os.listdir(i_pathToMatrices)
-  l_matrixFiles.sort()
-
-  for l_degree in range(1,8):
-    l_numberOfQuantities = '9'
-    l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
-
-    log( '*** generating code and running benchmarks for: '+str(l_degree)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)')
-
-    l_buildLog = '*********** order - ' + str(l_degree) + ' ***********\n'
-    l_buildLogFile.write(l_buildLog)
-
-    # name of the stiffness matrices
-    l_kXi =   'kXiDivMT_3D_'+str(l_degree)+'_csc.mtx'
-    l_kEta =  'kEtaDivMT_3D_'+str(l_degree)+'_csc.mtx'
-    l_kZeta = 'kZetaDivMT_3D_'+str(l_degree)+'_csc.mtx'
-
-    # name of the star matrices
-    l_aStar = 'starMatrix_3D_csc.mtx'
-    l_bStar = 'starMatrix_3D_csc.mtx'
-    l_cStar = 'starMatrix_3D_csc.mtx'
-    
-    # assert existance
-    assert( l_kXi in l_matrixFiles )
-    assert( l_kEta in l_matrixFiles )
-    assert( l_kZeta in l_matrixFiles )
-
-    assert( l_aStar in l_matrixFiles )
-    assert( l_bStar in l_matrixFiles )
-    assert( l_cStar in l_matrixFiles )
-
-    # build complete paths
-    l_kXi =   i_pathToMatrices+'/'+l_kXi
-    l_kEta =  i_pathToMatrices+'/'+l_kEta
-    l_kZeta = i_pathToMatrices+'/'+l_kZeta
-
-    l_aStar = i_pathToMatrices+'/'+l_aStar
-    l_bStar = i_pathToMatrices+'/'+l_bStar
-    l_cStar = i_pathToMatrices+'/'+l_cStar
-
-    # assert correct dimensions within the files
-    l_matrixDimension = (open(l_kXi, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
-    assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEta, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
-    assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEta, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
-    assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-
-    l_matrixDimension = (open(l_aStar, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfQuantities )
-    assert( l_matrixDimension[1] == l_numberOfQuantities )
-    l_matrixDimension = (open(l_bStar, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfQuantities )
-    assert( l_matrixDimension[1] == l_numberOfQuantities )
-    l_matrixDimension = (open(l_cStar, 'r').readlines()[2]).split()
-    assert( l_matrixDimension[0] == l_numberOfQuantities )
-    assert( l_matrixDimension[1] == l_numberOfQuantities )
-
-    # command line parameters (    filename-k-one, filename-star-one,
-    #                              filename-k-two, filename-star-two
-    #                              filename-k-three, filename-star-three
-    #                              nDenseRows, nDenseCols, nDenseLD )
-    l_commandLineParameters = '../' + l_kXi   + ' ' + '../' + l_aStar + ' ' +\
-                              '../' + l_kEta  + ' ' + '../' + l_bStar + ' ' +\
-                              '../' + l_kZeta + ' ' + '../' + l_cStar + ' ' +\
-                              l_numberOfBasisFunctions + ' ' + l_numberOfQuantities + ' ' + l_numberOfBasisFunctions
-
-    # run the actual benchmark
-    runSingleBenchmark( i_pathToSeisSolGen, l_buildLogFile, l_commandLineParameters, 'gen_'+str(l_degree)+'.imp' )
-
-  # old single left routine
-  '''
-  for l_file in l_matrixFiles:
-    # get matrices in csc format
-    if l_file.endswith('_csc.mtx'):
-      # get stiffness matrices
-      if re.match('k[A-Za-z0-9_]*DivM_3D[A-Za-z0-9_]*', l_file):
-        log('*** generating code and running benchmarks for '+l_file)
-
-        l_buildLog = '*********** ' + l_file + ' ***********\n'
-        l_buildLogFile.write(l_buildLog)
-
-        # generate full path
-        l_pathToFile = i_pathToMatrices+'/'+l_file
-
-        # read the dimension og the current matrix
-        l_matrixDimension = open(l_pathToFile, 'r')
-        l_matrixDimension = l_matrixDimension.readlines()[2]
-        l_matrixDimension = l_matrixDimension.split()
-
-        # command line parameters (    filename-k-one, filename-star-one,
-        #                              filename-k-two, filename-star-two
-        #                              filename-k-three, filename-star-three
-        #                              nDenseRows, nDenseCols, nDenseLD )
-        l_commandLineParameters = ' ../'+l_pathToFile+' 0 '+l_matrixDimension[0]+' 9 '+l_matrixDimension[1]+' 1'
-
-        # run benchmark for this matrix
-        # runSingleBenchmark( i_pathToSeisSolGen, l_buildLogFile, l_commandLineParameters, l_file.replace('_csc.mtx','')+'.imp' )
-     '''
-
 # Executes SeisSolGen with the given command line parameter
 #
 # \param i_pathToSeisSolGen location of SeisSolGen.
@@ -255,7 +61,7 @@ def executeSeisSolgen( i_pathToSeisSolGen,
 #   Each matrix is specified by:
 #     fileNameOfGeneratedKernel    - base name of generated matrix kernel
 #     routineNameOfGeneratedKernel - name of the routine inside the generated kernel
-#     pathToMatrixMarketFile       - location of the matrix in CSC-MatrixMarkeitFormat
+#     pathToMatrixMarketFile       - location of the matrix in MatrixMarkeitFormat
 #     multiplicationSide           - side on which the matrix appears within the kernel call
 #                                    left: sparse * dense, right: dense * matrix
 #     numberOfDenseRows            - #(dense rows) of the matrix
@@ -289,7 +95,7 @@ def getSparseMatrices( i_pathToMatrices,
   ###  
 
   # name of the star matrices
-  l_starMatrix = 'starMatrix_3D_csc.mtx'
+  l_starMatrix = 'starMatrix_3D_maple.mtx'
 
   # assert existance
   assert( l_starMatrix in l_matrixFiles )
@@ -298,7 +104,7 @@ def getSparseMatrices( i_pathToMatrices,
   l_starMatrix = i_pathToMatrices+'/'+l_starMatrix
   
   # assert correct dimensions within the file
-  l_matrixDimension = (open(l_starMatrix, 'r').readlines()[2]).split()
+  l_matrixDimension = (open(l_starMatrix, 'r').readlines()[1]).split()
   assert( l_matrixDimension[0] == l_numberOfQuantities )
   assert( l_matrixDimension[1] == l_numberOfQuantities )
 
@@ -314,13 +120,13 @@ def getSparseMatrices( i_pathToMatrices,
     l_logger.log( 'adding star, stiffness and flux matrices to dictionaries for: '+str(l_degree)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
 
     # name and filename of the stiffness matrices, TODO: avoid copy and paste code..
-    l_kXi =   dict( matrixName = 'kXiDivM',   matrixMarketFileName='kXiDivM_3D_'   + str(l_degree) + '_csc.mtx' )
-    l_kEta =  dict( matrixName = 'kEtaDivM',  matrixMarketFileName='kEtaDivM_3D_'  + str(l_degree) + '_csc.mtx' )
-    l_kZeta = dict( matrixName = 'kZetaDivM', matrixMarketFileName='kZetaDivM_3D_' + str(l_degree) + '_csc.mtx' )
+    l_kXi =   dict( matrixName = 'kXiDivM',   matrixMarketFileName='kXiDivM_3D_'   + str(l_degree) + '_maple.mtx' )
+    l_kEta =  dict( matrixName = 'kEtaDivM',  matrixMarketFileName='kEtaDivM_3D_'  + str(l_degree) + '_maple.mtx' )
+    l_kZeta = dict( matrixName = 'kZetaDivM', matrixMarketFileName='kZetaDivM_3D_' + str(l_degree) + '_maple.mtx' )
     
-    l_kXiTransposed =   dict( matrixName = 'kXiDivMT',   matrixMarketFileName='kXiDivMT_3D_'   + str(l_degree) + '_csc.mtx' )
-    l_kEtaTransposed =  dict( matrixName = 'kEtaDivMT',  matrixMarketFileName='kEtaDivMT_3D_'  + str(l_degree) + '_csc.mtx' )
-    l_kZetaTransposed = dict( matrixName = 'kZetaDivMT', matrixMarketFileName='kZetaDivMT_3D_' + str(l_degree) + '_csc.mtx' )
+    l_kXiTransposed =   dict( matrixName = 'kXiDivMT',   matrixMarketFileName='kXiDivMT_3D_'   + str(l_degree) + '_maple.mtx' )
+    l_kEtaTransposed =  dict( matrixName = 'kEtaDivMT',  matrixMarketFileName='kEtaDivMT_3D_'  + str(l_degree) + '_maple.mtx' )
+    l_kZetaTransposed = dict( matrixName = 'kZetaDivMT', matrixMarketFileName='kZetaDivMT_3D_' + str(l_degree) + '_maple.mtx' )
 
     # assert existance
     assert( l_kXi['matrixMarketFileName']   in l_matrixFiles )
@@ -341,23 +147,23 @@ def getSparseMatrices( i_pathToMatrices,
     l_kZetaTransposed['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_kZetaTransposed['matrixMarketFileName']
 
     # assert correct dimensions within the files
-    l_matrixDimension = (open(l_kXi['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kXi['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
     
-    l_matrixDimension = (open(l_kXiTransposed['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kXiTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
-    l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+    l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
     assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
     assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
 
@@ -383,7 +189,7 @@ def getSparseMatrices( i_pathToMatrices,
       #     3:  \f$ F^{-, 4} \f$
       l_fluxMinus = l_fluxMinus + [ dict( matrixName = 'fM'+str(l_localFace+1),
                                           matrixId = l_localFace,
-                                          matrixMarketFileName='fM'+str(l_localFace+1)+'DivM_3D_'   + str(l_degree) + '_csc.mtx' ) ]
+                                          matrixMarketFileName='fM'+str(l_localFace+1)+'DivM_3D_'   + str(l_degree) + '_maple.mtx' ) ]
       
       # assert existance
       assert( l_fluxMinus[-1]['matrixMarketFileName']   in l_matrixFiles )
@@ -392,7 +198,7 @@ def getSparseMatrices( i_pathToMatrices,
       l_fluxMinus[-1]['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_fluxMinus[l_localFace]['matrixMarketFileName']
 
       # assert correct dimensions
-      l_matrixDimension = (open(l_fluxMinus[-1]['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+      l_matrixDimension = (open(l_fluxMinus[-1]['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
       assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
       assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
 
@@ -419,7 +225,7 @@ def getSparseMatrices( i_pathToMatrices,
           l_multiIndex = str(l_localFace+1)+str(l_neighboringFace+1)+str(l_vertexCombination+1)
           l_fluxPlus = l_fluxPlus + [ dict( matrixName = 'fP'+l_multiIndex,
                                             matrixId   = l_matrixId,
-                                            matrixMarketFileName='fP'+l_multiIndex+'DivM_3D_'   + str(l_degree) + '_csc.mtx' ) ]
+                                            matrixMarketFileName='fP'+l_multiIndex+'DivM_3D_'   + str(l_degree) + '_maple.mtx' ) ]
 
           # assert existance
           assert( l_fluxPlus[-1]['matrixMarketFileName']   in l_matrixFiles )
@@ -428,7 +234,7 @@ def getSparseMatrices( i_pathToMatrices,
           l_fluxPlus[-1]['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_fluxPlus[-1]['matrixMarketFileName']
 
           # assert correct dimensions
-          l_matrixDimension = (open(l_fluxPlus[-1]['pathToMatrixMarketFile'], 'r').readlines()[2]).split()
+          l_matrixDimension = (open(l_fluxPlus[-1]['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
           assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
           assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
 
@@ -840,7 +646,7 @@ def getDenseMatrices( i_alignments,
 # Generates matrix kernels.
 #
 # \param i_pathToSeisSolGen path to executable of the code generator.
-# \param i_pathToMatrices path to directory, which contains the matrices in CSC-MatrixMarket-format.
+# \param i_pathToMatrices path to directory, which contains the matrices in MatrixMarket-format.
 # \param i_pathToOutputDirectory path to directory where the generated code will be written to.
 def generateMatrixKernels( i_pathToSeisSolGen,
                            i_pathToMatrices,
