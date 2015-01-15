@@ -60,9 +60,11 @@ class seissol::kernels::Volume {
     /**
      * Collection of matrix kernels, which perform the matrix product \f$ C += A.B\f$,
      * where \f$ A \f$ is a global stiffness matrix (case a) or B the sparse star matrix (case b).
-     * Each kernel can be dense (TODO: sparse support), the kernels are ordered as follows:
-     *    0:  \f$ K^\xi \vee K^\eta \vee K^\zeta \f$
-     *    1:  \f$ A^* \vee B^* \vee C^* \f
+     * Each kernel can be dense or sparse, the kernels are ordered as follows:
+     *    0:  \f$ K^\xi   \f$
+     *    1:  \f$ K^\eta  \f$
+     *    2:  \f$ K^\zeta \f$
+     *    3:  \f$ A^* \vee B^* \vee C^* \f
      *
      * The matrix kernels might prefetch matrices of the next matrix multiplication triple \f$ A =+ B.C \f$,
      * thus loading upcoming matrices into lower level memory while the FPUs are busy.
@@ -74,7 +76,7 @@ class seissol::kernels::Volume {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[2])( double *i_A,         double *i_B,         double *io_C,
+    void (*m_matrixKernels[4])( double *i_A,         double *i_B,         double *io_C,
                                 double *i_APrefetch, double *i_BPrefetch, double *i_CPrefetch );
 
   public:
@@ -93,7 +95,7 @@ class seissol::kernels::Volume {
      **/
     void computeIntegral( real** i_stiffnessMatrices,
                           real*  i_timeIntegratedDegreesOfFreedom,
-                          real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                          real   i_starMatrices[3][STAR_NNZ],
                           real*  io_degreesOfFreedom );
 };
 

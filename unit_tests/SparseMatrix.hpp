@@ -43,9 +43,9 @@
 #include <cxxtest/TestSuite.h>
 
 #include "../preprocessing/SeisSolGen/ReaderCSC.hpp"
-#include "generated_code/matrix_kernels/star_matrices_3d.hpp_include"
-#include "generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
-#include "generated_code/matrix_kernels/flux_matrices_3d.hpp_include"
+#include <matrix_kernels/star_matrices_3d.hpp_include>
+#include <matrix_kernels/stiffness_matrices_3d.hpp_include>
+#include <matrix_kernels/flux_matrices_3d.hpp_include>
 
 namespace unit_test {
   class SparseMatrix;
@@ -353,7 +353,7 @@ class unit_test::SparseMatrix {
                         l_denseResultMatrix, numberOfRows );
 
           // do the generated multiplication (depending on the number of basis functions and type of stiffness matrix)
-          #include "generated_code/unit_tests/volume_boundary_sparse_matrix_kernels.hpp_include"
+          #include <unit_tests/volume_boundary_sparse_matrix_kernels.hpp_include>
 
           // compare the results
           double l_error = compare_colmajor( l_denseResultMatrix, l_generatedResultMatrix, numberOfRows*l_numberOfVariables );

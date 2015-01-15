@@ -99,7 +99,7 @@ def printFinishMessage():
 
 # Get TUMs BSD license
 def getTumBsdLicense():
-  return '''Copyright (c) 2012-2014, SeisSol Group
+  return '''Copyright (c) 2012-2015, SeisSol Group
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

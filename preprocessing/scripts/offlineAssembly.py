@@ -49,6 +49,9 @@ import os
 import re
 
 import tools.Logger as l_logger
+import logging
+
+import tools.Configuration
 
 l_availableModules = dict()
 
@@ -66,7 +69,8 @@ except ImportError:
   l_availableModules['vectorizer'] = False
 
 try:
-  import tools.SeisSolGen as l_seisSolGen
+  import tools.MatrixSetup
+  import tools.SeisSolGen
   l_availableModules['seissol_gen'] = True
 except ImportError:
   l_availableModules['seissol_gen'] = False
@@ -83,12 +87,18 @@ try:
 except ImportError:
   l_availableModules['unit_test_generator'] = False
 
+# set up logging level
+logging.basicConfig( level=logging.INFO,
+                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s' )
+
 ###
 ### Command line arguments
 ###
-l_commandLineParser = argparse.ArgumentParser( description=
-  'This script is the frontend for generated matrix kernels in SeisSol; \
-   Available modules in your python configuration:\n' + str(l_availableModules) +'.'
+l_commandLineParser = argparse.ArgumentParser(
+  description= '\
+This script is the frontend for generated matrix kernels in SeisSol; \
+Available modules in your python configuration:\n' + str(l_availableModules) +'.',
+  formatter_class=argparse.RawTextHelpFormatter
 )
 
 l_commandLineParser.add_argument('--convertToXml',
@@ -98,10 +108,6 @@ l_commandLineParser.add_argument('--convertToXml',
 l_commandLineParser.add_argument('--plotSparsityPatterns',
                                  action='store_true',
                                  help='plots sparsity patterns of the matrices.')
-
-l_commandLineParser.add_argument('--runBenchmarks',
-                                 action='store_true',
-                                 help='run units tests.')
 
 l_commandLineParser.add_argument('--runVectorization',
                                  action='store_true',
@@ -114,14 +120,16 @@ l_commandLineParser.add_argument('--generatePreprocessorCode',
 l_commandLineParser.add_argument('--generateStarMatrixInitializationCode',
                                  action='store_true',
                                  help='generates Fortran Code, which initializes a flat star matrix given the full matrix.')
-
-l_commandLineParser.add_argument('--generateMatrixKernelsInitializationCode',
-                                 action='store_true',
-                                 help='generates C Code, which initializes the function pointers to the kernels of the matrices appearing in the boundary integration.')
                                  
 l_commandLineParser.add_argument('--generateMatrixKernels',
-                                 action='store_true',
-                                 help='generates the C++ matrix kernels.')
+                                 nargs=4,
+                                 metavar=('MATRICES_DIR', 'CONFIG_DIR', 'GEN_EXE', 'GENERATED_CODE_DIR'),
+                                 help=
+'generates the C++ matrix kernels and corresponding initialization code.\n\
+  Input: #1: dictory to the matices in matrix-market format\n\
+         #2: directory containing the sparse-dense configurations\n\
+         #3: path to the GemmCodeGenerator executable\n\
+         #4: path to the directory where the output is written')
 
 l_commandLineParser.add_argument('--generateMatrixUnitTests',
                                  action='store_true',
@@ -137,14 +145,28 @@ l_commandLineArguments = l_commandLineParser.parse_args()
 ### Main
 ###
 
+print l_commandLineArguments.generateMatrixKernels
+
 l_logger.printWelcomeMessage()
 
-# check for valid settings
-if l_commandLineArguments.runBenchmarks:
-  l_logger.log('Benchmark implementation outdated. Aborting')
-  exit()
+# construct configuration
+
+if l_commandLineArguments.generateMatrixKernels == None:
+  l_configuration = tools.Configuration.Configuration()
+else:
+  l_configuration = tools.Configuration.Configuration(
+    i_matricesDir              = l_commandLineArguments.generateMatrixKernels[0],
+    i_maximumOrder             = 8,
+    i_pathToSparseDenseConfigs = l_commandLineArguments.generateMatrixKernels[1],
+    i_pathToGemmCodeGenerator  = l_commandLineArguments.generateMatrixKernels[2],
+    i_pathToGeneratedCodeDir   = l_commandLineArguments.generateMatrixKernels[3] )
+
 
 # construct classes
+if l_availableModules['seissol_gen']:
+  l_matrixSetup = tools.MatrixSetup.MatrixSetup( i_configuration = l_configuration )
+  l_seissolGen = tools.SeisSolGen.SeisSolGen( i_matrixSetup = l_matrixSetup )
+
 if l_availableModules['matrix_converter']:
   l_matrixConverter = MatrixConverter.MatrixConverter()
 
@@ -155,25 +177,25 @@ if l_availableModules['unit_test_generator']:
   l_unitTestGenerator = UnitTestGenerator.UnitTestGenerator( i_pathToMatrices = 'matrices' )
 
 # get the matrix files and sort them
-l_matrixFiles = os.listdir('matrices')
-l_matrixFiles.sort()
+#l_matrixFiles = os.listdir('matrices')
+#l_matrixFiles.sort()
 
-for l_file in l_matrixFiles:
-  if l_file.endswith('_maple.mtx'):
-    l_baseName = l_file.replace('_maple.mtx','')
-    if l_commandLineArguments.plotSparsityPatterns:
-      l_matrixConverter.plotSparsityPattern( i_fullMatrix = 'matrices/'+l_file,
-                                             i_baseName = l_baseName,
-                                             i_pathToOutputDirectory = 'matrices',
-                                             i_readMatrix = True )
-    if l_commandLineArguments.runVectorization:
-      l_vectorizer.vectorizeMatrix( 'matrices/'+l_file, l_baseName, 'vectorization', True)
-    if l_commandLineArguments.generatePreprocessorCode:
-      l_matrixConverter.addMatrixToPreProcessorCode( i_pathToFullMatrix = 'matrices/'+l_file,
-                                                     i_baseName = l_baseName)
-    if l_baseName == 'starMatrix_3D':
-      if l_commandLineArguments.generateStarMatrixInitializationCode:
-        l_matrixConverter.generateMatrixInitializationCode('matrices/'+l_file, l_baseName, 'initializeFlatStarMatrixColumnMajor', 'csc' ,'generated_code/initialization')
+#for l_file in l_matrixFiles:
+#  if l_file.endswith('_maple.mtx'):
+#    l_baseName = l_file.replace('_maple.mtx','')
+#    if l_commandLineArguments.plotSparsityPatterns:
+#      l_matrixConverter.plotSparsityPattern( i_fullMatrix = 'matrices/'+l_file,
+#                                             i_baseName = l_baseName,
+#                                             i_pathToOutputDirectory = 'matrices',
+#                                             i_readMatrix = True )
+#    if l_commandLineArguments.runVectorization:
+#      l_vectorizer.vectorizeMatrix( 'matrices/'+l_file, l_baseName, 'vectorization', True)
+#    if l_commandLineArguments.generatePreprocessorCode:
+#      l_matrixConverter.addMatrixToPreProcessorCode( i_pathToFullMatrix = 'matrices/'+l_file,
+#                                                     i_baseName = l_baseName)
+#    if l_baseName == 'starMatrix_3D':
+#      if l_commandLineArguments.generateStarMatrixInitializationCode:
+#        l_matrixConverter.generateMatrixInitializationCode('matrices/'+l_file, l_baseName, 'initializeFlatStarMatrixColumnMajor', 'csc' ,'generated_code/initialization')
 
 if l_commandLineArguments.convertToXml:
   l_matrixConverter.convertToXml( i_pathToMatrices='matrices',
@@ -187,18 +209,10 @@ if l_commandLineArguments.generatePerformanceModel:
   if l_commandLineArguments.generatePreprocessorCode:
     l_matrixConverter.writePreProcessorCode('generated_code/pre_processor')
 
-if l_commandLineArguments.runBenchmarks:
-  l_logger.log('running benchmarks')
-  l_seisSolGen.runBenchmarks('MatrixGen', 'matrices', 'build_log.txt')
-
-if l_commandLineArguments.generateMatrixKernelsInitializationCode:
-  l_seisSolGen.generateMatrixKernelsInitializationCode( i_pathToMatrices='matrices',
-                                                        i_pathToOutputFile='generated_code/initialization/bind_matrix_kernels.hpp_include' )
   
 if l_commandLineArguments.generateMatrixKernels:
-  l_seisSolGen.generateMatrixKernels( i_pathToSeisSolGen = 'SeisSolGen/generator.exe',
-                                      i_pathToMatrices = 'matrices',
-                                      i_pathToOutputDirectory = 'generated_code/matrix_kernels' )
+  l_seissolGen.generateMatrixKernels()
+  l_seissolGen.generateMatrixKernelsInitializationCode()
 
 if l_commandLineArguments.generateMatrixUnitTests:
   l_unitTestGenerator.generateMatrixUnitTests( i_pathToOutputDirectory = 'generated_code/unit_tests' )

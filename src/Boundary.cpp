@@ -40,15 +40,8 @@
 
 #include "Boundary.h"
 
-#if ALIGNMENT==16
-#include <generated_code/matrix_kernels/dgemm_16.h>
-#elif ALIGNMENT==32
-#include <generated_code/matrix_kernels/dgemm_32.h>
-#elif ALIGNMENT==64
-#include <generated_code/matrix_kernels/dgemm_64.h>
-#else
-#error ALIGNMENT not supported
-#endif
+#include <matrix_kernels/sparse.h>
+#include <matrix_kernels/dense.h>
 
 #ifndef NDEBUG
 #pragma message "compiling boundary kernel with assertions"
@@ -56,12 +49,13 @@
 
 #include <cassert>
 #include <stdint.h>
+#include <cstddef>
 
 seissol::kernels::Boundary::Boundary() {
   // intialize the function pointers to the matrix kernels
-#define FLUX_KERNEL
-#include <generated_code/initialization/bind_matrix_kernels.hpp_include>
-#undef FLUX_KERNEL
+#define BOUNDARY_KERNEL
+#include <initialization/bind.h>
+#undef BOUNDARY_KERNEL
 }
 
 void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_faceTypes[4],
@@ -94,12 +88,12 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
     // no element local contribution in the case of dynamic rupture boundary conditions
     if( i_faceTypes[l_face] != dynamicRupture ) {
       // compute neighboring elements contribution
-      m_matrixKernels[0]( i_fluxMatrices[l_face], i_timeIntegrated,      l_temporaryResult,
-                          NULL,                   NULL,                  NULL                 ); // TODO: prefetches
+      m_matrixKernels[l_face]( i_fluxMatrices[l_face], i_timeIntegrated,      l_temporaryResult,
+                               NULL,                   NULL,                  NULL                 ); // TODO: prefetches
 
 
-      m_matrixKernels[1]( l_temporaryResult,      i_fluxSolvers[l_face], io_degreesOfFreedom,
-                          NULL,                   NULL,                  NULL                 ); // TODO: prefetches
+      m_matrixKernels[52](     l_temporaryResult,      i_fluxSolvers[l_face], io_degreesOfFreedom,
+                               NULL,                   NULL,                  NULL                 ); // TODO: prefetches
     }
   }
 }
@@ -160,11 +154,11 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
       assert( l_id < 52 );
 
       // compute neighboring elements contribution
-      m_matrixKernels[0]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
-                          NULL,                 NULL,                     NULL                 ); // TODO: prefetches
+      m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
+                             NULL,                 NULL,                     NULL                 ); // TODO: prefetches
 
-      m_matrixKernels[1]( l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
-                          NULL,                 NULL,                     NULL                 ); // TODO: prefetches
+      m_matrixKernels[52](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
+                             NULL,                 NULL,                     NULL                 ); // TODO: prefetches
     }
   }
 }

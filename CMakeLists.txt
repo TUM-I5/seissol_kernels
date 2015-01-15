@@ -5,7 +5,7 @@
 # @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 #
 # @section LICENSE
-# Copyright (c) 2013-2014, SeisSol Group
+# Copyright (c) 2013-2015, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,51 +39,55 @@
 
 cmake_minimum_required( VERSION 2.6 )
 
-option( VECTOR_INSTRUCTION_SET "Vectorization instruction set: avx, avx2 or mic" )
-option( CONVERGENCE_ORDER      "Convergence order of the ADER-DG scheme" )
+#option( GENERATED_KERNELS "Generated kernels to use: swsm, dwsm, ssnb, dsnb, sknc, dknc, shsw, dhsw" )
+#option( CONVERGENCE_ORDER "Convergence order of the ADER-DG scheme" )
+#option( GENERATED_CODE    "Generated code to use" )
+#option( SEISSOL_PROXY     "Location to the the seissol proxy" )
 
+# set convergence order
 add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 
 # set number of quantities
 add_definitions( -DNUMBER_OF_QUANTITIES=9 )
 
-# build the architecture dependent matrix kernels as library
-if( ${VECTOR_INSTRUCTION_SET} STREQUAL sse3 )
-  message( "-- using 16-bit aligned matrix kernels" )
-
-  add_library( matrix_kernels
-               submodules/seissol/Monitoring/FlopCounter.cpp
-               preprocessing/generated_code/matrix_kernels/dgemm_16.cpp )
-  add_definitions( -DALIGNMENT=16
-                   -m${VECTOR_INSTRUCTION_SET} )
-elseif( ${VECTOR_INSTRUCTION_SET} STREQUAL avx )
-  message( "-- using 32-bit aligned matrix kernels" )
-
-  add_library( matrix_kernels
-               submodules/seissol/Monitoring/FlopCounter.cpp
-               preprocessing/generated_code/matrix_kernels/dgemm_32.cpp )
-  add_definitions( -DALIGNMENT=32
-                   -m${VECTOR_INSTRUCTION_SET} )
-elseif( ${VECTOR_INSTRUCTION_SET} STREQUAL avx2 OR ${VECTOR_INSTRUCTION_SET} STREQUAL mic )
-  message( "-- using 64-bit aligned matrix kernels" )
-
-  add_library( matrix_kernels
-               submodules/seissol/Monitoring/FlopCounter.cpp
-               preprocessing/generated_code/matrix_kernels/dgemm_64.cpp )
-#TODO: add proper avx2 command
-  add_definitions( -DALIGNMENT=64
-                   -m${VECTOR_INSTRUCTION_SET} )
-else()
-  message( WARNING "vector instruction set ${VECTOR_INSTRUCTION_SET} not supported" )
-  message( "-- using 32-bit alignment and compiler generated kernels" )
-  add_definitions( -DALIGNMENT=32 )
-  add_library( matrix_kernels
-               submodules/seissol/Monitoring/FlopCounter.cpp
-               preprocessing/generated_code/matrix_kernels/dgemm_32.cpp )
+# set include to generated code
+if( GENERATED_CODE )
+  include_directories( ${GENERATED_CODE} )
 endif()
 
-# enable C++11
-ADD_DEFINITIONS( -std=c++11 )
+# split by architecture and precision
+string( SUBSTRING ${GENERATED_KERNELS} 0 1  PRECISION_PLAIN )
+string( SUBSTRING ${GENERATED_KERNELS} 1 -1 ARCHITECTURE_PLAIN )
+
+# build the architecture dependent matrix kernels as library
+if( ${ARCHITECTURE_PLAIN} STREQUAL wsm )
+  add_definitions( -DALIGNMENT=16
+                   -msse3 )
+elseif( ${ARCHITECTURE_PLAIN} STREQUAL snb )
+  add_definitions( -DALIGNMENT=32
+                   -mavx )
+elseif( ${ARCHITECTURE_PLAIN} STREQUAL knc )
+  add_definitions( -DALIGNMENT=64
+                   -mmic )
+  set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -mmic" )
+else()
+  message( FATAL_ERROR "GENERATED_KERNELS ${GENERATED_KERNELS} not supported" )
+endif()
+
+# add matrix kernel library
+add_library( matrix_kernels
+             submodules/seissol/Monitoring/FlopCounter.cpp
+             ${GENERATED_CODE}/matrix_kernels/sparse_${GENERATED_KERNELS}.cpp
+             ${GENERATED_CODE}/matrix_kernels/${PRECISION_PLAIN}gemm_${ARCHITECTURE_PLAIN}.cpp )
+
+
+# convert to upper case for definition
+string( TOUPPER ${GENERATED_KERNELS} GENERATED_KERNELS )
+
+# define the architecture
+add_definitions( -D${GENERATED_KERNELS} )
+# debug flags
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
 
 # add submodules
 include_directories( src
@@ -97,7 +101,7 @@ add_library( pugiXml
              submodules/pugixml/src/pugixml.cpp
            )
 
-# add kernels
+# add integration kernels
 add_library( time_kernel
              src/Time.cpp )
 
@@ -107,9 +111,25 @@ add_library( volume_kernel
 add_library( flux_kernel
              src/Boundary.cpp )
 
+if(NOT SEISSOL_PROXY STREQUAL "OFF" )
+  find_package(OpenMP)
+  if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  endif()
+
+  add_definitions( -DNDEBUG )
+
+  add_executable( seissol_proxy ${SEISSOL_PROXY}/proxy_seissol.cpp )
+  target_link_libraries( seissol_proxy time_kernel volume_kernel flux_kernel matrix_kernels )
+endif()
+
 # add unit tests
 find_package( CxxTest )
 if(CXXTEST_FOUND)
+  # enable C++11
+  ADD_DEFINITIONS( -std=c++11 )
+
   set( CXXTEST_USE_PYTHON TRUE )
   include_directories( ${CXXTEST_INCLUDE_DIR} )
   enable_testing()

@@ -4,3 +4,6 @@
 [submodule "submodules/pugixml"]
 	path = submodules/pugixml
 	url = https://github.com/zeux/pugixml.git
+[submodule "submodules/elementtree"]
+	path = submodules/elementtree
+	url = https://github.com/SublimeCodeIntel/elementtree.git

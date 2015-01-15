@@ -5,7 +5,7 @@
  * @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
  *
  * @section LICENSE
- * Copyright (c) 2013-2014, SeisSol Group
+ * Copyright (c) 2013-2015, SeisSol Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,13 +86,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       // allocate memory for the stiffness matrices
       unsigned l_sizesStiff[2];
       l_sizesStiff[0] = seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-1 );
-      l_sizesStiff[1] = l_alignedNumberOfBasisFunctions;
+      l_sizesStiff[1] = seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER );
+
 
       // allocate memory
-      o_stiffnessMatrices    = (real**)    malloc( 3*sizeof(real*) );
-      o_stiffnessMatrices[0] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
-      o_stiffnessMatrices[1] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
-      o_stiffnessMatrices[2] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
+      o_stiffnessMatrices    = (real**) malloc( 9*sizeof(real*) );
+      for( unsigned int l_c = 0; l_c < 6; l_c++ ) {
+        o_stiffnessMatrices[l_c] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                  ALIGNMENT );
+      }
 
       o_degreesOfFreedom     = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
 
@@ -119,10 +120,10 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                      real*&  o_timeExtrapolated ) {
       _mm_free( o_degreesOfFreedom  );
 
-      _mm_free( o_stiffnessMatrices[0] );
-      _mm_free( o_stiffnessMatrices[1] );
-      _mm_free( o_stiffnessMatrices[2] );
-          free( o_stiffnessMatrices    );
+      for( unsigned int l_c = 0; l_c < 6; l_c++ ) {
+        _mm_free( o_stiffnessMatrices[l_c] );
+      }
+      free( o_stiffnessMatrices );
 
       _mm_free( o_timeDerivatives      );
       _mm_free( o_timeIntegrated       );
@@ -145,7 +146,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       // allocate memory
       real** l_stiffnessMatrices, *l_degreesOfFreedom, *l_timeDerivatives, *l_timeIntegrated, *l_timeExtrapolated;
 
-      real l_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_starMatricesDense[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_starMatrices[3][STAR_NNZ];
+
+#if STAR_NNZ == NUMBER_OF_QUANTITIES * NUMBER_OF_QUANTITIES
+      real* l_starPointer = l_starMatricesDense[0];
+#else
+      real* l_starPointer = l_starMatrices[0];
+#endif
 
       allocateMemory( l_stiffnessMatrices,
                       l_degreesOfFreedom,
@@ -159,8 +167,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       real l_timeExtrapolatedUT[NUMBER_OF_DOFS];
 
       // location of the matrices
-      // TODO: for now it's all handled dense
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -171,6 +178,20 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                         seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-1 ),
                                         seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER   ),
                                         l_stiffnessMatrices[l_c] );
+
+        // dense matrix
+        if( m_configuration.getSparseSwitch( 56+l_c ) == false ) {
+          l_stiffnessMatrices[l_c+6] = l_stiffnessMatrices[l_c];
+        }
+        // sparse matrix
+        else {
+          m_denseMatrix.copyDenseToSparse( seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-1 ),
+                                           seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER   ),
+                                           l_stiffnessMatrices[l_c],
+                                           l_stiffnessMatrices[l_c+3] );
+
+          l_stiffnessMatrices[l_c+6] = l_stiffnessMatrices[l_c+3];
+        }
       }
 
       // initialize a simple time intgrator
@@ -210,7 +231,15 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
           m_denseMatrix.initializeMatrix( 59,
                                           NUMBER_OF_QUANTITIES,
                                           NUMBER_OF_QUANTITIES,
-                                          l_starMatrices[l_c] );
+                                          l_starMatricesDense[l_c] );
+
+          // init sparse if requested
+          if( m_configuration.getSparseSwitch(59) == true ) {
+            m_denseMatrix.copyDenseToSparse( NUMBER_OF_QUANTITIES,
+                                             NUMBER_OF_QUANTITIES,
+                                             l_starMatricesDense[l_c],
+                                             l_starMatrices[l_c] );
+          }
         }
 
         /*
@@ -222,9 +251,9 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
         // reference implementation
         m_simpleTimeIntegrator.computeTimeDerivation( l_degreesOfFreedomUT,
-                                                      l_starMatrices[0],
-                                                      l_starMatrices[1],
-                                                      l_starMatrices[2],
+                                                      l_starMatricesDense[0],
+                                                      l_starMatricesDense[1],
+                                                      l_starMatricesDense[2],
                                                       l_timeDerivativesUT );
 
         m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
@@ -232,12 +261,12 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                                        l_timeIntegratedUT );
 
         // optimized implementation
-        l_timeKernel.computeAder( l_cellDeltaT[1],
-                                  l_stiffnessMatrices,
-                                  l_degreesOfFreedom,
-                                  l_starMatrices,
-                                  l_timeIntegrated,
-                                  l_timeDerivatives );
+        l_timeKernel.computeAder(                      l_cellDeltaT[1],
+                                                       l_stiffnessMatrices+6,
+                                                       l_degreesOfFreedom,
+                                  (real(*) [STAR_NNZ]) l_starPointer,
+                                                       l_timeIntegrated,
+                                                       l_timeDerivatives );
 
         // check the results
         m_denseMatrix.checkResult( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES,
@@ -250,12 +279,23 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
         for( int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
           unsigned int l_offset = l_timeKernel.m_derivativesOffsets[l_derivative];
-          m_denseMatrix.checkSubMatrix(  l_timeDerivativesUT[l_derivative],
-                                         NUMBER_OF_BASIS_FUNCTIONS,
-                                         NUMBER_OF_QUANTITIES,
-                                        &l_timeDerivatives[ l_offset ],
-                                         l_timeKernel.m_numberOfAlignedBasisFunctions[l_derivative],
-                                         NUMBER_OF_QUANTITIES );
+          if( !(CONVERGENCE_ORDER == 2 && ALIGNMENT >= 64) ) {
+            m_denseMatrix.checkSubMatrix(  l_timeDerivativesUT[l_derivative],
+                                           NUMBER_OF_BASIS_FUNCTIONS,
+                                           NUMBER_OF_QUANTITIES,
+                                          &l_timeDerivatives[ l_offset ],
+                                           l_timeKernel.m_numberOfAlignedBasisFunctions[l_derivative],
+                                           NUMBER_OF_QUANTITIES );
+          }
+          else {
+            // 64 byte aligned data extendes the number of basis functions (4) of degree 2
+            m_denseMatrix.checkSubMatrix( &l_timeDerivatives[ l_offset ],
+                                           l_timeKernel.m_numberOfAlignedBasisFunctions[l_derivative],
+                                           NUMBER_OF_QUANTITIES,
+                                           l_timeDerivativesUT[l_derivative],
+                                           NUMBER_OF_BASIS_FUNCTIONS,
+                                           NUMBER_OF_QUANTITIES );
+          }
         }
 
         m_denseMatrix.checkSubMatrix( l_timeIntegrated,
@@ -319,9 +359,9 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
         // reference implementation
         m_simpleTimeIntegrator.computeTimeDerivation( l_degreesOfFreedomUT,
-                                                      l_starMatrices[0],
-                                                      l_starMatrices[1],
-                                                      l_starMatrices[2],
+                                                      l_starMatricesDense[0],
+                                                      l_starMatricesDense[1],
+                                                      l_starMatricesDense[2],
                                                       l_timeDerivativesUT );
 
         m_simpleTimeIntegrator.computeTimeIntegration( l_timeDerivativesUT,
@@ -329,11 +369,11 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
                                                        l_timeIntegratedUT );
 
         // optimized implementation
-        l_timeKernel.computeAder( l_cellDeltaT[1],
-                                  l_stiffnessMatrices,
-                                  l_degreesOfFreedom,
-                                  l_starMatrices,
-                                  l_timeIntegrated );
+        l_timeKernel.computeAder(                      l_cellDeltaT[1],
+                                                       l_stiffnessMatrices+6,
+                                                       l_degreesOfFreedom,
+                                  (real(*) [STAR_NNZ]) l_starPointer,
+                                                       l_timeIntegrated );
 
         // check the results
         m_denseMatrix.checkSubMatrix( l_timeIntegrated,
@@ -361,7 +401,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       m_denseMatrix.setRandomValues( 1, &l_timeStepWidth );
 
       // location of the matrices
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );

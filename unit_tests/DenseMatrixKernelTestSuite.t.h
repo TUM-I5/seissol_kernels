@@ -42,7 +42,7 @@
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
 #include <Initializer/MemoryAllocator.h>
-#include "generated_code/matrix_kernels/dense_matrices.hpp_include"
+#include <matrix_kernels/dense_matrices.hpp_include>
 #include "DenseMatrix.hpp"
 
 namespace unit_test {
@@ -82,7 +82,7 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
      **/
     void executeGeneratedMultiplication( int     i_m, int     i_n, int     i_k,
                                          double *i_a, double *i_b, double *io_c ) {
-      #include "generated_code/unit_tests/dense_matrix_kernels.hpp_include"
+      #include <unit_tests/dense_matrix_kernels.hpp_include>
     }
 
     /**

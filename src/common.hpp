@@ -57,21 +57,35 @@ namespace seissol {
     }
 
     /**
+     * Gets the number of aligned reals.
+     *
+     * @param i_alignment alignment in bytes.
+     * @return aligned number of reals.
+     **/
+    static unsigned int getNumberOfAlignedReals( unsigned int i_numberOfReals,
+                                                 unsigned int i_alignment = ALIGNMENT ) {
+
+      unsigned int l_nonZeroBytes = i_numberOfReals * sizeof(real);
+
+      // compute corresponding aligned # of basis functions
+      unsigned int l_alignedBytes = l_nonZeroBytes + (i_alignment-(l_nonZeroBytes % i_alignment))%i_alignment;
+      assert( l_alignedBytes % sizeof(real) == 0 );
+
+      return l_alignedBytes / sizeof( real );
+    }
+
+    /**
      * Get the # of basis functions aligned to the given boundaries.
      *
      * @param i_convergenceOrder convergence order.
-     * @param i_alignment alignment in bits.
+     * @param i_alignment alignment in bytes.
      * @return aligned number of basis functions.
      **/
     static unsigned int getNumberOfAlignedBasisFunctions( unsigned int i_convergenceOrder = CONVERGENCE_ORDER,
                                                           unsigned int i_alignment        = ALIGNMENT ) {
-      unsigned int l_nonZeroBits = getNumberOfBasisFunctions( i_convergenceOrder) * sizeof(real);
+      unsigned int l_numberOfBasisFunctions = getNumberOfBasisFunctions( i_convergenceOrder);
 
-      // compute corresponding aligned # of basis functions
-      unsigned int l_alignedBits = l_nonZeroBits + (i_alignment-(l_nonZeroBits % i_alignment))%i_alignment;
-      assert( l_alignedBits % sizeof(real) == 0 );
-
-      return l_alignedBits / sizeof( real );
+      return getNumberOfAlignedReals( l_numberOfBasisFunctions );
     }
 
     /**
@@ -179,6 +193,48 @@ namespace seissol {
 
         l_firstEntry += getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER-l_order ) * NUMBER_OF_QUANTITIES;
       }
+    }
+
+    /**
+     * Converts a full star matrix (including zeros) to a compressed star matrix containing the 24 possible non-zeros.
+     *
+     * @param i_fullStarMatrix star matrix in full format.
+     * @param o_compressedStarMatrix compressed star matrix.
+     **/
+    static void convertStarMatrix( const double *i_fullStarMatrix,
+                                         real   *o_compressedStarMatrix ) {
+      o_compressedStarMatrix[ 0] = i_fullStarMatrix[0*9 + 6];
+      o_compressedStarMatrix[ 1] = i_fullStarMatrix[0*9 + 7];
+      o_compressedStarMatrix[ 2] = i_fullStarMatrix[0*9 + 8];
+
+      o_compressedStarMatrix[ 3] = i_fullStarMatrix[1*9 + 6];
+      o_compressedStarMatrix[ 4] = i_fullStarMatrix[1*9 + 7];
+      o_compressedStarMatrix[ 5] = i_fullStarMatrix[1*9 + 8];
+
+      o_compressedStarMatrix[ 6] = i_fullStarMatrix[2*9 + 6];
+      o_compressedStarMatrix[ 7] = i_fullStarMatrix[2*9 + 7];
+      o_compressedStarMatrix[ 8] = i_fullStarMatrix[2*9 + 8];
+
+      o_compressedStarMatrix[ 9] = i_fullStarMatrix[3*9 + 6];
+      o_compressedStarMatrix[10] = i_fullStarMatrix[3*9 + 7];
+
+      o_compressedStarMatrix[11] = i_fullStarMatrix[4*9 + 7];
+      o_compressedStarMatrix[12] = i_fullStarMatrix[4*9 + 8];
+
+      o_compressedStarMatrix[13] = i_fullStarMatrix[5*9 + 6];
+      o_compressedStarMatrix[14] = i_fullStarMatrix[5*9 + 8];
+
+      o_compressedStarMatrix[15] = i_fullStarMatrix[6*9 + 0];
+      o_compressedStarMatrix[16] = i_fullStarMatrix[6*9 + 3];
+      o_compressedStarMatrix[17] = i_fullStarMatrix[6*9 + 5];
+
+      o_compressedStarMatrix[18] = i_fullStarMatrix[7*9 + 1];
+      o_compressedStarMatrix[19] = i_fullStarMatrix[7*9 + 3];
+      o_compressedStarMatrix[20] = i_fullStarMatrix[7*9 + 4];
+
+      o_compressedStarMatrix[21] = i_fullStarMatrix[8*9 + 2];
+      o_compressedStarMatrix[22] = i_fullStarMatrix[8*9 + 4];
+      o_compressedStarMatrix[23] = i_fullStarMatrix[8*9 + 5];
     }
 
   }

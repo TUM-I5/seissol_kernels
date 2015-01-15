@@ -46,7 +46,11 @@
 #include <cxxtest/TestSuite.h>
 
 const int s_maximumOrder = 6;
-const double s_zeroTolerance = 10e-13;
+#if CONVERGENCE_ORDER < 6
+const double s_zeroTolerance = 10e-11;
+#else
+const double s_zeroTolerance = 10e-09;
+#endif
 
 namespace unit_test {
   class DenseMatrix;
@@ -178,7 +182,7 @@ class unit_test::DenseMatrix {
 
      // iterate over dense matrix elements
      for( int l_denseElement = 0; l_denseElement < l_numberOfDenseElements; l_denseElement++ ) {
-       if( i_denseMatrix[ l_denseElement ] > 1e-15 ) {
+       if( std::abs( i_denseMatrix[ l_denseElement ] ) > 1e-15 ) {
          o_sparseMatrix[ l_sparseElement ] = i_denseMatrix[ l_denseElement ];
          
          // next sparse element

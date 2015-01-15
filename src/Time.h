@@ -121,15 +121,16 @@ class seissol::kernels::Time {
     /**
      * Collection of matrix kernels, which perform the matrix product \f$ C += A.B\f$,
      * where \f$ A \f$ is a global transposed stiffness matrix (case a) or B a star matrix (case b).
-     * Each dense kernel (TODO: sparse implementation) has hardcoded BLAS-specifiers (M, N, K, ld(A), ld(B), ld(C), beta) exploiting the recursive structure.
+     * Each matrix kernel can be dense or sparse.
+     * Each kernel has hardcoded BLAS-specifiers (M, N, K, ld(A), ld(B), ld(C), beta) exploiting the recursive structure.
      * The kernels are ordered as follows:
-     *    0:         1st derivative \f$ M^{-1} ( K^\xi )^T \vee M^{-1} ( K^\eta )^T \vee M^{-1} ( K^\zeta )^T \f$
-     *    1:         1st derivative \f$ A^* \vee B^* \vee C^* \f
-     *    2:         2nd derivative \f$ M^{-1} ( K^\xi )^T \vee M^{-1} ( K^\eta )^T \vee M^{-1} ( K^\zeta )^T \f$
-     *    3:         2nd derivative \f$ A^* \vee B^* \vee C^* \f
+     *    0-2:       1st derivative \f$ M^{-1} ( K^\xi )^T \vee M^{-1} ( K^\eta )^T \vee M^{-1} ( K^\zeta )^T \f$
+     *    3:         1st derivative \f$ A^* \vee B^* \vee C^* \f
+     *    4-6:       2nd derivative \f$ M^{-1} ( K^\xi )^T \vee M^{-1} ( K^\eta )^T \vee M^{-1} ( K^\zeta )^T \f$
+     *    7:         2nd derivative \f$ A^* \vee B^* \vee C^* \f
      *    ...
-     *    2*(O-2):   O-1th derivative
-     *    2*(O-2)+1: O-1th derivative
+     *    4*(O-2):   O-1th derivative
+     *    4*(O-2)+1: O-1th derivative
      *
      * Remark: The mass matrix \f$ M \f$ is diagonal.
      * 
@@ -150,7 +151,7 @@ class seissol::kernels::Time {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[(CONVERGENCE_ORDER-1)*2])( real *i_A,         real *i_B,         real *io_C,
+    void (*m_matrixKernels[(CONVERGENCE_ORDER-1)*4])( real *i_A,         real *i_B,         real *io_C,
                                                       real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
 
   public:
@@ -197,7 +198,7 @@ class seissol::kernels::Time {
     void computeAder(       real   i_timeStepWidth,
                             real** i_stiffnessMatrices,
                       const real*  i_degreesOfFreedom,
-                            real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                            real   i_starMatrices[3][STAR_NNZ],
                             real*  o_timeIntegrated,
                             real*  o_timeDerivatives = NULL );
 

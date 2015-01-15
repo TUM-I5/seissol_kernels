@@ -41,6 +41,8 @@
 #ifndef TYPEDEFS_HPP
 #define TYPEDEFS_HPP
 
+#include <initialization/bind.h>
+
 // define order of taylor series relative to the number of basis functions
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_BASIS_FUNCTIONS 4

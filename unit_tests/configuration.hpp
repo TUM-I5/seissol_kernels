@@ -73,6 +73,9 @@ class unit_test::Configuration: public CxxTest::TestSuite {
     //! zero tolerance
     double m_zeroTolerance;
 
+    //! sparse dense switch
+    int m_sparseSwitch[60];
+
   public:
     /**
      * Constructor, which sets up the configuration.
@@ -99,6 +102,11 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       m_maximumOrder = 6;
 
       m_zeroTolerance = 10e-13;
+
+      // set up sparse switch
+#define SPARSE_SWITCH
+#include <initialization/bind.h>
+#undef SPARSE_SWITCH
     }
 
     /**
@@ -147,6 +155,16 @@ class unit_test::Configuration: public CxxTest::TestSuite {
      **/
     double getNumericalZeroTolerance() const {
       return m_zeroTolerance;
+    }
+
+    /**
+     * Get the sparse switch of a specific matrix.
+     * @param i_matrixId matrix id.
+     * @return true if sparse, false if dense.
+     **/
+    bool getSparseSwitch( unsigned int i_matrixId ) {
+      if( m_sparseSwitch[i_matrixId] != -1 ) return true;
+      else return false;
     }
 };
 

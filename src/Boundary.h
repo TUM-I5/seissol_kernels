@@ -58,11 +58,11 @@ class seissol::kernels::Boundary {
     /**
      * Collection of matrix kernels, which perform the matrix product \f$ C += A.B\f$,
      * where \f$ A \f$ is a global flux matrix (case a) or B the flux solver (case b, 52).
-     *   Each kernel can be dense (TODO: sparse).
+     *   Each kernel can be dense or sparse.
      *   The kernels are ordered element local contribution \f$ F^{-, i} \f$ in front, which is 
      *   followed by the flux matrices for the neighbor element contribution \f$ F^{+, i, j, h} \f$
-     *    0:  \f$ F^{-, 1} \vee \ldots \vee F^{-, 4} \vee F^+{+, 1, 1, 1} \vee \ldots \vee F^+{+, 4, 4, 3} \f$
-     *    1: \f$ N_{k,i} A_k^+ N_{k,i}^{-1}\f$ or \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
+     *    0-51:  \f$ F^{-, 1} \vee \ldots \vee F^{-, 4} \vee F^+{+, 1, 1, 1} \vee \ldots \vee F^+{+, 4, 4, 3} \f$
+     *    52:    \f$ N_{k,i} A_k^+ N_{k,i}^{-1}\f$ or \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
      *
      * The matrix kernels might prefetch matrices of the next matrix multiplication triple \f$ A =+ B.C \f$,
      * thus loading upcoming matrices into lower level memory while the FPUs are busy.
@@ -74,8 +74,8 @@ class seissol::kernels::Boundary {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[2])( double *i_A,         double *i_B,         double *io_C,
-                                double *i_APrefetch, double *i_BPrefetch, double *i_CPrefetch );
+    void (*m_matrixKernels[53])( double *i_A,         double *i_B,         double *io_C,
+                                 double *i_APrefetch, double *i_BPrefetch, double *i_CPrefetch );
 
   public:
     /**

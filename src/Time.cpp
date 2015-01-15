@@ -40,15 +40,8 @@
 
 #include "Time.h"
 
-#if ALIGNMENT==16
-#include <generated_code/matrix_kernels/dgemm_16.h>
-#elif ALIGNMENT==32
-#include <generated_code/matrix_kernels/dgemm_32.h>
-#elif ALIGNMENT==64
-#include <generated_code/matrix_kernels/dgemm_64.h>
-#else
-#error ALIGNMENT not supported
-#endif
+#include <matrix_kernels/sparse.h>
+#include <matrix_kernels/dense.h>
 
 #ifndef NDEBUG
 #pragma message "compiling time kernel with assertions"
@@ -74,14 +67,14 @@ seissol::kernels::Time::Time() {
 
   // intialize the function pointers to the matrix kernels
 #define TIME_KERNEL
-#include <generated_code/initialization/bind_matrix_kernels.hpp_include>
+#include <initialization/bind.h>
 #undef TIME_KERNEL
 }
 
 void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
                                                 real** i_stiffnessMatrices,
                                           const real*  i_degreesOfFreedom,
-                                                real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                                real   i_starMatrices[3][STAR_NNZ],
                                                 real*  o_timeIntegrated,
                                                 real*  o_timeDerivatives ) {
   /*
@@ -133,11 +126,11 @@ void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
     // iterate over dimensions 
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
       // compute $K_{\xi_c}.Q_k$ and $(K_{\xi_c}.Q_k).A*$
-      m_matrixKernels[ (l_derivative-1)*2     ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+l_derivativesOffsets[l_derivative-1],  l_temporaryResult,
-                                                  NULL,                     NULL,                                                    NULL                                                  ); // prefetches
+      m_matrixKernels[ (l_derivative-1)*4 + l_c ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+l_derivativesOffsets[l_derivative-1],  l_temporaryResult,
+                                                    NULL,                     NULL,                                                    NULL                                                  ); // prefetches
 
-      m_matrixKernels[ (l_derivative-1)*2 + 1 ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+l_derivativesOffsets[l_derivative],
-                                                  NULL,                     NULL,                                                    NULL                                                  ); // prefetches
+      m_matrixKernels[ (l_derivative-1)*4 + 3   ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+l_derivativesOffsets[l_derivative],
+                                                    NULL,                     NULL,                                                    NULL                                                  ); // prefetches
     }
 
     // update scalar for this derivative

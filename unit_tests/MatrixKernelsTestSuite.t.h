@@ -265,7 +265,7 @@ class unit_test::MatrixTestSuite: public CxxTest::TestSuite {
       int l_orderOfTaylorSeriesExpansion = ORDEROFTAYLORSERIESEXPANSION+1;
 
       //! setup matrix path
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBEROFBASISFUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBEROFBASISFUNCTIONS) + ".xml";
 
       // set up the xml-parser
       seissol::XmlParser l_matrixReader( l_matricesPath );

@@ -5,7 +5,7 @@
  * @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
  *
  * @section LICENSE
- * Copyright (c) 2013-2014, SeisSol Group
+ * Copyright (c) 2013-2015, SeisSol Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,6 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      *
      * @param o_stiffnessMatrices stiffness matrices.
      * @param o_timeIntegrated time integrated DOFs.
-     * @param o_starMatrices star matrices.
      * @param o_degreesOfFreedom degrees of freedom.
      **/
     void allocateMemory( real**& o_stiffnessMatrices,
@@ -80,10 +79,10 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
       l_sizesStiff[1] = seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER-1 );
 
       // allocate memory
-      o_stiffnessMatrices    = (real**)    malloc( 3*sizeof(real*) );
-      o_stiffnessMatrices[0] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
-      o_stiffnessMatrices[1] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
-      o_stiffnessMatrices[2] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                      ALIGNMENT );
+      o_stiffnessMatrices    = (real**) malloc( 9*sizeof(real*) );
+      for( unsigned int l_c = 0; l_c < 6; l_c++ ) {
+        o_stiffnessMatrices[l_c] = (real*) _mm_malloc( l_sizesStiff[0]*l_sizesStiff[1]*sizeof(real),                  ALIGNMENT );
+      }
 
       o_degreesOfFreedom     = (real*) _mm_malloc( l_alignedNumberOfBasisFunctions*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
 
@@ -95,20 +94,18 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      *
      * @param o_stiffnessMatrices stiffness matrices.
      * @param o_timeIntegrated time integrated DOFs.
-     * @param o_starMatrices star matrices.
      * @param o_degreesOfFreedom degrees of freedom.
      **/
     void freeMemory( real**& o_stiffnessMatrices,
                      real*&  o_timeIntegrated,
                      real*&  o_degreesOfFreedom ) {
 
+      for( unsigned int l_c = 0; l_c < 6; l_c++ ) {
+        _mm_free( o_stiffnessMatrices[l_c] );
+      }
+      free( o_stiffnessMatrices );
 
-      _mm_free( o_stiffnessMatrices[0] );
-      _mm_free( o_stiffnessMatrices[1] );
-      _mm_free( o_stiffnessMatrices[2] );
-          free( o_stiffnessMatrices    );
-
-      _mm_free( o_timeIntegrated       );
+      _mm_free( o_timeIntegrated );
 
       _mm_free( o_degreesOfFreedom  );
     }
@@ -126,7 +123,14 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
       // allocate memory
       real **l_stiffnessMatrices, *l_timeIntegrated, *l_degreesOfFreedom;
 
-      real l_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_starMatricesDense[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_starMatrices[3][STAR_NNZ];
+
+#if STAR_NNZ == NUMBER_OF_QUANTITIES * NUMBER_OF_QUANTITIES
+      real* l_starPointer = l_starMatricesDense[0];
+#else
+      real* l_starPointer = l_starMatrices[0];
+#endif
 
       allocateMemory( l_stiffnessMatrices,
                       l_timeIntegrated,
@@ -136,7 +140,7 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
       real l_degreesOfFreedomUT[NUMBER_OF_DOFS];
 
       // setup matrix path
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       // read in the matrices for our unit tests
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -148,10 +152,24 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
 
       // intitialize stiffness matrices
       for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
+        // init stiffness matrix
         m_denseMatrix.initializeMatrix( 53+l_c,
                                         seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER   ),
                                         seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER-1 ),
                                         l_stiffnessMatrices[l_c] );
+
+        if( m_configuration.getSparseSwitch( 53+l_c ) == false ) {
+          l_stiffnessMatrices[l_c+6] = l_stiffnessMatrices[l_c];
+        }
+        // sparse matrix
+        else {
+          m_denseMatrix.copyDenseToSparse( seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER   ),
+                                           seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER-1 ),
+                                           l_stiffnessMatrices[l_c],
+                                           l_stiffnessMatrices[l_c+3] );
+
+          l_stiffnessMatrices[l_c+6] = l_stiffnessMatrices[l_c+3];
+        }
       }
 
       // repeat the test
@@ -194,7 +212,15 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
           m_denseMatrix.initializeMatrix( 59,
                                           NUMBER_OF_QUANTITIES,
                                           NUMBER_OF_QUANTITIES,
-                                          l_starMatrices[l_c] );
+                                          l_starMatricesDense[l_c] );
+
+          // init sparse if requested
+          if( m_configuration.getSparseSwitch(59) == true ) {
+            m_denseMatrix.copyDenseToSparse( NUMBER_OF_QUANTITIES,
+                                             NUMBER_OF_QUANTITIES,
+                                             l_starMatricesDense[l_c],
+                                             l_starMatrices[l_c] );
+          }
         }
 
 
@@ -203,14 +229,13 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
          */
         // standard multiplication
         l_simpleVolumeIntegrator.computeVolumeIntegration( l_timeIntegratedUT,
-                                                           l_starMatrices,
+                                                           l_starMatricesDense,
                                                            l_degreesOfFreedomUT );
-
         // genrated multiplication
-        l_volumeKernel.computeIntegral( l_stiffnessMatrices,
-                                        l_timeIntegrated,
-                                        l_starMatrices,
-                                        l_degreesOfFreedom );
+        l_volumeKernel.computeIntegral(                      l_stiffnessMatrices+6,
+                                                             l_timeIntegrated,
+                                        (real(*) [STAR_NNZ]) l_starPointer,
+                                                             l_degreesOfFreedom );
 
         // check the results
         m_denseMatrix.checkSubMatrix( l_degreesOfFreedom,

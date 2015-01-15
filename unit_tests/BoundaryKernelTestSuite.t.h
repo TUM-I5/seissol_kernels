@@ -5,7 +5,7 @@
  * @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
  *
  * @section LICENSE
- * Copyright (c) 2013-2014, SeisSol Group
+ * Copyright (c) 2013-2015, SeisSol Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
  **/
 
 #include <iostream>
+#include <string>
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
 #include "Initializer/preProcessorMacros.fpp"
@@ -87,21 +88,21 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
      **/
     void testBoundaryKernel() {
       //! path to matrix set-up
-      std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string(NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       //! matrix of degrees of freedom
-      double l_degreesOfFreedom[  NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      double l_degreesOfFreedomUT[NUMBER_OF_BASIS_FUNCTIONS           *NUMBER_OF_QUANTITIES] = {0};
+      double l_degreesOfFreedom[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
+      double l_degreesOfFreedomUT[NUMBER_OF_DOFS] = {0};
 
       //! matrices of time integrated unknowns
-      double l_timeIntegrated[            NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      double l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegrated[            NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
       double* l_timeIntegratedNeighborsPT[4];
       l_timeIntegratedNeighborsPT[0] = l_timeIntegratedNeighbors[0]; l_timeIntegratedNeighborsPT[1] = l_timeIntegratedNeighbors[1];
       l_timeIntegratedNeighborsPT[2] = l_timeIntegratedNeighbors[2]; l_timeIntegratedNeighborsPT[3] = l_timeIntegratedNeighbors[3];
 
-      double l_timeIntegratedUT[            NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
-      double l_timeIntegratedNeighborsUT[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegratedUT[            NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
+      double l_timeIntegratedNeighborsUT[4][NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
 
       //! flux solvers matrices (positive eigenvalues): \f$ N_{k,i} A_k^+ N_{k,i}^{-1} \f$
       double l_fluxSolversPos[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
@@ -116,10 +117,11 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       int l_neighboringIndices[4][2];
 
       //! flux matrices
-      real *l_fluxMatrices[52];
-      real l_fluxMatricesData[NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*52] __attribute__((aligned(ALIGNMENT)));
-      for( unsigned int l_fluxMatrix = 0; l_fluxMatrix < 52; l_fluxMatrix++ ) {
-        l_fluxMatrices[l_fluxMatrix] = &l_fluxMatricesData[NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*l_fluxMatrix];
+      real* l_fluxMatrices[52*2];
+      real* l_fluxMatricesData = (real*) _mm_malloc( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*52*2*sizeof(real), ALIGNMENT );
+
+      for( unsigned int l_fluxMatrix = 0; l_fluxMatrix < 52*2; l_fluxMatrix++ ) {
+        l_fluxMatrices[l_fluxMatrix] = l_fluxMatricesData + (NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*l_fluxMatrix);
       }
 
       // read in the matrices for our unit tests
@@ -132,6 +134,22 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                         NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                         l_fluxMatrices[l_fluxMatrix] );
+
+        if( m_configuration.getSparseSwitch( l_fluxMatrix ) == true ) {
+          m_denseMatrix.copyDenseToSparse( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                           NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                           l_fluxMatrices[l_fluxMatrix],
+                                           l_fluxMatrices[l_fluxMatrix+52] );
+        }
+        else {
+          m_denseMatrix.copySubMatrix( l_fluxMatrices[l_fluxMatrix],
+                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                       l_fluxMatrices[l_fluxMatrix+52],
+                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
+                                       NUMBER_OF_ALIGNED_BASIS_FUNCTIONS );
+        }
+
       }
 
       // construct boundary integrators
@@ -142,7 +160,6 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
       // repeat the test
       for( int l_repeat = 0; l_repeat < l_numberOfRepeats; l_repeat++) {
-
         // initialize DOFs
         m_denseMatrix.setRandomValues( NUMBER_OF_DOFS,
                                        l_degreesOfFreedomUT );
@@ -211,14 +228,14 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
         // do boundary integration with generated kernels
         l_boundaryKernel.computeLocalIntegral(     l_faceTypes,
-                                                   l_fluxMatrices,
+                                                   l_fluxMatrices+52,
                                                    l_timeIntegrated,
                                                    l_fluxSolversPos,
                                                    l_degreesOfFreedom );
 
         l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                    l_neighboringIndices,
-                                                   l_fluxMatrices,
+                                                   l_fluxMatrices+52,
                                                    l_timeIntegratedNeighborsPT,
                                                    l_fluxSolversNeg,
                                                    l_degreesOfFreedom );
@@ -247,14 +264,14 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
           // do boundary integration with optimized matrix kernels
           l_boundaryKernel.computeLocalIntegral(     l_faceTypes,
-                                                     l_fluxMatrices,
+                                                     l_fluxMatrices+52,
                                                      l_timeIntegrated,
                                                      l_fluxSolversPos,
                                                      l_degreesOfFreedom );
 
           l_boundaryKernel.computeNeighborsIntegral( l_faceTypes,
                                                      l_neighboringIndices,
-                                                     l_fluxMatrices,
+                                                     l_fluxMatrices+52,
                                                      l_timeIntegratedNeighborsPT,
                                                      l_fluxSolversNeg,
                                                      l_degreesOfFreedom );
@@ -267,8 +284,9 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
                                         NUMBER_OF_BASIS_FUNCTIONS,
                                         NUMBER_OF_QUANTITIES );
         }
-
       }
 
+    // free memory
+    _mm_free( l_fluxMatricesData );
     }
 };

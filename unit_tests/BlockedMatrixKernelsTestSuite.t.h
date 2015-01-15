@@ -43,8 +43,8 @@
 #include "configuration.hpp"
 #include <Initializer/MemoryAllocator.h>
 #include "DenseMatrix.hpp"
-#include "generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
-#include "generated_code/matrix_kernels/star_matrices_3d.hpp_include"
+#include <matrix_kernels/stiffness_matrices_3d.hpp_include>
+#include <matrix_kernels/star_matrices_3d.hpp_include>
 
 namespace unit_test {
   class BlockedMatrixKernelsTestSuite;
@@ -89,7 +89,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
       int l_numberOfBasisFunctions  = computeNumberOfBasisFunctions( i_basisDegree );
 
       // setup path to xml file
-      std::string l_matricesPath = m_matricesDirectory + "matrices_" + std::to_string(l_numberOfBasisFunctions) + ".xml";
+      std::string l_matricesPath = m_matricesDirectory + "matrices_" + std::to_string( (long long) l_numberOfBasisFunctions) + ".xml";
 
       // setup the xml-parser
       seissol::XmlParser l_matrixReader( l_matricesPath );
@@ -145,7 +145,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
           }
 
           // do the blocked sparse matrix multiplication
-#include "generated_code/unit_tests/time_sparse_matrix_kernels.hpp_include"
+#include <unit_tests/time_sparse_matrix_kernels.hpp_include>
 
           // reset matrix to zero and set dense matrix values
           std::fill( l_a, l_a+l_numberOfBasisFunctions*l_numberOfBasisFunctions, 0 );

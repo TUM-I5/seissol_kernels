@@ -40,15 +40,8 @@
 
 #include "Volume.h"
 
-#if ALIGNMENT==16
-#include <generated_code/matrix_kernels/dgemm_16.h>
-#elif ALIGNMENT==32
-#include <generated_code/matrix_kernels/dgemm_32.h>
-#elif ALIGNMENT==64
-#include <generated_code/matrix_kernels/dgemm_64.h>
-#else
-#error ALIGNMENT not supported
-#endif
+#include <matrix_kernels/sparse.h>
+#include <matrix_kernels/dense.h>
 
 #ifndef NDEBUG
 #pragma message "compiling volume kernel with assertions"
@@ -60,13 +53,13 @@
 seissol::kernels::Volume::Volume() {
   // intialize the function pointers to the matrix kernels
 #define VOLUME_KERNEL
-#include <generated_code/initialization/bind_matrix_kernels.hpp_include>
+#include <initialization/bind.h>
 #undef VOLUME_KERNEL
 }
 
 void seissol::kernels::Volume::computeIntegral( real** i_stiffnessMatrices,
                                                 real*  i_timeIntegratedDegreesOfFreedom,
-                                                real   i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                                real   i_starMatrices[3][STAR_NNZ],
                                                 real*  io_degreesOfFreedom ) {
   // assert alignments
   assert( ((uintptr_t)i_stiffnessMatrices[0])           % ALIGNMENT == 0 );
@@ -80,9 +73,9 @@ void seissol::kernels::Volume::computeIntegral( real** i_stiffnessMatrices,
 
   // iterate over dimensions 
   for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
-    m_matrixKernels[0] ( i_stiffnessMatrices[l_c], i_timeIntegratedDegreesOfFreedom, l_temporaryResult,
-                         NULL,                     NULL,                             NULL                 ); // TODO: prefetches
-    m_matrixKernels[1] ( l_temporaryResult,        i_starMatrices[l_c],              io_degreesOfFreedom,
-                         NULL,                     NULL,                             NULL                 ); // TODO: prefetches
+    m_matrixKernels[l_c] ( i_stiffnessMatrices[l_c], i_timeIntegratedDegreesOfFreedom, l_temporaryResult,
+                           NULL,                     NULL,                             NULL                 ); // TODO: prefetches
+    m_matrixKernels[3]   ( l_temporaryResult,        i_starMatrices[l_c],              io_degreesOfFreedom,
+                           NULL,                     NULL,                             NULL                 ); // TODO: prefetches
   }
 }
