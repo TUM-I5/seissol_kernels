@@ -56,7 +56,7 @@ TUNE_TS[7]=750
 # Usage info
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-h] [-m MODE -c CONFIGURATIONS -a GENERATED_KERNELS -k SEISSOL_KERNELS_DIR -g GEMM_CODE_GEN_DIR -o OUTPUT_DIR -t WORK_DIR -d]
+Usage: ${0##*/} [-h] [-m MODE -c CONFIGURATIONS -a GENERATED_KERNELS -k SEISSOL_KERNELS_DIR -g GEMM_CODE_GEN_DIR -o OUTPUT_DIR -t WORK_DIR -r REPEATS -d]
 Runs the auto-tuning of the kernels.
      -h                     display this help and exit.
      -m MODE                mode to run:
@@ -74,6 +74,7 @@ Runs the auto-tuning of the kernels.
      -g GEMM_CODE_GEN_EXE   path to the GemmCodeGenerator executable.
      -o OUTPUT_DIR          path to the dictory where the output goes.
      -w WORK_DIR            path to the working directory (optional).
+     -r REPEATS             number of repeats for the tuning runs (default: 1)
      -d                     delete working directories after usage: generated code (1, 7, 8), builds (2, 5, 6, 7, 8).
 EOF
 exit 1
@@ -167,11 +168,16 @@ unit_tests() {
 # @param $2 #cells
 # @param $3 #timesteps
 # @param $4 kernel (all, local, neigh, ader, vol, bndlocal)
+# @param $5 number of tuning repeats
 tune() {
-  if ! $1/seissol_proxy $2 $3 $4; then
-    echo_date "seissol proxy failed, exiting: $1 $2 $3 $4" >&2
-    exit
-  fi
+  CURRENT_REPEAT=0
+  while [ $CURRENT_REPEAT -lt $5 ]; do
+    if ! $1/seissol_proxy $2 $3 $4; then
+      echo_date "seissol proxy failed, exiting: $1 $2 $3 $4" >&2
+      exit
+    fi
+    let CURRENT_REPEAT=CURRENT_REPEAT+1 
+  done
 }
 
 #
@@ -179,7 +185,7 @@ tune() {
 #
 
 OPTIND=1
-while getopts "hm:c:a:k:g:o:w:d" opt; do
+while getopts "hm:c:a:k:g:o:w:r:d" opt; do
     case "$opt" in
         m) MODE=$OPTARG
             # set up the switches
@@ -215,6 +221,8 @@ while getopts "hm:c:a:k:g:o:w:d" opt; do
             ;;
         w) WORK_DIR=$OPTARG
             ;;
+        r) TUNE_REPEATS=$OPTARG
+            ;;
         d) DELETE=true
             ;;
         *)
@@ -224,6 +232,11 @@ while getopts "hm:c:a:k:g:o:w:d" opt; do
 done
 
 shift $((OPTIND-1))
+
+if [ -z "${TUNE_REPEATS}" ];
+then
+  TUNE_REPEATS=1
+fi
 
 if [ -z "${MODE}"                ] ||
    [ -z "${CONFIGURATIONS}"      ] ||
@@ -239,19 +252,22 @@ else
   echo_date '---------------------------------------------------------'
   echo
   echo_date 'We are using the following configuration:'
-  echo_date "\t Code generation enabled? ${GENERATE_SWITCH}"
-  echo_date "\t Build enabled?           ${BUILD_SWITCH}"
-  echo_date "\t Unit tests enabled?      ${UT_SWITCH}"
-  echo_date "\t Auto tuning enabled?     ${TUNE_SWITCH}"
-  echo_date "\t CONFIGURATIONS:          ${CONFIGURATIONS}"
-  echo_date "\t GENERATED_KERNELS:       ${GENERATED_KERNELS}"
-  echo_date "\t SEISSOL_KERNELS_DIR:     ${SEISSOL_KERNELS_DIR}"
-  echo_date "\t GEMM_CODE_GEN_EXE:       ${GEMM_CODE_GEN_EXE}"
-  echo_date "\t OUTPUT_DIR:              ${OUTPUT_DIR}"
-  if [ $WORK_DIR != "" ]; then
-    echo_date "\t WORK_DIR:            ${WORK_DIR}\n"
+  echo_date "\t Code generation enabled?  ${GENERATE_SWITCH}"
+  echo_date "\t Build enabled?            ${BUILD_SWITCH}"
+  echo_date "\t Unit tests enabled?       ${UT_SWITCH}"
+  echo_date "\t Auto tuning enabled?      ${TUNE_SWITCH}"
+  if [ $TUNE_SWITCH ]; then
+  echo_date "\t Number of tuning repeats: ${TUNE_REPEATS}"
   fi
-  echo_date "\t Deleting enabled?        ${DELETE}"
+  echo_date "\t CONFIGURATIONS:           ${CONFIGURATIONS}"
+  echo_date "\t GENERATED_KERNELS:        ${GENERATED_KERNELS}"
+  echo_date "\t SEISSOL_KERNELS_DIR:      ${SEISSOL_KERNELS_DIR}"
+  echo_date "\t GEMM_CODE_GEN_EXE:        ${GEMM_CODE_GEN_EXE}"
+  echo_date "\t OUTPUT_DIR:               ${OUTPUT_DIR}"
+  if [ $WORK_DIR != "" ]; then
+    echo_date "\t WORK_DIR:               ${WORK_DIR}\n"
+  fi
+  echo_date "\t Deleting enabled?         ${DELETE}"
 fi
 
 #
@@ -330,7 +346,7 @@ for CONFIG in ${CONFIGURATIONS}/*/; do
         echo "#cells ${TUNE_CELLS[${ORDER}]}" >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
         echo "#ts ${TUNE_TS[${ORDER}]}"       >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
         # run the tuning runs
-        tune ${BUILD_DIR} ${TUNE_CELLS[${ORDER}]} ${TUNE_TS[${ORDER}]} all  >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.err
+        tune ${BUILD_DIR} ${TUNE_CELLS[${ORDER}]} ${TUNE_TS[${ORDER}]} all ${TUNE_REPEATS}  >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.err
       fi
 
       # clean up build
