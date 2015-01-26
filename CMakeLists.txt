@@ -121,6 +121,14 @@ if(NOT SEISSOL_PROXY STREQUAL "OFF" )
   add_definitions( -DNDEBUG )
 
   add_executable( seissol_proxy ${SEISSOL_PROXY}/proxy_seissol.cpp )
+
+  # enable ipo
+  set_property(TARGET matrix_kernels PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+  set_property(TARGET flux_kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+  set_property(TARGET volume_kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+  set_property(TARGET time_kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+  set_property(TARGET seissol_proxy PROPERTY INTERPROCEDURAL_OPTIMIZATION 1)
+
   target_link_libraries( seissol_proxy time_kernel volume_kernel flux_kernel matrix_kernels )
 endif()
 
