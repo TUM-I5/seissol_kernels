@@ -97,8 +97,9 @@ class SeisSolGen:
     if not os.path.exists(l_outputDir):
       os.makedirs(l_outputDir)
 
-    l_fileNames = []
     for l_precision in ['s', 'd']:
+      l_fileNames = []
+
       for l_architecture in self.m_configuration.m_architectures:
         l_baseName = l_precision + 'gemm_' + l_architecture
 
@@ -112,93 +113,90 @@ class SeisSolGen:
         l_fileNames = l_fileNames + [l_baseName+".cpp"]
 
 
-    # create new files and write header information
-    for l_file in l_fileNames:
-      # output file
-      l_pathToOutputFile = l_outputDir+'/'+l_file
-    
-      # remove old file contents
-      open(l_pathToOutputFile, 'w').close()
-
-      # write license
-      l_logger.writeFileHeader(l_pathToOutputFile, '// ')
+      # create new files and write header information
+      for l_file in l_fileNames:
+        # output file
+        l_pathToOutputFile = l_outputDir+'/'+l_file
       
-      # add include guards, add include for intrinsics
-      l_includeGuardName = re.sub("[^a-zA-Z]","",  l_file).upper() # remove non letters, uppercase
-      l_includeCommand = '#ifndef ' + l_includeGuardName + '\n' \
-                         '#define ' + l_includeGuardName + '\n\n' \
-                         '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'\
-                         '#include <cstddef>\n'\
-                         '#ifndef NDEBUG\n'\
-                         'extern unsigned long long num_flops;\n'\
-                         '#endif\n\n'
-      l_outputFile = open(l_pathToOutputFile ,'a')
+        # remove old file contents
+        open(l_pathToOutputFile, 'w').close()
 
-      l_outputFile.write(l_includeCommand)
-      l_outputFile.close()
+        # write license
+        l_logger.writeFileHeader(l_pathToOutputFile, '// ')
+        
+        # add include guards, add include for intrinsics
+        l_includeGuardName = re.sub("[^a-zA-Z]","",  l_file).upper() # remove non letters, uppercase
+        l_includeCommand = '#ifndef ' + l_includeGuardName + '\n' \
+                           '#define ' + l_includeGuardName + '\n\n' \
+                           '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'\
+                           '#include <cstddef>\n'\
+                           '#ifndef NDEBUG\n'\
+                           'extern unsigned long long num_flops;\n'\
+                           '#endif\n\n'
+        l_outputFile = open(l_pathToOutputFile ,'a')
 
-    # get dense matrices
-    l_denseMatrices = self.m_matrixSetup.getDenseMatrices()
+        l_outputFile.write(l_includeCommand)
+        l_outputFile.close()
 
-    # get sparse matrices
-    l_sparseMatrices = self.m_matrixSetup.getSparseMatrices()
+      # get dense matrices
+      l_denseMatrices = self.m_matrixSetup.getDenseMatrices( i_precision = l_precision )
 
-    # generate code for all matrices
-    for l_matrix in l_denseMatrices + l_sparseMatrices:
-      # write header
-      l_header = open(l_outputDir+'/'+l_matrix['fileNameOfGeneratedKernel']+'.h', 'a')
-      l_header.write( 'void ' + l_matrix['routine_name']+'(double *i_A, double *i_B, double *io_C,'\
-                                                          'double *i_APrefetch, double *i_BPrefetch, double *i_CPrefetch );\n' )
-      l_header.close()
+      # get sparse matrices
+      l_sparseMatrices = self.m_matrixSetup.getSparseMatrices( i_precision = l_precision )
 
-      # output file
-      l_pathToOutputFile = l_outputDir+'/'+l_matrix['fileNameOfGeneratedKernel']+'.cpp'
+      # generate code for all matrices
+      for l_matrix in l_denseMatrices + l_sparseMatrices:
+        # write header
+        l_header = open(l_outputDir+'/'+l_matrix['fileNameOfGeneratedKernel']+'.h', 'a')
+        l_header.write( 'void ' + l_matrix['routine_name']+'(real *i_A, real *i_B, real *io_C,'\
+                                                            'real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );\n' )
+        l_header.close()
 
-      if( l_matrix['type'] == 'dense' ):
-        l_commandLineParameters =     l_matrix['type']          +\
-                                  ' '+l_pathToOutputFile        +\
-                                  ' '+l_matrix['routine_name']  +\
-                                  ' '+str(l_matrix['m'])        +\
-                                  ' '+str(l_matrix['n'])        +\
-                                  ' '+str(l_matrix['k'])        +\
-                                  ' '+str(l_matrix['ld_a'])     +\
-                                  ' '+str(l_matrix['ld_b'])     +\
-                                  ' '+str(l_matrix['ld_c'])     +\
-                                  ' '+str(int(l_matrix['add']))
-      else:
-        # convert to temporary csc file
-        l_cscFile = tempfile.NamedTemporaryFile(); l_csrFile = tempfile.NamedTemporaryFile();
-        MatrixConverter.MatrixConverter.convertFullToSparse( i_pathToFullMatrix = l_matrix['matrix_market'],
-                                                             i_cscFile          = l_cscFile,
-                                                             i_csrFile          = l_csrFile )
+        # output file
+        l_pathToOutputFile = l_outputDir+'/'+l_matrix['fileNameOfGeneratedKernel']+'.cpp'
+
+        if( l_matrix['type'] == 'dense' ):
+          l_commandLineParameters =     l_matrix['type']          +\
+                                    ' '+l_pathToOutputFile        +\
+                                    ' '+l_matrix['routine_name']  +\
+                                    ' '+str(l_matrix['m'])        +\
+                                    ' '+str(l_matrix['n'])        +\
+                                    ' '+str(l_matrix['k'])        +\
+                                    ' '+str(l_matrix['ld_a'])     +\
+                                    ' '+str(l_matrix['ld_b'])     +\
+                                    ' '+str(l_matrix['ld_c'])     +\
+                                    ' '+str(int(l_matrix['add']))
+        else:
+          # convert to temporary csc file
+          l_cscFile = tempfile.NamedTemporaryFile(); l_csrFile = tempfile.NamedTemporaryFile();
+          MatrixConverter.MatrixConverter.convertFullToSparse( i_pathToFullMatrix = l_matrix['matrix_market'],
+                                                               i_cscFile          = l_cscFile,
+                                                               i_csrFile          = l_csrFile )
 
 
-        l_commandLineParameters =     l_matrix['type']          +\
-                                  ' '+l_pathToOutputFile        +\
-                                  ' '+l_matrix['routine_name']  +\
-                                  ' '+l_cscFile.name            +\
-                                  ' '+str(l_matrix['m'])        +\
-                                  ' '+str(l_matrix['n'])        +\
-                                  ' '+str(l_matrix['k'])        +\
-                                  ' '+str(l_matrix['ld_a'])     +\
-                                  ' '+str(l_matrix['ld_b'])     +\
-                                  ' '+str(l_matrix['ld_c'])     +\
-                                  ' '+str(int(l_matrix['add']))
+          l_commandLineParameters =     l_matrix['type']          +\
+                                    ' '+l_pathToOutputFile        +\
+                                    ' '+l_matrix['routine_name']  +\
+                                    ' '+l_cscFile.name            +\
+                                    ' '+str(l_matrix['m'])        +\
+                                    ' '+str(l_matrix['n'])        +\
+                                    ' '+str(l_matrix['k'])        +\
+                                    ' '+str(l_matrix['ld_a'])     +\
+                                    ' '+str(l_matrix['ld_b'])     +\
+                                    ' '+str(l_matrix['ld_c'])     +\
+                                    ' '+str(int(l_matrix['add']))
 
-      l_commandLineParameters += ' '+str(l_matrix['arch'])
+        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' none ' + l_precision.upper() + 'P'
 
-      # TODO: default to no prefetches and double precision
-      l_commandLineParameters += ' none DP'
+        # generate code C++-code for the current matrix
+        self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
+                                l_commandLineParameters )
 
-      # generate code C++-code for the current matrix
-      self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
-                              l_commandLineParameters )
-
-    # close include guards
-    for l_file in l_fileNames:
-      l_header = open(l_outputDir+'/'+l_file, 'a' )
-      l_header.write('#endif\n')
-      l_header.close()
+      # close include guards
+      for l_file in l_fileNames:
+        l_header = open(l_outputDir+'/'+l_file, 'a' )
+        l_header.write('#endif\n')
+        l_header.close()
 
     # write sparse global incluce
     l_globalInclude = l_outputDir+'/dense.h'
@@ -280,14 +278,17 @@ class SeisSolGen:
               l_sparse      = self.m_matrixSetup.getSparseTimeMatrices(            i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
-                                                                                   i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch )
+                                                                                   i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
+                                                                                   i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseStiffTimeMatrices(        i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = reversed(range(l_order-1)),
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
               assert( len(l_globalDgemm) == len(l_localDgemm) )
 
             if( l_kernel == 'volume' ):
@@ -297,15 +298,18 @@ class SeisSolGen:
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
-                                                                                   i_integrationKernels      = ['volume'] )
+                                                                                   i_integrationKernels      = ['volume'],
+                                                                                   i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseStiffVolumeMatrices(      i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
 
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
 
             if( l_kernel == 'boundary' ):
               l_numberOfBinds = 53
@@ -314,15 +318,18 @@ class SeisSolGen:
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
-                                                                                   i_integrationKernels      = ['boundary'] )
+                                                                                   i_integrationKernels      = ['boundary'],
+                                                                                   i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
 
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9 )
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision )
 
             l_sourceCode = l_sourceCode + '\n#ifdef ' + l_kernel.upper() + '_KERNEL\n'
 
@@ -393,10 +400,30 @@ class SeisSolGen:
         l_outFile.write(l_sourceCode)
         l_outFile.close()
 
-        # write global header
-        l_outFile = l_outputDir + '/' + 'bind.h'
-        open(l_outFile ,'w').close()
-        l_logger.writeFileHeader(l_outFile, '// ')
-        l_outFile = open(l_outFile ,'a')
-        l_outFile.write(l_globalInclude)
-        l_outFile.close()
+    # write global header
+    l_outFile = l_outputDir + '/' + 'bind.h'
+    open(l_outFile ,'w').close()
+    l_logger.writeFileHeader(l_outFile, '// ')
+    l_outFile = open(l_outFile ,'a')
+    l_outFile.write(l_globalInclude)
+    l_outFile.close()
+
+    # setup precision switch
+    l_sourceCode = ''
+    for l_precision in ['s', 'd']:
+       for l_architecture in self.m_configuration.m_architectures:
+         l_sourceCode = l_sourceCode + '\n#ifdef ' + str( l_precision + l_architecture ).upper() + "\n"
+         if l_precision == 's':
+           l_sourceCode = l_sourceCode + "#define SINGLE_PRECISION\n"
+         else:
+           l_sourceCode = l_sourceCode + "#define DOUBLE_PRECISION\n"
+         l_sourceCode = l_sourceCode + "#endif\n"
+
+    # precision switch
+    l_outFile = l_outputDir + '/' + 'precision.h'
+    open(l_outFile ,'w').close()
+    l_logger.writeFileHeader(l_outFile, '// ')
+    l_outFile = open(l_outFile ,'a')
+    l_outFile.write(l_sourceCode)
+    l_outFile.close()
+

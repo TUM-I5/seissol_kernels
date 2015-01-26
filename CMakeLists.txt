@@ -87,7 +87,7 @@ string( TOUPPER ${GENERATED_KERNELS} GENERATED_KERNELS )
 # define the architecture
 add_definitions( -D${GENERATED_KERNELS} )
 # debug flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
 # add submodules
 include_directories( src

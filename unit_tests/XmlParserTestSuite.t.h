@@ -77,12 +77,12 @@ class unit_test::XmlParserTestSuite: public CxxTest::TestSuite {
       
       std::vector< std::vector<unsigned int> > l_testRows;
       std::vector< std::vector<unsigned int> > l_testColumns;
-      std::vector< std::vector<double>       > l_testValues;
+      std::vector< std::vector<real>       > l_testValues;
 
       // add first speficied matrix
       std::vector<unsigned int> l_rows;
       std::vector<unsigned int> l_columns;
-      std::vector<double      > l_values;
+      std::vector<real        > l_values;
       l_rows.push_back(     1            );
       l_columns.push_back( 10            ); 
       l_values.push_back( 421.2215141241 );
@@ -110,7 +110,7 @@ class unit_test::XmlParserTestSuite: public CxxTest::TestSuite {
       for( int l_i = 0; l_i < 11; l_i++) {
         l_testRows.push_back(    std::vector<unsigned int>() );
         l_testColumns.push_back( std::vector<unsigned int>() );
-        l_testValues.push_back(  std::vector<double>()       );
+        l_testValues.push_back(  std::vector<real>()         );
       }
 
       // add second specified matrix
@@ -134,7 +134,7 @@ class unit_test::XmlParserTestSuite: public CxxTest::TestSuite {
       for( int l_i = 0; l_i < 7; l_i++) {
         l_testRows.push_back(    std::vector<unsigned int>() );
         l_testColumns.push_back( std::vector<unsigned int>() );
-        l_testValues.push_back(  std::vector<double>()       );
+        l_testValues.push_back(  std::vector<real>()         );
       }
 
       // add test xml file
@@ -152,7 +152,7 @@ class unit_test::XmlParserTestSuite: public CxxTest::TestSuite {
 
       std::vector< std::vector<unsigned int> > l_matrixRows;
       std::vector< std::vector<unsigned int> > l_matrixColumns;
-      std::vector< std::vector<double>       > l_matrixValues;
+      std::vector< std::vector<real>       >   l_matrixValues;
       
       // read the flux matrices
       l_matrixReader.readGlobalMatrices( "flux",

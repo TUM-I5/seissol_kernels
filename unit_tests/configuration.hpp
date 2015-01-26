@@ -42,6 +42,7 @@
 #define CONFIGURATION_HPP
 
 #include <cstdio>
+#include <typedefs.hpp>
 #include <cxxtest/TestSuite.h>
 #include <cxxtest/GlobalFixture.h>
 
@@ -71,7 +72,7 @@ class unit_test::Configuration: public CxxTest::TestSuite {
     unsigned int m_maximumOrder;
 
     //! zero tolerance
-    double m_zeroTolerance;
+    real m_zeroTolerance;
 
     //! sparse dense switch
     int m_sparseSwitch[60];
@@ -153,7 +154,7 @@ class unit_test::Configuration: public CxxTest::TestSuite {
      * Get the numerical zero toleratnce to test again.
      * @return numerical zero tolerance.
      **/
-    double getNumericalZeroTolerance() const {
+    real getNumericalZeroTolerance() const {
       return m_zeroTolerance;
     }
 

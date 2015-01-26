@@ -104,7 +104,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
       // element information in coordinate format
       std::vector< std::vector<unsigned int> > l_matrixRows;
       std::vector< std::vector<unsigned int> > l_matrixColumns;
-      std::vector< std::vector<double>       > l_matrixValues;
+      std::vector< std::vector<real>       > l_matrixValues;
 
       // read the stiffness matrices
       l_matrixReader.readGlobalMatrices( "stiffness",
@@ -130,7 +130,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
           }
 
           // matrices for operation C = A.B 
-          double *l_a = NULL, *l_b = NULL, *l_c1 = NULL, *l_c2 = NULL;
+          real *l_a = NULL, *l_b = NULL, *l_c1 = NULL, *l_c2 = NULL;
 
           // allocate memory and set to random values
           // For simplicity we are reusing dense memory l_a for the sparse matrix

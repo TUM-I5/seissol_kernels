@@ -91,24 +91,24 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
 
       //! matrix of degrees of freedom
-      double l_degreesOfFreedom[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
-      double l_degreesOfFreedomUT[NUMBER_OF_DOFS] = {0};
+      real l_degreesOfFreedom[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
+      real l_degreesOfFreedomUT[NUMBER_OF_DOFS] = {0};
 
       //! matrices of time integrated unknowns
-      double l_timeIntegrated[            NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
-      double l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
-      double* l_timeIntegratedNeighborsPT[4];
+      real l_timeIntegrated[            NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
+      real l_timeIntegratedNeighbors[4][NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
+      real* l_timeIntegratedNeighborsPT[4];
       l_timeIntegratedNeighborsPT[0] = l_timeIntegratedNeighbors[0]; l_timeIntegratedNeighborsPT[1] = l_timeIntegratedNeighbors[1];
       l_timeIntegratedNeighborsPT[2] = l_timeIntegratedNeighbors[2]; l_timeIntegratedNeighborsPT[3] = l_timeIntegratedNeighbors[3];
 
-      double l_timeIntegratedUT[            NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
-      double l_timeIntegratedNeighborsUT[4][NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
+      real l_timeIntegratedUT[            NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
+      real l_timeIntegratedNeighborsUT[4][NUMBER_OF_DOFS] __attribute__((aligned(ALIGNMENT)));
 
       //! flux solvers matrices (positive eigenvalues): \f$ N_{k,i} A_k^+ N_{k,i}^{-1} \f$
-      double l_fluxSolversPos[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_fluxSolversPos[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
       //! flux solvers matrices (negative eigenvalues): \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
-      double l_fluxSolversNeg[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
+      real l_fluxSolversNeg[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES];
 
       //! face types
       enum faceType l_faceTypes[4] = {regular, regular, regular, regular};

@@ -42,6 +42,7 @@
 #define TYPEDEFS_HPP
 
 #include <initialization/bind.h>
+#include <initialization/precision.h>
 
 // define order of taylor series relative to the number of basis functions
 #if CONVERGENCE_ORDER == 2
@@ -70,7 +71,7 @@
 #endif
 
 // aligned number of basis functions
-#if ALIGNMENT == 16
+#if ALIGNMENT == 16 && defined(DOUBLE_PRECISION)
 
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 4
@@ -88,7 +89,7 @@
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 120
 #endif
 
-#elif ALIGNMENT == 32
+#elif ( ALIGNMENT == 32 && defined(DOUBLE_PRECISION) ) || ( ALIGNMENT == 16 && defined(SINGLE_PRECISION) )
 
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 4
@@ -106,7 +107,7 @@
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 120
 #endif
 
-#elif ALIGNMENT == 64
+#elif ( ALIGNMENT == 64 && defined(DOUBLE_PRECISION) ) || ( ALIGNMENT == 32 && defined(SINGLE_PRECISION) )
 
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 8
@@ -124,9 +125,27 @@
 #define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 120
 #endif
 
+#elif ALIGNMENT == 64 && defined(SINGLE_PRECISION)
+
+#if CONVERGENCE_ORDER == 2
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 16
+#elif CONVERGENCE_ORDER == 3
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 16
+#elif CONVERGENCE_ORDER == 4
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 32
+#elif CONVERGENCE_ORDER == 5
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 48
+#elif CONVERGENCE_ORDER == 6
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 64
+#elif CONVERGENCE_ORDER == 7
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 96
+#elif CONVERGENCE_ORDER == 8
+#define NUMBER_OF_ALIGNED_BASIS_FUNCTIONS 128
+#endif
+
 #else
 
-#error ALIGNMENT is not in {32, 64}.
+#error alignment-precision combination not implemented.
 
 #endif
 
@@ -152,7 +171,12 @@ enum faceType {
   periodic
 };
 
-// use double precision for floating point numbers
+// define floating point precision
+#ifdef SINGLE_PRECISION
+typedef float real;
+#endif
+#ifdef DOUBLE_PRECISION
 typedef double real;
+#endif
 
 #endif

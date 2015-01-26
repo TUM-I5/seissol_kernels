@@ -74,7 +74,7 @@ class MatrixSetup:
   def getAlignedNumberOfBasisFunctions( self,
                                         i_order,
                                         i_alignment,
-                                        i_precision = 8 ):
+                                        i_precision ):
 
     # compute the #remaing non-zeros for the recursive scheme
     l_numberOfNonZeroBasisFunctions = self.getNumberOfBasisFunctions( i_order )
@@ -121,10 +121,12 @@ class MatrixSetup:
   # @param i_alignment assumed memory alignment of the stiffness matrices and time derivatives of the DOFs.
   # @param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
   # @param i_numberOfQuantities #(quantities).
+  # @param i_precision precision either 's' for single precision or 'd' for double precision
   def getDenseStiffTimeMatrices( self,
                                  i_alignment,
                                  i_degreesOfBasisFunctions,
-                                 i_numberOfQuantities ):
+                                 i_numberOfQuantities,
+                                 i_precision ):
     l_denseMatrices = []
 
     for l_degree in i_degreesOfBasisFunctions:
@@ -151,19 +153,23 @@ class MatrixSetup:
         # ld(B) = #(aligned basis function of the associated order)
         # ld(C) = #(aligned basis functions of the associated order-1)
         l_m   = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                       i_alignment       = i_alignment ); 
+                                                       i_alignment       = i_alignment,
+                                                       i_precision       = self.m_configuration.m_bytesPerReal[i_precision] )
         l_n   = i_numberOfQuantities
         l_k   = l_nonZeroBasisFunctions
         l_ldA = self.getAlignedNumberOfBasisFunctions( i_order           = l_order-1,
-                                                       i_alignment       = i_alignment );
+                                                       i_alignment       = i_alignment,
+                                                       i_precision       = self.m_configuration.m_bytesPerReal[i_precision] )
         l_ldB = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder,
-                                                       i_alignment       = i_alignment )
+                                                       i_alignment       = i_alignment,
+                                                       i_precision       = self.m_configuration.m_bytesPerReal[i_precision] )
         l_ldC = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                       i_alignment       = i_alignment ); 
+                                                       i_alignment       = i_alignment,
+                                                       i_precision       = self.m_configuration.m_bytesPerReal[i_precision] )
 
-        l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
-                                            + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                            + "_beta0";
+        l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                     + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                     + "_beta0";
 
         # Add matrix to dictionary
         l_denseMatrices = l_denseMatrices + [ dict(\
@@ -188,7 +194,8 @@ class MatrixSetup:
   def getDenseStiffVolumeMatrices( self,
                                    i_alignment,
                                    i_degreesOfBasisFunctions,
-                                   i_numberOfQuantities ):
+                                   i_numberOfQuantities,
+                                   i_precision ):
     l_denseMatrices = []
     
     for l_degree in i_degreesOfBasisFunctions:
@@ -203,16 +210,16 @@ class MatrixSetup:
       # ld(A) = #(aligned basis functions)
       # ld(B) = #(aligned basis functions)
       # ld(C) = #(aligned basus functions) 
-      l_m   = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+      l_m   = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
       l_n   = i_numberOfQuantities
-      l_k   = self.getNumberOfBasisFunctions(        i_order = l_order - 1                            )
-      l_ldA = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
-      l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
-      l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment )
+      l_k   = self.getNumberOfBasisFunctions(        i_order = l_order - 1                                                                                            )
+      l_ldA = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+      l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+      l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order    , i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
 
-      l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
-                                          + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                          + "_beta0";
+      l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                   + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                   + "_beta0";
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -237,7 +244,8 @@ class MatrixSetup:
   def getDenseFluxMatrices( self,
                             i_alignment,
                             i_degreesOfBasisFunctions,
-                            i_numberOfQuantities ):
+                            i_numberOfQuantities,
+                            i_precision ):
     l_denseMatrices = []
     
     for l_degree in i_degreesOfBasisFunctions:
@@ -252,16 +260,16 @@ class MatrixSetup:
       # ld(A) = #(aligned basis functions)
       # ld(B) = #(aligned basis functions)
       # ld(C) = #(aligned basus functions) 
-      l_m   = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+      l_m   = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
       l_n   = i_numberOfQuantities
-      l_k   = self.getNumberOfBasisFunctions(        i_order = l_order                            )
-      l_ldA = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
-      l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
-      l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+      l_k   = self.getNumberOfBasisFunctions(        i_order = l_order                                                                                            )
+      l_ldA = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+      l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+      l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
 
-      l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
-                                          + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                          + "_beta0";
+      l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                   + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                   + "_beta0";
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -285,7 +293,8 @@ class MatrixSetup:
   def getDenseStarSolverMatrices( self,
                                   i_alignment,
                                   i_degreesOfBasisFunctions,
-                                  i_numberOfQuantities ):
+                                  i_numberOfQuantities,
+                                  i_precision ):
     l_denseMatrices = []
     
     for l_degree in i_degreesOfBasisFunctions:
@@ -301,18 +310,21 @@ class MatrixSetup:
       # ld(B) = #(quantities)
       # ld(C) = #(aligned basis functions of the order)
       l_m   = self.getAlignedNumberOfBasisFunctions( i_order     = l_order,
-                                                     i_alignment = i_alignment ); 
+                                                     i_alignment = i_alignment,
+                                                     i_precision = self.m_configuration.m_bytesPerReal[i_precision] ); 
       l_n   = i_numberOfQuantities
       l_k   = i_numberOfQuantities
       l_ldA = self.getAlignedNumberOfBasisFunctions( i_order     = l_order,
-                                                     i_alignment = i_alignment );
+                                                     i_alignment = i_alignment,
+                                                     i_precision = self.m_configuration.m_bytesPerReal[i_precision] ); 
       l_ldB = i_numberOfQuantities
       l_ldC = self.getAlignedNumberOfBasisFunctions( i_order     = l_order,
-                                                     i_alignment = i_alignment ); 
+                                                     i_alignment = i_alignment,
+                                                     i_precision = self.m_configuration.m_bytesPerReal[i_precision] ); 
 
-      l_routineNameOfGeneratedKernel = "dgemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
-                                          + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                          + "_beta1";
+      l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                   + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                   + "_beta1";
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -360,6 +372,7 @@ class MatrixSetup:
   # @param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
   # @return dictionary conatinig the dense matrices described abover.
   def getDenseMatrices( self,
+                        i_precision = ['s', 'd'],
                         i_architectures = ['wsm', 'snb', 'knc', 'hsw', 'noarch'],
                         i_numberOfQuantities = 9,
                         i_maximumDegreeOfBasisFunctions = 8 ):
@@ -379,32 +392,40 @@ class MatrixSetup:
         l_minimumGlobalDegree = 2
         l_minimumLocalDegree  = 1
 
-      l_alignedDgemm = []
-      l_alignedDgemm = l_alignedDgemm + self.getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
+      l_alignedGemm = []
+      for l_precision in i_precision:
+        l_alignedGemm = l_alignedGemm + self.getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                          i_numberOfQuantities      = i_numberOfQuantities )
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision )
 
-      l_alignedDgemm = l_alignedDgemm + self.getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
+        l_alignedGemm = l_alignedGemm + self.getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                          i_numberOfQuantities      = i_numberOfQuantities )
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision )
 
-      l_alignedDgemm = l_alignedDgemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
+        l_alignedGemm = l_alignedGemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                          i_numberOfQuantities      = i_numberOfQuantities )
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision )
 
-      l_alignedDgemm = l_alignedDgemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
+        l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                          i_numberOfQuantities      = i_numberOfQuantities )
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision )
 
       # file where the generated code is stored
-      l_fileNameOfGeneratedKernel = 'dgemm_' + str(l_architecture)
-      for l_matrix in range(len(l_alignedDgemm)):
-        l_alignedDgemm[l_matrix]['type'] = "dense"
-        l_alignedDgemm[l_matrix]['arch'] = l_architecture
-        l_alignedDgemm[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
+     
+      for l_matrix in range(len(l_alignedGemm)):
+        l_alignedGemm[l_matrix]['type'] = "dense"
+        l_alignedGemm[l_matrix]['arch'] = l_architecture
+        if 'dgemm' in l_alignedGemm[l_matrix]['routine_name']:
+          l_alignedGemm[l_matrix]['fileNameOfGeneratedKernel'] =  l_fileNameOfGeneratedKernel = 'dgemm_' + str(l_architecture)
+        else:
+          l_alignedGemm[l_matrix]['fileNameOfGeneratedKernel'] =  l_fileNameOfGeneratedKernel = 'sgemm_' + str(l_architecture)
 
       # add the alignment to all matrices
-      l_denseMatrices = l_denseMatrices + l_alignedDgemm 
+      l_denseMatrices = l_denseMatrices + l_alignedGemm 
 
     return l_denseMatrices
 
@@ -418,7 +439,8 @@ class MatrixSetup:
                              i_alignment,
                              i_degreesOfBasisFunctions,
                              i_numberOfQuantities,
-                             i_pathToSparseDenseSwitch ):
+                             i_pathToSparseDenseSwitch,
+                             i_precision ):
     # open sparse-dense-switch configuration
     l_sparseDense = open(i_pathToSparseDenseSwitch)
 
@@ -465,19 +487,23 @@ class MatrixSetup:
             # ld(C) = #(aligned basis functions of the associated order-1)
 
             if( "starMatrix" in ( l_sparseDense[l_setup]['local'].keys() if l_sparseDense[l_setup]['local'] != None else [] ) ):
-              l_m   = self.getNumberOfBasisFunctions(        i_order           = l_associatedOrder-1 )
+              l_m   = self.getNumberOfBasisFunctions(        i_order           = l_associatedOrder-1                        )
             else:
               l_m   = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                             i_alignment       = i_alignment )
+                                                             i_alignment       = i_alignment,
+                                                             i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
             l_n   = i_numberOfQuantities
-            l_k   = self.getNumberOfBasisFunctions(        i_order           = l_associatedOrder   )
+            l_k   = self.getNumberOfBasisFunctions(          i_order           = l_associatedOrder                          )
             l_ldA = -(l_degree+1)
-            l_ldB = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder,
-                                                           i_alignment       = i_alignment )
-            l_ldC = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                           i_alignment       = i_alignment );
+            l_ldB = self.getAlignedNumberOfBasisFunctions(   i_order           = l_associatedOrder,
+                                                             i_alignment       = i_alignment,
+                                                             i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+            l_ldC = self.getAlignedNumberOfBasisFunctions(   i_order           = l_associatedOrder-1,
+                                                             i_alignment       = i_alignment,
+                                                             i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
 
-            l_routineName = "dsparse"                 +\
+            l_routineName = i_precision               +\
+                            "sparse"                  +\
                             "_"      + l_sparseMatrix +\
                             "_m"     + str(l_m)       +\
                             "_n"     + str(l_n)       +\
@@ -518,18 +544,21 @@ class MatrixSetup:
             l_n   = i_numberOfQuantities
             l_k   = i_numberOfQuantities
             l_ldA = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                           i_alignment       = i_alignment )
+                                                           i_alignment       = i_alignment,
+                                                           i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
             l_ldB = -(l_degree+1)
             l_ldC = self.getAlignedNumberOfBasisFunctions( i_order           = l_associatedOrder-1,
-                                                           i_alignment       = i_alignment );
+                                                           i_alignment       = i_alignment,
+                                                           i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
 
-            l_routineName = "dsparse"               +\
+            l_routineName = i_precision             +\
+                            "sparse"                +\
                             "_"      + "starMatrix" +\
                             "_m"     + str(l_m)     +\
                             "_n"     + str(l_n)     +\
                             "_k"     + str(l_k)     +\
                             "_ldA"   + str(l_ldA)   +\
-                            "_ldBna" + str(-l_ldB)   +\
+                            "_ldBna" + str(-l_ldB)  +\
                             "_ldC"   + str(l_ldC)   +\
                             "_beta1"
 
@@ -562,6 +591,7 @@ class MatrixSetup:
                                       i_degreesOfBasisFunctions,
                                       i_numberOfQuantities,
                                       i_pathToSparseDenseSwitch,
+                                      i_precision,
                                       i_integrationKernels = ['volume', 'boundary'] ):
 
     # open sparse-dense-switch configuration
@@ -611,15 +641,16 @@ class MatrixSetup:
             l_n   = i_numberOfQuantities
             l_k   = self.getNumberOfBasisFunctions( i_order = l_order )
             l_ldA = -(l_degree+1)
-            l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
-            l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment )
+            l_ldB = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+            l_ldC = self.getAlignedNumberOfBasisFunctions( i_order = l_order, i_alignment = i_alignment, i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
 
-            l_routineName = "dsparse"                 +\
+            l_routineName = i_precision               +\
+                            "sparse"                  +\
                             "_"      + l_sparseMatrix +\
                             "_m"     + str(l_m)       +\
                             "_n"     + str(l_n)       +\
                             "_k"     + str(l_k)       +\
-                            "_ldAna" + str(-l_ldA)     +\
+                            "_ldAna" + str(-l_ldA)    +\
                             "_ldB"   + str(l_ldB)     +\
                             "_ldC"   + str(l_ldC)     +\
                             "_beta0"
@@ -651,22 +682,25 @@ class MatrixSetup:
             # ld(A) = #(aligned basis function of the order)
             # ld(B) = not available (sparse): -order
             # ld(C) = #(aligned basis functions of the order)
-            l_m   = self.getNumberOfBasisFunctions(        i_order           = l_order     )
+            l_m   = self.getNumberOfBasisFunctions(        i_order           = l_order                                    )
             l_n   = i_numberOfQuantities
             l_k   = i_numberOfQuantities
             l_ldA = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
-                                                           i_alignment       = i_alignment )
+                                                           i_alignment       = i_alignment,
+                                                           i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
             l_ldB = -(l_degree+1)
             l_ldC = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
-                                                           i_alignment       = i_alignment   )
+                                                           i_alignment       = i_alignment,
+                                                           i_precision = self.m_configuration.m_bytesPerReal[i_precision]   )
 
-            l_routineName = "dsparse"               +\
+            l_routineName = i_precision             +\
+                            "sparse"                +\
                             "_"      + "starMatrix" +\
                             "_m"     + str(l_m)     +\
                             "_n"     + str(l_n)     +\
                             "_k"     + str(l_k)     +\
                             "_ldA"   + str(l_ldA)   +\
-                            "_ldBna" + str(-l_ldB)   +\
+                            "_ldBna" + str(-l_ldB)  +\
                             "_ldC"   + str(l_ldC)   +\
                             "_beta1"
 
@@ -693,6 +727,7 @@ class MatrixSetup:
   # @param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
   # @return dictionary containing the sparse matrices described.
   def getSparseMatrices( self,
+                         i_precision = ['s', 'd'],
                          i_architectures = ['wsm', 'snb', 'knc', 'hsw', 'noarch'],
                          i_numberOfQuantities = 9,
                          i_maximumDegreeOfBasisFunctions = 8 ):
@@ -707,28 +742,31 @@ class MatrixSetup:
       l_alignment = self.m_configuration.m_alignments[l_architecture]
 
       # path to the sparse dense configuration
-      l_pathToSparseDenseSwitch = self.m_configuration.m_pathToSparseDenseConfigs+"/d" + l_architecture + ".xml"
+      l_pathToSparseDenseSwitch = self.m_configuration.m_pathToSparseDenseConfigs+ i_precision + l_architecture + ".xml"
 
-      l_alignedSparse = []
+      for l_precision in i_precision:
+        l_alignedSparse = []
 
-      l_alignedSparse = l_alignedSparse + self.getSparseTimeMatrices(          i_alignment               = l_alignment,
-                                                                               i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                               i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
-                                                                               i_numberOfQuantities      = i_numberOfQuantities )
+        l_alignedSparse = l_alignedSparse + self.getSparseTimeMatrices(          i_alignment               = l_alignment,
+                                                                                 i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                                 i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
+                                                                                 i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                 i_precision               = l_precision )
 
-      l_alignedSparse = l_alignedSparse + self.getSparseVolumeAndFluxMatrices( i_alignment               = l_alignment,
-                                                                               i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
-                                                                               i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
-                                                                               i_numberOfQuantities      = i_numberOfQuantities )
+        l_alignedSparse = l_alignedSparse + self.getSparseVolumeAndFluxMatrices( i_alignment               = l_alignment,
+                                                                                 i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                                 i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
+                                                                                 i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                 i_precision               = l_precision )
 
-      # file where the generated code is stored
-      l_fileNameOfGeneratedKernel = 'sparse_' + 'd'+str(l_architecture)
-      for l_matrix in range(len(l_alignedSparse)):
-        l_alignedSparse[l_matrix]['type'] = "sparse"
-        l_alignedSparse[l_matrix]['arch'] = l_architecture
-        l_alignedSparse[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
+        # file where the generated code is stored
+        l_fileNameOfGeneratedKernel = 'sparse_' + l_precision + str(l_architecture)
+        for l_matrix in range(len(l_alignedSparse)):
+          l_alignedSparse[l_matrix]['type'] = "sparse"
+          l_alignedSparse[l_matrix]['arch'] = l_architecture
+          l_alignedSparse[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
 
-      # add the alignment to all matrices
-      l_sparseMatrices = l_sparseMatrices + l_alignedSparse 
+        # add the alignment to all matrices
+        l_sparseMatrices = l_sparseMatrices + l_alignedSparse 
 
     return l_sparseMatrices

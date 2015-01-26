@@ -55,10 +55,10 @@ namespace unit_test {
 class unit_test::SimpleBoundaryIntegrator {
   //private:
     //! flux matrices (elements contribution): \f$ F^{-, i} \f$
-    double m_fluxMatricesNeg[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
+    real m_fluxMatricesNeg[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! flux matrices (neighboring elements contribution): \f$ F^+{+, i, j, h} \f$
-    double m_fluxMatricesPos[48][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
+    real m_fluxMatricesPos[48][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! dense matrix functionality
     unit_test::DenseMatrix m_denseMatrix;
@@ -98,15 +98,15 @@ class unit_test::SimpleBoundaryIntegrator {
      * @param i_nAmNm1DivM flux solvers for the neighboring elements contributions.
      * @param io_unknowns degrees of freedom of the element, which are updated.
      **/
-    void computeBoundaryIntegration(       double        i_timeIntegratedUnknownsElement[NUMBER_OF_DOFS],
-                                           double        i_timeIntegratedUnknownsNeighbors[4][NUMBER_OF_DOFS],
+    void computeBoundaryIntegration(       real          i_timeIntegratedUnknownsElement[NUMBER_OF_DOFS],
+                                           real          i_timeIntegratedUnknownsNeighbors[4][NUMBER_OF_DOFS],
                                      const enum faceType i_faceTypes[4],
                                      const int           i_neighboringIndices[4][2],
-                                           double        i_nApNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                           double        i_nAmNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                           double        io_unknowns[NUMBER_OF_DOFS] ) {
+                                           real          i_nApNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           real          i_nAmNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           real          io_unknowns[NUMBER_OF_DOFS] ) {
       //! temporary product (we have to multiply a matrix from the left and the right)
-      double l_temporaryProduct[ NUMBER_OF_DOFS ];
+      real l_temporaryProduct[ NUMBER_OF_DOFS ];
 
 
       // compute the elements contribution

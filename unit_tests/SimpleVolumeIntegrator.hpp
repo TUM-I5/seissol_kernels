@@ -56,7 +56,7 @@ namespace unit_test {
 class unit_test::SimpleVolumeIntegrator {
   //private:
     //! stiffness matrices (multiplied by the inverse of the mass matrix): \f$ M^{-1} K^\xi, M^{-1} K^\eta, M^{-1} K^\zeta \f$
-    double m_stiffnessMatrices[3][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
+    real m_stiffnessMatrices[3][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! dense matrix functionality
     unit_test::DenseMatrix m_denseMatrix;
@@ -97,11 +97,11 @@ class unit_test::SimpleVolumeIntegrator {
      *          + M^{-1} K^\zeta I(t^{n}, t^{n+1}, Q_{k}^n) C^*_k
      *        \f]
      **/
-    void computeVolumeIntegration( const double i_timeIntegratedUnknowns[NUMBER_OF_DOFS],
-                                   double const i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
-                                   double       io_unknowns[NUMBER_OF_DOFS] ) {
+    void computeVolumeIntegration( const real i_timeIntegratedUnknowns[NUMBER_OF_DOFS],
+                                   real const i_starMatrices[3][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                   real       io_unknowns[NUMBER_OF_DOFS] ) {
       // temporary matrix for two-step multiplications
-      double l_temporaryProduct[NUMBER_OF_DOFS];
+      real l_temporaryProduct[NUMBER_OF_DOFS];
 
       // iterate over the three reference coordinate: \f$ \xi, \eta, \zeta \f$
       for( unsigned int l_coordinate = 0; l_coordinate < 3; l_coordinate++ ) {

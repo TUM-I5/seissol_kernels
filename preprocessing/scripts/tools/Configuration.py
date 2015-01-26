@@ -196,6 +196,9 @@ class Configuration():
   m_architectures = ['wsm', 'snb', 'hsw', 'knc', 'noarch']
 
 
+  m_bytesPerReal = { 's': 4,
+                     'd': 8 }
+
   m_alignments = {  'wsm': 16,
                     'snb': 32,
                     'hsw': 32,

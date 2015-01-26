@@ -279,7 +279,12 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
         for( int l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
           unsigned int l_offset = l_timeKernel.m_derivativesOffsets[l_derivative];
+#ifdef SINGLE_PRECISION
+          if( !(CONVERGENCE_ORDER == 2 && ALIGNMENT >= 32) && !(CONVERGENCE_ORDER == 3 && ALIGNMENT >= 64) ) {
+#endif
+#ifdef DOUBLE_PRECISION
           if( !(CONVERGENCE_ORDER == 2 && ALIGNMENT >= 64) ) {
+#endif
             m_denseMatrix.checkSubMatrix(  l_timeDerivativesUT[l_derivative],
                                            NUMBER_OF_BASIS_FUNCTIONS,
                                            NUMBER_OF_QUANTITIES,

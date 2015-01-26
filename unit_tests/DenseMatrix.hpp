@@ -46,10 +46,20 @@
 #include <cxxtest/TestSuite.h>
 
 const int s_maximumOrder = 6;
+#ifdef DOUBLE_PRECISION
 #if CONVERGENCE_ORDER < 6
-const double s_zeroTolerance = 10e-11;
+const long double s_zeroTolerance = 10e-11;
 #else
-const double s_zeroTolerance = 10e-09;
+const long double s_zeroTolerance = 10e-09;
+#endif
+#endif
+
+#ifdef SINGLE_PRECISION
+#if CONVERGENCE_ORDER < 6
+const long double s_zeroTolerance = 10e-05;
+#else
+const long double s_zeroTolerance = 10e-03;
+#endif
 #endif
 
 namespace unit_test {
@@ -70,7 +80,7 @@ class unit_test::DenseMatrix {
 
     std::vector< std::vector<unsigned int> > m_matrixRows;
     std::vector< std::vector<unsigned int> > m_matrixColumns;
-    std::vector< std::vector<double>       > m_matrixValues;
+    std::vector< std::vector<real>       > m_matrixValues;
 
   public:
     /**
@@ -79,9 +89,9 @@ class unit_test::DenseMatrix {
      * @param i_length length of the array.
      * @param o_array array to fill.
      **/
-    void setRandomValues( int i_length, double *o_array ) {
+    void setRandomValues( int i_length, real *o_array ) {
       for( int l_i = 0; l_i < i_length; l_i++) {
-        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*0.1;
+        o_array[l_i] = ((real)rand()/(real)RAND_MAX)*0.1;
       }
     }
 
@@ -95,7 +105,7 @@ class unit_test::DenseMatrix {
     void setZeroBlock( int     i_numberOfRows,
                        int     i_numberOfColumns,
                        int     i_numberOfNonZeroRows,
-                       double *io_matrix ) {
+                       real    *io_matrix ) {
       for( int l_column = 0; l_column < i_numberOfColumns; l_column++ ) {
         for( int l_row = 0; l_row < i_numberOfRows; l_row++ ) {
           // check if this a zero row
@@ -172,8 +182,8 @@ class unit_test::DenseMatrix {
      **/
     void copyDenseToSparse(       int     i_numberOfRows,
                                   int     i_numberOfColumns,
-                            const double *i_denseMatrix,
-                                  double *o_sparseMatrix ) {
+                            const real   *i_denseMatrix,
+                                  real   *o_sparseMatrix ) {
      // #(dense elements)
      int l_numberOfDenseElements = i_numberOfRows * i_numberOfColumns;
 
@@ -269,7 +279,7 @@ class unit_test::DenseMatrix {
      * @i_add true: C += A.B, false C = A.B
      **/
     void executeStandardMultiplication(       int     i_m,       int     i_n, int     i_k,
-                                        const double *i_a, const double *i_b, double *io_c,
+                                        const real   *i_a, const real   *i_b, real   *io_c,
                                               bool    i_add = true ) {
       // set result matrix to zero first of required
       if( i_add == false ) {
@@ -300,7 +310,7 @@ class unit_test::DenseMatrix {
      * @param i_numberOfColumnes number of columns.
      * @param i_matrix pointer to matrix elements.
      **/
-    static void printDenseMatrix( int i_numberOfRows, int i_numberOfColumns, double* i_matrix ) {
+    static void printDenseMatrix( int i_numberOfRows, int i_numberOfColumns, real* i_matrix ) {
       for( int l_row = 0; l_row < i_numberOfRows; l_row++ ) {
         for( int l_column = 0; l_column < i_numberOfColumns; l_column++ ) {
           std::cout << i_matrix[ l_column * i_numberOfRows + l_row ] << " ";
@@ -316,11 +326,11 @@ class unit_test::DenseMatrix {
      * @param i_array1 first array.
      * @param i_array2 second array.
      **/
-    void checkResult( int i_length, const double* i_array1, const double* i_array2 ) {
+    void checkResult( int i_length, const real* i_array1, const real* i_array2 ) {
       // check every value individually
       for( int l_i = 0; l_i < i_length; l_i++) {
         if( std::abs(i_array2[l_i]) > 10e-5 ) { 
-          TS_ASSERT_DELTA( (double) ( (long double) i_array1[l_i] / (long double) i_array2[l_i]), 1.0, s_zeroTolerance);
+          TS_ASSERT_DELTA( (long double) ( (long double) i_array1[l_i] / (long double) i_array2[l_i]), 1.0, s_zeroTolerance);
         }
         else {
           TS_ASSERT_DELTA( i_array1[l_i], i_array2[l_i], s_zeroTolerance );
@@ -378,7 +388,7 @@ class unit_test::DenseMatrix {
                                                m_matrixNumberOfRows, m_matrixNumberOfColumns, m_matrixSparsities,
                                                m_matrixRows, m_matrixColumns );
       // synchronize size of values and name (which are not set by the local matrix reader)
-      m_matrixValues.push_back( std::vector< double >());
+      m_matrixValues.push_back( std::vector< real >());
       m_matrixNames.push_back( std::string() );
 
       // read stiffness matrices
@@ -407,7 +417,7 @@ class unit_test::DenseMatrix {
     void initializeMatrix( unsigned int i_id,
                            unsigned int i_numberOfRows,
                            unsigned int i_numberOfColumns,
-                           double*      o_matrix ) {
+                           real*        o_matrix ) {
       // assert the matrices have been read
       assert( m_matrixIds.size() > 0 );
 
@@ -444,7 +454,7 @@ class unit_test::DenseMatrix {
           TS_ASSERT_LESS_THAN( l_denseIndex, i_numberOfRows*i_numberOfColumns );
 
           if( i_id == 59 ) { // star matrix
-            o_matrix[ l_denseIndex ] = ((double)rand()/(double)RAND_MAX)*10.0;
+            o_matrix[ l_denseIndex ] = ((real)rand()/(real)RAND_MAX)*10.0;
           }
           else if( i_id >= 56 && i_id <= 58 ) { // add minus-sign for time kernel
             o_matrix[ l_denseIndex ] = -m_matrixValues[l_position][l_element];
