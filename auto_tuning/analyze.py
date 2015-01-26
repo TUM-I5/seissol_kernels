@@ -77,17 +77,33 @@ for l_file in range(len(l_files)):
   l_files[l_file] = os.path.basename(l_files[l_file])
 
 l_runtime = {}
-for l_file in l_files: 
-  l_match = re.search( "tune_local_([0-9])+_([0-9])+_([0-9])+_([0-9])+_([0-9])+.log" , l_file )
-  # create a new dictionary for this file
-  l_runtime[l_file] = {}
+for l_file in l_files:
+  # local integration
+  if 'local' in l_file:
+    l_match = re.search( "tune_local_([0-9])+_([0-9])+_([0-9])+_([0-9])+_([0-9])+.log" , l_file )
+    # create a new dictionary for this file
+    l_runtime[l_file] = {}
 
-  # save the information of the file name
-  l_runtime[l_file]['star_matrix']           = l_match.group(1)
-  l_runtime[l_file]['time_kernel']           = l_match.group(2)
-  l_runtime[l_file]['volume_kernel']         = l_match.group(3)
-  l_runtime[l_file]['boundary_kernel_local'] = l_match.group(4)
-  l_runtime[l_file]['order']                 = l_match.group(5)
+    # save the information of the file name
+    l_runtime[l_file]['star_matrix']                 = l_match.group(1)
+    l_runtime[l_file]['time_kernel']                 = l_match.group(2)
+    l_runtime[l_file]['volume_kernel']               = l_match.group(3)
+    l_runtime[l_file]['boundary_kernel_local']       = l_match.group(4)
+    l_runtime[l_file]['boundary_kernel_neighboring'] = 0
+    l_runtime[l_file]['order']                       = l_match.group(5)
+  elif 'neighboring' in l_file:
+    l_match = re.search( "tune_neighboring_0_([0-9])+_([0-9])+.log" , l_file )
+    # create a new dictionary for this file
+    l_runtime[l_file] = {}
+
+    # save the information of the file name
+    l_runtime[l_file]['star_matrix']                 = 0
+    l_runtime[l_file]['time_kernel']                 = 0
+    l_runtime[l_file]['volume_kernel']               = 0
+    l_runtime[l_file]['boundary_kernel_local']       = 0
+    l_runtime[l_file]['boundary_kernel_neighboring'] = l_match.group(1)
+    l_runtime[l_file]['order']                       = l_match.group(2)
+
 
   # create an empty list for the runtime
   l_measurements = []
@@ -112,8 +128,8 @@ for l_file in l_files:
     l_runtime[l_file]['var']     = statistics.variance( l_measurements )
 
 # save to csv file
-with open( l_arguments['output_dir']+'timings.csv', 'w' ) as l_csvFile:
-  l_fieldNames = ['order', 'star_matrix', 'time_kernel', 'volume_kernel', 'boundary_kernel_local']
+with open( l_arguments['output_dir']+'/timings.csv', 'w' ) as l_csvFile:
+  l_fieldNames = ['order', 'star_matrix', 'time_kernel', 'volume_kernel', 'boundary_kernel_local', 'boundary_kernel_neighboring']
   l_fieldNames = l_fieldNames + ['repeats', 'min', 'mean', 'max', 'stddev', 'var']
   l_writer = csv.DictWriter(l_csvFile, fieldnames=l_fieldNames)
   l_writer.writeheader()
