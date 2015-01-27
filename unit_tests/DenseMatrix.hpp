@@ -55,10 +55,10 @@ const long double s_zeroTolerance = 10e-09;
 #endif
 
 #ifdef SINGLE_PRECISION
-#if CONVERGENCE_ORDER < 6
-const long double s_zeroTolerance = 10e-05;
+#if CONVERGENCE_ORDER < 5
+const long double s_zeroTolerance = 10e-04;
 #else
-const long double s_zeroTolerance = 10e-03;
+const long double s_zeroTolerance = 10e-02;
 #endif
 #endif
 
