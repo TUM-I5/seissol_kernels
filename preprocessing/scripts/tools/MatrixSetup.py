@@ -383,51 +383,33 @@ class MatrixSetup:
     # iterate over different architectures:
     for l_architecture in i_architectures:
       l_alignment = self.m_configuration.m_alignments[l_architecture]
-      l_minimumGlobalDegree   = 0
-      l_minimumLocalDegree    = 0
-
       l_alignedGemm = []
+
       for l_precision in i_precision:
-        # increase minimum degree depeneding on alignment
-        if( l_alignment == 64 and l_precision == 's' ):
-         l_minimumGlobalDegree = 3
-         l_minimumLocalDegree  = 2
-
-        if( l_alignment == 64 and l_precision == 'd' ):
-          # same kernel for order 1-3; remark ld(A) of the stiffness matrices is basis(O-1)
-          l_minimumGlobalDegree = 2
-          l_minimumLocalDegree  = 1
-
-        if( l_alignment == 32 ):
-          l_minimumGlobalDegree = 2
-          l_minimumLocalDegree  = 1
-
-        if( l_alignment == 16 and l_precision == 's' ):
-          l_minimumGlobalDegree = 2
-          l_minimumLocalDegree  = 1
-
         l_alignedGemm = l_alignedGemm + self.getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
         l_alignedGemm = l_alignedGemm + self.getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
         l_alignedGemm = l_alignedGemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
         l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
+        # remove all duplicates which might have been generated (recursive time integration)
+        l_alignedGemm =  {l_value['routine_name']:l_value for l_value in l_alignedGemm}.values()
+
       # file where the generated code is stored
-     
       for l_matrix in range(len(l_alignedGemm)):
         l_alignedGemm[l_matrix]['type'] = "dense"
         l_alignedGemm[l_matrix]['arch'] = l_architecture
