@@ -386,14 +386,26 @@ class MatrixSetup:
       l_minimumGlobalDegree   = 0
       l_minimumLocalDegree    = 0
 
-      # increase minimum degree in case of 32 and 64 bit alignment
-      # same kernel for order 1-3; remark ld(A) of the stiffness matrices is basis(O-1)
-      if( l_alignment >= 32 ):
-        l_minimumGlobalDegree = 2
-        l_minimumLocalDegree  = 1
-
       l_alignedGemm = []
       for l_precision in i_precision:
+        # increase minimum degree depeneding on alignment
+        if( l_alignment == 64 and l_precision == 's' ):
+         l_minimumGlobalDegree = 3
+         l_minimumLocalDegree  = 2
+
+        if( l_alignment == 64 and l_precision == 'd' ):
+          # same kernel for order 1-3; remark ld(A) of the stiffness matrices is basis(O-1)
+          l_minimumGlobalDegree = 2
+          l_minimumLocalDegree  = 1
+
+        if( l_alignment == 32 ):
+          l_minimumGlobalDegree = 2
+          l_minimumLocalDegree  = 1
+
+        if( l_alignment == 16 and l_precision == 's' ):
+          l_minimumGlobalDegree = 2
+          l_minimumLocalDegree  = 1
+
         l_alignedGemm = l_alignedGemm + self.getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
@@ -742,7 +754,7 @@ class MatrixSetup:
       l_alignment = self.m_configuration.m_alignments[l_architecture]
 
       # path to the sparse dense configuration
-      l_pathToSparseDenseSwitch = self.m_configuration.m_pathToSparseDenseConfigs+ i_precision + l_architecture + ".xml"
+      l_pathToSparseDenseSwitch = self.m_configuration.m_pathToSparseDenseConfigs + '/' + i_precision + l_architecture + ".xml"
 
       for l_precision in i_precision:
         l_alignedSparse = []
