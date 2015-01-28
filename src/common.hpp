@@ -94,8 +94,9 @@ namespace seissol {
      * @param i_alignedDofs aligned degrees of freedom (zero padding in the basis functions / columns).
      * @param o_unalignedDofs unaligned degrees of freedom.
      **/
-    static void convertAlignedDofs( const real i_alignedDofs[   NUMBER_OF_ALIGNED_DOFS],
-                                          real o_unalignedDofs[ NUMBER_OF_DOFS] ) {
+    template<typename real_from, typename real_to>
+    static void convertAlignedDofs( const real_from i_alignedDofs[   NUMBER_OF_ALIGNED_DOFS],
+                                          real_to   o_unalignedDofs[ NUMBER_OF_DOFS] ) {
       for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
         for( unsigned int l_basisFunction = 0; l_basisFunction < NUMBER_OF_BASIS_FUNCTIONS; l_basisFunction++ ) {
           o_unalignedDofs[l_quantity*NUMBER_OF_BASIS_FUNCTIONS + l_basisFunction] = i_alignedDofs[l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS + l_basisFunction];
@@ -110,8 +111,9 @@ namespace seissol {
      * @param i_unalignedDofs unaligned degrees of freedom.
      * @param o_alignedDofs aligned degrees of freedom (zero paddin in the basis functions / columns).
      **/
-    static void convertUnalignedDofs( const real i_unalignedDofs[ NUMBER_OF_DOFS ],
-                                            real o_alignedDofs[   NUMBER_OF_ALIGNED_DOFS ] ) {
+    template<typename real_from, typename real_to>
+    static void convertUnalignedDofs( const real_from i_unalignedDofs[ NUMBER_OF_DOFS ],
+                                            real_to   o_alignedDofs[   NUMBER_OF_ALIGNED_DOFS ] ) {
       for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
         for( unsigned int l_basisFunction = 0; l_basisFunction < NUMBER_OF_BASIS_FUNCTIONS; l_basisFunction++ ) {
           o_alignedDofs[l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS + l_basisFunction] = i_unalignedDofs[l_quantity*NUMBER_OF_BASIS_FUNCTIONS + l_basisFunction];
@@ -125,8 +127,9 @@ namespace seissol {
      * @param i_unalignedUpdate unaligned update.
      * @param o_alignedDofs aligned degrees of freedom.
      **/
-    static void addToAlignedDofs( const real i_unalignedUpdate[ NUMBER_OF_DOFS ],
-                                        real o_alignedDofs[     NUMBER_OF_ALIGNED_DOFS ] ) {
+    template<typename real_from, typename real_to>
+    static void addToAlignedDofs( const real_from i_unalignedUpdate[ NUMBER_OF_DOFS ],
+                                        real_to   o_alignedDofs[     NUMBER_OF_ALIGNED_DOFS ] ) {
       for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
         for( unsigned int l_basisFunction = 0; l_basisFunction < NUMBER_OF_BASIS_FUNCTIONS; l_basisFunction++ ) {
           o_alignedDofs[l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS + l_basisFunction] += i_unalignedUpdate[l_quantity*NUMBER_OF_BASIS_FUNCTIONS + l_basisFunction];
@@ -147,14 +150,15 @@ namespace seissol {
      * @param i_bNumberOfColumns number of columns of matrix B.
      * @param i_bLeadingDimension leading dimension of B.
      */
-    static void copySubMatrix( const real         *i_A,
+    template<typename real_from, typename real_to>
+    static void copySubMatrix( const real_from    *i_A,
                                const unsigned int  i_aNumberOfRows,
                                const unsigned int  i_aNumberOfColumns,
                                const unsigned int  i_aLeadingDimension,
-                                     real         *o_B,
+                                     real_to      *o_B,
                                const unsigned int  i_bNumberOfRows,
-                               const unsigned int i_bNumberOfColumns,
-                               const unsigned int i_bLeadingDimension ) {
+                               const unsigned int  i_bNumberOfColumns,
+                               const unsigned int  i_bLeadingDimension ) {
       // set matrix B to zero
       for( unsigned int l_index = 0; l_index < i_bLeadingDimension*i_bNumberOfColumns; l_index++ ) {
         o_B[l_index] = (real) 0;
@@ -177,8 +181,9 @@ namespace seissol {
      * @param i_compressedDerivatives derivatives in compressed, aligned format.
      * @param o_fullDerivatives derivatives in full, unaligned format.
      **/
-    static void convertAlignedCompressedTimeDerivatives( const real *i_compressedDerivatives,
-                                                               real  o_fullDerivatives[CONVERGENCE_ORDER][NUMBER_OF_DOFS] ) {
+    template<typename real_from, typename real_to>
+    static void convertAlignedCompressedTimeDerivatives( const real_from *i_compressedDerivatives,
+                                                               real_to    o_fullDerivatives[CONVERGENCE_ORDER][NUMBER_OF_DOFS] ) {
       unsigned int l_firstEntry = 0;
 
       for( unsigned int l_order = 0; l_order < CONVERGENCE_ORDER; l_order++ ) {
@@ -201,8 +206,9 @@ namespace seissol {
      * @param i_fullStarMatrix star matrix in full format.
      * @param o_compressedStarMatrix compressed star matrix.
      **/
-    static void convertStarMatrix( const double *i_fullStarMatrix,
-                                         real   *o_compressedStarMatrix ) {
+    template<typename real_from, typename real_to>
+    static void convertStarMatrix( const real_from *i_fullStarMatrix,
+                                         real_to   *o_compressedStarMatrix ) {
       o_compressedStarMatrix[ 0] = i_fullStarMatrix[0*9 + 6];
       o_compressedStarMatrix[ 1] = i_fullStarMatrix[0*9 + 7];
       o_compressedStarMatrix[ 2] = i_fullStarMatrix[0*9 + 8];

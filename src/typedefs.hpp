@@ -44,7 +44,7 @@
 #include <initialization/bind.h>
 #include <initialization/precision.h>
 
-// define order of taylor series relative to the number of basis functions
+// define number of basis functions
 #if CONVERGENCE_ORDER == 2
 #define NUMBER_OF_BASIS_FUNCTIONS 4
 
