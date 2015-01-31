@@ -133,7 +133,7 @@ build() {
     exit 1
   fi
 
-  if ! make
+  if ! make -j
   then
     echo_date "make failed, exiting: $1 $2 $3 $4 $5 $6" >&2
     exit 1
@@ -307,61 +307,69 @@ fi
 # Iterate over the configurations
 #
 echo
-echo_date "iterating over configurations.."
 
-for CONFIG in ${CONFIGURATIONS}/*/; do
-  # get base name
-  CONFIG_BASE=$(basename ${CONFIG})
+# Repeat the tuning runs if requested
+CURRENT_REPEAT=0
+while [ $CURRENT_REPEAT -lt $TUNE_REPEATS ]; do
+  echo_date "iteration: ${CURRENT_REPEAT}"
 
-  echo_date "config: ${CONFIG_BASE}"
+  echo_date "iterating over configurations.."
+  for CONFIG in ${CONFIGURATIONS}/*/; do
+    # get base name
+    CONFIG_BASE=$(basename ${CONFIG})
 
-  CODE_DIR=${GENERATED_DIR}/gen_$CONFIG_BASE
+    echo_date "config: ${CONFIG_BASE}"
 
-  if [ $GENERATE_SWITCH ]; then
-    # generate code for this configuration
-    mkdir -p ${CODE_DIR}
-    echo_date "generating code"
-    generate_code ${SEISSOL_KERNELS_DIR} ${SEISSOL_KERNELS_DIR}/preprocessing/matrices ${CONFIG} ${GEMM_CODE_GEN_EXE} ${CODE_DIR} >> ${LOG_DIR}/gen_${CONFIG_BASE}.log  2>> ${LOG_DIR}/gen_${CONFIG_BASE}.err
-  fi
+    CODE_DIR=${GENERATED_DIR}/gen_$CONFIG_BASE
 
-  if [ $BUILD_SWITCH ] || [ $UT_SWITCH ] || [ $TUNE_SWITCH ]; then
-    echo -n -e `date +%y/%m/%d\ %H:%M:%S` $* 'iterating over orders: '
-    for ORDER in {2..7}; do
-      echo -n "${ORDER}.."
-
-      BUILD_DIR=${BUILDS_DIR}/${CONFIG_BASE}/${ORDER}
-      if [ $BUILD_SWITCH ]; then
-        # build this setting
-        mkdir -p $BUILD_DIR
-
-        build ${GENERATED_KERNELS} ${ORDER} ${SEISSOL_KERNELS_DIR} ${CODE_DIR} ${BUILD_DIR} ${SEISSOL_KERNELS_DIR}/proxy >> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.err
-      fi
-
-      if [ $UT_SWITCH ]; then
-        # run the unit tests
-        unit_tests ${BUILD_DIR}  >> ${LOG_DIR}/ut_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/ut_${CONFIG_BASE}_${ORDER}.err
-      fi
-
-      if [ $TUNE_SWITCH ]; then
-        echo "#cells ${TUNE_CELLS[${ORDER}]}" >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
-        echo "#ts ${TUNE_TS[${ORDER}]}"       >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
-        # run the tuning runs
-        tune ${BUILD_DIR} ${TUNE_CELLS[${ORDER}]} ${TUNE_TS[${ORDER}]} all ${TUNE_REPEATS}  >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.err
-      fi
-
-      # clean up build
-      if [ $DELETE ] && [ $BUILD_SWITCH ]; then
-        rm -r $BUILD_DIR
-      fi
-    done
-    echo
-
-    # clean up generated code
-    if [ $DELETE ] && [ $GENERATE_SWITCH ]; then
-      rm -r ${CODE_DIR}
+    if [ $GENERATE_SWITCH ] && [ $CURRENT_REPEAT -lt 1 ]; then
+      # generate code for this configuration
+      mkdir -p ${CODE_DIR}
+      echo_date "generating code"
+      generate_code ${SEISSOL_KERNELS_DIR} ${SEISSOL_KERNELS_DIR}/preprocessing/matrices ${CONFIG} ${GEMM_CODE_GEN_EXE} ${CODE_DIR} >> ${LOG_DIR}/gen_${CONFIG_BASE}.log  2>> ${LOG_DIR}/gen_${CONFIG_BASE}.err
     fi
-  fi
 
+    if [ $BUILD_SWITCH ] || [ $UT_SWITCH ] || [ $TUNE_SWITCH ]; then
+      echo -n -e `date +%y/%m/%d\ %H:%M:%S` $* 'iterating over orders: '
+      for ORDER in {2..7}; do
+        echo -n "${ORDER}.."
+
+        BUILD_DIR=${BUILDS_DIR}/${CONFIG_BASE}/${ORDER}
+        if [ $BUILD_SWITCH ] && [ $CURRENT_REPEAT -lt 1 ]; then
+          # build this setting
+          mkdir -p $BUILD_DIR
+
+          build ${GENERATED_KERNELS} ${ORDER} ${SEISSOL_KERNELS_DIR} ${CODE_DIR} ${BUILD_DIR} ${SEISSOL_KERNELS_DIR}/proxy >> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.err
+        fi
+
+        if [ $UT_SWITCH ]  && [ $CURRENT_REPEAT -lt 1 ]; then
+          # run the unit tests
+          unit_tests ${BUILD_DIR}  >> ${LOG_DIR}/ut_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/ut_${CONFIG_BASE}_${ORDER}.err
+        fi
+
+        if [ $TUNE_SWITCH ]; then
+          echo "#cells ${TUNE_CELLS[${ORDER}]}" >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
+          echo "#ts ${TUNE_TS[${ORDER}]}"       >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log
+          # run the tuning runs
+          tune ${BUILD_DIR} ${TUNE_CELLS[${ORDER}]} ${TUNE_TS[${ORDER}]} all 1  >> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/tune_${CONFIG_BASE}_${ORDER}.err
+        fi
+
+        # clean up build
+        if [ $DELETE ] && [ $BUILD_SWITCH ]  && [ $CURRENT_REPEAT -lt 1 ]; then
+          rm -r $BUILD_DIR
+        fi
+      done
+      echo
+
+      # clean up generated code
+      if [ $DELETE ] && [ $GENERATE_SWITCH ]  && [ $CURRENT_REPEAT -lt 1 ]; then
+        rm -r ${CODE_DIR}
+      fi
+    fi
+
+  done
+
+let CURRENT_REPEAT=CURRENT_REPEAT+1 
 done
 
 echo_date '-------------------------'
