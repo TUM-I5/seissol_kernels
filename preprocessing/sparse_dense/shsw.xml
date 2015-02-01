@@ -5,9 +5,7 @@
     <local>
       <starMatrix/>
     </local>
-    <time>
-      <kXiDivMT/>
-    </time>
+    <time/>
     <volume/>
     <boundary/>
   </O2>
@@ -18,7 +16,10 @@
     </local>
     <time/>
     <volume/>
-    <boundary/>
+    <boundary>
+      <fP113DivM/>
+      <fP111DivM/>
+    </boundary>
   </O3>
 
   <O4>
@@ -36,7 +37,9 @@
     </local>
     <time/>
     <volume/>
-    <boundary/>
+    <boundary>
+      <fM1DivM/>
+    </boundary>
   </O5>
 
   <O6>
@@ -46,7 +49,7 @@
     <time/>
     <volume/>
     <boundary>
-      <fP113DivM/>
+      <fM1DivM/>
     </boundary>
   </O6>
 
@@ -57,13 +60,14 @@
     <time/>
     <volume/>
     <boundary>
-      <fP113DivM/>
-      <fP111DivM/>
+      <fM1DivM/>
     </boundary>
   </O7>
 
   <O8>
-    <local/>
+    <local>
+      <starMatrix/>
+    </local>
     <time/>
     <volume/>
     <boundary/>
