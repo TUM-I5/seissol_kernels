@@ -169,7 +169,7 @@ class MatrixSetup:
 
         l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
                                                      + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                                     + "_beta0";
+                                                     + "_beta0_pfsigonly";
 
         # Add matrix to dictionary
         l_denseMatrices = l_denseMatrices + [ dict(\
@@ -181,7 +181,8 @@ class MatrixSetup:
                                                 ld_b         = l_ldB,                          \
                                                 ld_c         = l_ldC,                          \
                                                 add          = False,                          \
-                                                bind         = -1
+                                                bind         = -1,                             \
+                                                prefetch     = 'pfsigonly'
                                               )]
 
     return l_denseMatrices
@@ -219,7 +220,7 @@ class MatrixSetup:
 
       l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                                   + "_beta0";
+                                                   + "_beta0_pfsigonly";
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -231,7 +232,8 @@ class MatrixSetup:
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
                                               add          = False,                          \
-                                              bind         = -1
+                                              bind         = -1,                             \
+                                              prefetch     = 'pfsigonly'
                                            )]
 
     return l_denseMatrices
@@ -245,7 +247,8 @@ class MatrixSetup:
                             i_alignment,
                             i_degreesOfBasisFunctions,
                             i_numberOfQuantities,
-                            i_precision ):
+                            i_precision, 
+                            i_prefetch = 'pfsigonly' ):
     l_denseMatrices = []
     
     for l_degree in i_degreesOfBasisFunctions:
@@ -269,7 +272,7 @@ class MatrixSetup:
 
       l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                                   + "_beta0";
+                                                   + "_beta0_" + i_prefetch;
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -281,7 +284,8 @@ class MatrixSetup:
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
                                               add          = False,                          \
-                                              bind         = -1
+                                              bind         = -1,                             \
+                                              prefetch     = i_prefetch
                                           )]
     return l_denseMatrices           
 
@@ -294,7 +298,8 @@ class MatrixSetup:
                                   i_alignment,
                                   i_degreesOfBasisFunctions,
                                   i_numberOfQuantities,
-                                  i_precision ):
+                                  i_precision, 
+                                  i_prefetch = 'pfsigonly'):
     l_denseMatrices = []
     
     for l_degree in i_degreesOfBasisFunctions:
@@ -324,7 +329,7 @@ class MatrixSetup:
 
       l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
-                                                   + "_beta1";
+                                                   + "_beta1_" + i_prefetch;
 
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
@@ -336,7 +341,8 @@ class MatrixSetup:
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
                                               add          = True,                           \
-                                              bind         = -1
+                                              bind         = -1,                             \
+                                              prefetch     = i_prefetch
                                           )]
 
     return l_denseMatrices
@@ -401,10 +407,22 @@ class MatrixSetup:
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
+        l_alignedGemm = l_alignedGemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision,
+                                                                          i_prefetch                = 'AL2' )
+
         l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
+
+        l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision,
+                                                                          i_prefetch                = 'BL2viaC' )
 
         # remove all duplicates which might have been generated (recursive time integration)
         l_alignedGemm =  {l_value['routine_name']:l_value for l_value in l_alignedGemm}.values()
@@ -505,7 +523,7 @@ class MatrixSetup:
                             "_ldAna" + str(-l_ldA)    +\
                             "_ldB"   + str(l_ldB)     +\
                             "_ldC"   + str(l_ldC)     +\
-                            "_beta0"
+                            "_beta0_pfsigonly"
 
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
@@ -519,7 +537,8 @@ class MatrixSetup:
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
                                                       add           = False,
-                                                      bind          = l_bindId
+                                                      bind          = l_bindId,
+                                                      prefetch      = 'pfsigonly'
                                                    )
                                                   ]
           # generate sparse star matrix if requested
@@ -554,7 +573,7 @@ class MatrixSetup:
                             "_ldA"   + str(l_ldA)   +\
                             "_ldBna" + str(-l_ldB)  +\
                             "_ldC"   + str(l_ldC)   +\
-                            "_beta1"
+                            "_beta1_pfsigonly"
 
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
@@ -568,7 +587,8 @@ class MatrixSetup:
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
                                                       add           = True,
-                                                      bind          = l_bindId
+                                                      bind          = l_bindId,
+                                                      prefetch      = 'pfsigonly'
                                                    )
                                                   ]
     return l_sparseMatrices
@@ -647,7 +667,7 @@ class MatrixSetup:
                             "_ldAna" + str(-l_ldA)    +\
                             "_ldB"   + str(l_ldB)     +\
                             "_ldC"   + str(l_ldC)     +\
-                            "_beta0"
+                            "_beta0_pfsigonly"
 
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
@@ -661,7 +681,8 @@ class MatrixSetup:
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
                                                       add           = False,
-                                                      bind          = l_bindId
+                                                      bind          = l_bindId,
+                                                      prefetch      = 'pfsigonly'
                                                    )
                                                   ]
           # generate sparse star matrix if requested
@@ -696,7 +717,7 @@ class MatrixSetup:
                             "_ldA"   + str(l_ldA)   +\
                             "_ldBna" + str(-l_ldB)  +\
                             "_ldC"   + str(l_ldC)   +\
-                            "_beta1"
+                            "_beta1_pfsigonly"
 
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
@@ -710,7 +731,8 @@ class MatrixSetup:
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
                                                       add           = True,
-                                                      bind          = l_bindId
+                                                      bind          = l_bindId,
+                                                      prefetch      = 'pfsigonly'
                                                    )
                                                   ]
     return l_sparseMatrices

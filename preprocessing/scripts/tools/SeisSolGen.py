@@ -186,7 +186,7 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' '+str(int(l_matrix['add']))
 
-        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' none ' + l_precision.upper() + 'P'
+        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
 
         # generate code C++-code for the current matrix
         self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
@@ -312,7 +312,7 @@ class SeisSolGen:
                                                                                    i_precision               = l_precision )
 
             if( l_kernel == 'boundary' ):
-              l_numberOfBinds = 53
+              l_numberOfBinds = 54
 
               l_sparse      =  self.m_matrixSetup.getSparseVolumeAndFluxMatrices(  i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
@@ -326,10 +326,24 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
 
+              l_fluxMatrix_prefetch = 'pfsigonly'
+
+              l_globalDgemm = l_globalDgemm + self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
+                                                                                   i_degreesOfBasisFunctions = [l_order-1],
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision,
+                                                                                   i_prefetch                = l_fluxMatrix_prefetch )
+
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
+
+              l_localDgemm  = l_localDgemm + self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
+                                                                                   i_degreesOfBasisFunctions = [l_order-1],
+                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_precision               = l_precision,
+                                                                                   i_prefetch                = 'pfsigonly' )
 
             l_sourceCode = l_sourceCode + '\n#ifdef ' + l_kernel.upper() + '_KERNEL\n'
 
@@ -349,18 +363,32 @@ class SeisSolGen:
                 l_localBind = self.m_configuration.m_matrixBinds[l_kernel]['starMatrix']
               elif( l_kernel == 'boundary' ):
                 l_localBind = self.m_configuration.m_matrixBinds['boundary']['fluxSolver']
+                l_localBind_pf = self.m_configuration.m_matrixBinds['boundary']['fluxSolverPF']
               else:
                 assert( False )
 
+              if ( l_kernel == 'boundary' and l_bind == 4):
+                # increase gemm id for boundary kernel when entering the neighoring part
+                # of the flux matrix multiplications
+                l_gemmId = l_gemmId + 1                
+
               # this a local matrix
               if( (l_bind+1) % (l_localBind+1) == 0 ):
+                if ( l_kernel == 'boundary' ):
+                  l_gemmId = 0                #reset to zero for local matrices of boundary integration
+                
                 l_gemmMatrix = l_localDgemm[l_gemmId]
 
                 # increase gemm id for time kernel
                 l_gemmId = l_gemmId + 1
               else:
-                l_gemmMatrix = l_globalDgemm[l_gemmId]
-
+                # special case for the boundary integration, we have to flux dgemms
+                # one without prefetches (local) and one with prefetches (neighbor)
+                if ( l_kernel == 'boundary' and l_bind == l_localBind_pf ):
+                  l_gemmMatrix = l_localDgemm[l_gemmId]
+                else:
+                  l_gemmMatrix = l_globalDgemm[l_gemmId]        
+                  
               # sparse setup
               if( len(l_match) == 1 ):
                 l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_match[0]['routine_name'] + ';\n'

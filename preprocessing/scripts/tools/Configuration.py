@@ -185,7 +185,8 @@ class Configuration():
                                          "fP442DivM":  50,
                                          "fP443DivM":  51,
 
-                                         "fluxSolver": 52 }
+                                         "fluxSolver": 52,
+                                         "fluxSolverPF": 53 }
                   }
 
   m_globalMatrices = { 'time': 3, 'volume': 3, 'boundary': 52 }

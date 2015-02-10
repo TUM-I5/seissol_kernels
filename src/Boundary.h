@@ -74,7 +74,7 @@ class seissol::kernels::Boundary {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[53])( real *i_A,         real *i_B,         real *io_C,
+    void (*m_matrixKernels[54])( real *i_A,         real *i_B,         real *io_C,
                                  real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
 
   public:

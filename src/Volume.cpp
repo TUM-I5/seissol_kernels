@@ -74,8 +74,8 @@ void seissol::kernels::Volume::computeIntegral( real** i_stiffnessMatrices,
   // iterate over dimensions 
   for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
     m_matrixKernels[l_c] ( i_stiffnessMatrices[l_c], i_timeIntegratedDegreesOfFreedom, l_temporaryResult,
-                           NULL,                     NULL,                             NULL                 ); // TODO: prefetches
+                           NULL,                     NULL,                             NULL                 ); // These will be be ignored
     m_matrixKernels[3]   ( l_temporaryResult,        i_starMatrices[l_c],              io_degreesOfFreedom,
-                           NULL,                     NULL,                             NULL                 ); // TODO: prefetches
+                           NULL,                     NULL,                             NULL                 ); // These will be be ignored
   }
 }

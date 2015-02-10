@@ -49,7 +49,9 @@ from numpy import arange, nonzero, sort
 
 import tools.Logger as l_logger
 
-from elementtree.SimpleXMLWriter import XMLWriter
+#from elementtree.SimpleXMLWriter import XMLWriter
+import tools.SimpleXMLWriter as XMLWriter
+
 import os
 
 class MatrixConverter():

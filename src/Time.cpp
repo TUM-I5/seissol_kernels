@@ -127,10 +127,10 @@ void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
       // compute $K_{\xi_c}.Q_k$ and $(K_{\xi_c}.Q_k).A*$
       m_matrixKernels[ (l_derivative-1)*4 + l_c ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+l_derivativesOffsets[l_derivative-1],  l_temporaryResult,
-                                                    NULL,                     NULL,                                                    NULL                                                  ); // prefetches
+                                                    NULL,                     NULL,                                                    NULL                                                  ); // These will be be ignored
 
       m_matrixKernels[ (l_derivative-1)*4 + 3   ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+l_derivativesOffsets[l_derivative],
-                                                    NULL,                     NULL,                                                    NULL                                                  ); // prefetches
+                                                    NULL,                     NULL,                                                    NULL                                                  ); // These will be be ignored
     }
 
     // update scalar for this derivative

@@ -89,11 +89,10 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
     if( i_faceTypes[l_face] != dynamicRupture ) {
       // compute neighboring elements contribution
       m_matrixKernels[l_face]( i_fluxMatrices[l_face], i_timeIntegrated,      l_temporaryResult,
-                               NULL,                   NULL,                  NULL                 ); // TODO: prefetches
-
+                               NULL,                   NULL,                  NULL                 ); // These will be be ignored
 
       m_matrixKernels[52](     l_temporaryResult,      i_fluxSolvers[l_face], io_degreesOfFreedom,
-                               NULL,                   NULL,                  NULL                 ); // TODO: prefetches
+                               NULL,                   NULL,                  NULL                 ); // These will be be ignored
     }
   }
 }
@@ -157,7 +156,7 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
       m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
                              NULL,                 NULL,                     NULL                 ); // TODO: prefetches
 
-      m_matrixKernels[52](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
+      m_matrixKernels[53](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
                              NULL,                 NULL,                     NULL                 ); // TODO: prefetches
     }
   }
