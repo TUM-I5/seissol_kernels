@@ -41,6 +41,8 @@
 #
 import logging
 import os.path
+import numpy
+import scipy
 
 class Configuration():
   # ids of the matrices
@@ -193,6 +195,7 @@ class Configuration():
 
   m_matricesDir = ""
   m_matrixMarketFiles = {}
+  m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81 } }
 
   m_architectures = ['wsm', 'snb', 'hsw', 'knc', 'noarch']
 
@@ -232,21 +235,30 @@ class Configuration():
     # inverse name -> key dict
     self.m_matrixNames = {v: k for k, v in self.m_matrixIds.items()}
 
+    # add bind to matrix name mapping
+    for l_kernel in self.m_matrixBinds.keys():
+      for l_bind in self.m_matrixBinds[l_kernel].keys():
+        self.m_matrixBinds[l_kernel][self.m_matrixBinds[l_kernel][l_bind] ] = l_bind
+
     # check that the matrices dir exists
     if( not os.path.exists( i_matricesDir ) ):
       logging.error( "matrices directory does not exist: " + i_matricesDir )
       exit(1)
 
-    # setup paths to global matrix market files
+    # setup paths to global matrix market files and derives number of non-zeros
     for l_order in range(2, i_maximumOrder+1):
-      # create a new dict for this order
+      # create new dicts for this order
       self.m_matrixMarketFiles[l_order] = {}
+      self.m_nonZeros[l_order]          = { 'starMatrix':   24,
+                                            'fluxSolver':   81,
+                                            'fluxSolverPF': 81 }
 
       for l_matrix in self.m_matrixIds.keys():
         if( l_matrix is "fluxSolver" or l_matrix is "starMatrix" ):
           continue
 
         self.m_matrixMarketFiles[l_order][l_matrix] = i_matricesDir + "/" + l_matrix + "_3D_" + str(l_order-1) + "_maple.mtx"
+        self.m_nonZeros[l_order][l_matrix] = len(numpy.nonzero(scipy.io.mmread( self.m_matrixMarketFiles[l_order][l_matrix] ))[0])
 
         if( not os.path.exists( self.m_matrixMarketFiles[l_order][l_matrix] ) ):
           logging.error( "matrix market files does not exist: " + self.m_matrixMarketFiles[l_order][l_matrix] )

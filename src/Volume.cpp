@@ -79,3 +79,18 @@ void seissol::kernels::Volume::computeIntegral( real** i_stiffnessMatrices,
                            NULL,                     NULL,                             NULL                 ); // These will be be ignored
   }
 }
+
+void seissol::kernels::Volume::flopsIntegral( unsigned int &o_nonZeroFlops,
+                                              unsigned int &o_hardwareFlops ) {
+  // reset flops
+  o_nonZeroFlops = 0; o_hardwareFlops = 0;
+
+  // iterate over dimensions
+  for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
+    o_nonZeroFlops  += m_nonZeroFlops[ l_c];
+    o_hardwareFlops += m_hardwareFlops[l_c];
+
+    o_nonZeroFlops  += m_nonZeroFlops[3];
+    o_hardwareFlops += m_hardwareFlops[3];
+  }
+}

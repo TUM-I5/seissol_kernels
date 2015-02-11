@@ -97,6 +97,26 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
   }
 }
 
+void seissol::kernels::Boundary::flopsLocalIntegral( const enum faceType  i_faceTypes[4],
+                                                     unsigned int        &o_nonZeroFlops,
+                                                     unsigned int        &o_hardwareFlops ) {
+  // reset flops
+  o_nonZeroFlops = 0; o_hardwareFlops = 0;
+
+  // iterate over faces
+  for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+    // no element local contribution in the case of dynamic rupture boundary conditions
+    if( i_faceTypes[l_face] != dynamicRupture ) {
+      // compute number of flops
+      o_nonZeroFlops  += m_nonZeroFlops[ l_face];
+      o_hardwareFlops += m_hardwareFlops[l_face];
+
+      o_nonZeroFlops  += m_nonZeroFlops[ 52];
+      o_hardwareFlops += m_hardwareFlops[52];
+    }
+  }
+}
+
 void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i_faceTypes[4],
                                                            const int           i_neighboringIndices[4][2],
                                                                  real         *i_fluxMatrices[52],
@@ -158,6 +178,48 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
 
       m_matrixKernels[53](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
                              NULL,                 NULL,                     NULL                 ); // TODO: prefetches
+    }
+  }
+}
+
+void seissol::kernels::Boundary::flopsNeighborsIntegral( const enum faceType  i_faceTypes[4],
+                                                         const int            i_neighboringIndices[4][2],
+                                                         unsigned int        &o_nonZeroFlops,
+                                                         unsigned int        &o_hardwareFlops ) {
+  // reset flops
+  o_nonZeroFlops = 0; o_hardwareFlops = 0;
+
+  // iterate over faces
+  for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+    // no neighboring cell contribution in the case of absorbing and dynamic rupture boundary conditions
+    if( i_faceTypes[l_face] != outflow && i_faceTypes[l_face] != dynamicRupture ) {
+      // id of the flux matrix (0-3: element local, 4-51: neighboring element)
+      unsigned int l_id;
+
+      // compute the neighboring elements flux matrix id.
+      if( i_faceTypes[l_face] != freeSurface ) {
+        // derive memory and kernel index
+        l_id = 4                                   // jump over flux matrices \f$ F^{-, i} \f$
+              + l_face*12                          // jump over index \f$i\f$
+              + i_neighboringIndices[l_face][0]*3  // jump over index \f$j\f$
+              + i_neighboringIndices[l_face][1];   // jump over index \f$h\f$
+
+        // assert we have a neighboring index in the case of non-absorbing boundary conditions.
+        assert( l_id >= 4 || i_faceTypes[l_face] == outflow );
+      }
+      else { // fall back to local matrices in case of free surface boundary conditions
+        l_id = l_face;
+      }
+
+      // assert we have a valid index.
+      assert( l_id < 52 );
+
+      // compute number of flops
+      o_nonZeroFlops  += m_nonZeroFlops[ l_id];
+      o_hardwareFlops += m_hardwareFlops[l_id];
+
+      o_nonZeroFlops  += m_nonZeroFlops[ 53];
+      o_hardwareFlops += m_hardwareFlops[53];
     }
   }
 }

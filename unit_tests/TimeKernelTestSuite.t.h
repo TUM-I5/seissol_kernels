@@ -536,4 +536,41 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
         }
       }
     }
+
+    void testAderFlops() {
+      unsigned int l_nonZeroFlops  = -1;
+      unsigned int l_hardwareFlops = -1;
+
+      // volume kernel
+      seissol::kernels::Time l_timeKernel;
+
+      // get the flops for a single call
+      l_timeKernel.flopsAder( l_nonZeroFlops, l_hardwareFlops );
+
+      // assert we are at least doing the sparse flops in hardware
+      TS_ASSERT_LESS_THAN_EQUALS( l_nonZeroFlops, l_hardwareFlops );
+
+
+      // derive dense flops
+      unsigned int l_denseFlops = NUMBER_OF_ALIGNED_DOFS;
+
+      for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
+        // stiffness matrices
+        l_denseFlops += ( seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER - l_derivative     ) *
+                          seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER - l_derivative + 1 ) *
+                          NUMBER_OF_QUANTITIES * 2
+                        ) * 3;
+        // star matrices
+        l_denseFlops += ( seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER - l_derivative     ) *
+                          STAR_NNZ * 2
+                        ) * 3;
+
+        // update of the time integrated dofs
+        l_denseFlops += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER - l_derivative ) * NUMBER_OF_QUANTITIES * 2;
+      }
+
+      // assert we are not doing more FLOPS in hardware than for dense-only stifness execution
+      TS_ASSERT_LESS_THAN_EQUALS( l_hardwareFlops, l_denseFlops );
+
+    }
 };

@@ -62,7 +62,8 @@ class seissol::kernels::Boundary {
      *   The kernels are ordered element local contribution \f$ F^{-, i} \f$ in front, which is 
      *   followed by the flux matrices for the neighbor element contribution \f$ F^{+, i, j, h} \f$
      *    0-51:  \f$ F^{-, 1} \vee \ldots \vee F^{-, 4} \vee F^+{+, 1, 1, 1} \vee \ldots \vee F^+{+, 4, 4, 3} \f$
-     *    52:    \f$ N_{k,i} A_k^+ N_{k,i}^{-1}\f$ or \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
+     *    52:    \f$ N_{k,i} A_k^+ N_{k,i}^{-1}\f$ or \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$ without prefetches
+     *    53:    \f$ N_{k,i} A_k^+ N_{k,i}^{-1}\f$ or \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$ with prefetches
      *
      * The matrix kernels might prefetch matrices of the next matrix multiplication triple \f$ A =+ B.C \f$,
      * thus loading upcoming matrices into lower level memory while the FPUs are busy.
@@ -76,6 +77,16 @@ class seissol::kernels::Boundary {
      **/  
     void (*m_matrixKernels[54])( real *i_A,         real *i_B,         real *io_C,
                                  real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
+
+    /**
+     * Number of non-zero floating point operations performed by each matrix kernel.
+     **/
+    unsigned int m_nonZeroFlops[54];
+
+    /**
+     * Number of floating point operations in hardware performed by each matrix kernels
+     **/
+    unsigned int m_hardwareFlops[54];
 
   public:
     /**
@@ -115,6 +126,17 @@ class seissol::kernels::Boundary {
                                      real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
 
     /**
+     * Derives the number of sparse and hardware floating point operations performed in the local boundary integral.
+     *
+     * @param i_faceTypes types of the faces: regular, freeSurface, dynamicRupture or periodic.
+     * @param o_nonZeroFlops will be set to the number of non-zero flops performed by the element-local contribution to the boundary integration.
+     * @param o_hardwareFlops will be set to the number of flops in hardware performed by the element-local contribution to the boundary integration.
+     **/
+    void flopsLocalIntegral( const enum faceType  i_faceTypes[4],
+                             unsigned int        &o_nonZeroFlops,
+                             unsigned int        &o_hardwareFlops );
+
+    /**
      * Computes the neighboring cells contribution to the boundary integral for a single cell.
      *
      * @param i_faceTypes types of the faces: regular, freeSurface, dynamicRupture or periodic
@@ -152,6 +174,23 @@ class seissol::kernels::Boundary {
                                          real         *i_timeIntegrated[4],
                                          real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
                                          real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
+
+    /**
+     * Derives the number of sparse and hardware floating point opreations performed in the neighboring intergal.
+     * @param i_faceTypes types of the faces: regular, freeSurface, dynamicRupture or periodic
+     * @param i_neighboringIndices indices \f$j(i) \in \{0,1,2,3\}\f$ and \f$h(i) \in \{0,1,2\}\f$,
+     *        which depend on the face combinations of the current elements faces \f$ i \in
+     *        \{0,1,2,3\}\f$ and the neighboring faces \f$ j(i) \f$ and vertex orientation of the
+     *        element and neighboring face \f$ h(i) \f$.
+     *        A two dimensional array is expected, where the first index i_neighboringIndices[i][]
+     *        selects the face of the current element and the second index i_neighboringIndices[][*]
+     * @param o_nonZeroFlops will be set to the number of non-zero flops performed by the contribution of the neighboring cells to the boundary integration.
+     * @param o_hardwareFlops will be set to the number of flops in hardware performed by the contribution of the neighboring cells to the boundary integration.
+     **/
+    void flopsNeighborsIntegral( const enum faceType  i_faceTypes[4],
+                                 const int            i_neighboringIndices[4][2],
+                                 unsigned int        &o_nonZeroFlops,
+                                 unsigned int        &o_hardwareFlops );
 };
 
 #endif

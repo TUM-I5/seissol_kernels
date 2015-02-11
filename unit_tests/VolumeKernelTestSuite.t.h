@@ -250,4 +250,33 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
                   l_timeIntegrated,
                   l_degreesOfFreedom );
     }
+
+    /**
+     * Tests the flop-counters.
+     **/
+    void testIntegralFlops() {
+      unsigned int l_nonZeroFlops  = -1;
+      unsigned int l_hardwareFlops = -1;
+
+      // volume kernel
+      seissol::kernels::Volume l_volumeKernel;
+
+      // get the flops for a single call
+      l_volumeKernel.flopsIntegral( l_nonZeroFlops, l_hardwareFlops );
+
+      // assert we are at least doing the sparse flops in hardware
+      TS_ASSERT_LESS_THAN_EQUALS( l_nonZeroFlops, l_hardwareFlops );
+
+
+      // stiffness multiplications
+      unsigned int l_denseFlops =  (  NUMBER_OF_ALIGNED_BASIS_FUNCTIONS
+                                    * seissol::kernels::getNumberOfBasisFunctions( CONVERGENCE_ORDER - 1 )
+                                    * NUMBER_OF_QUANTITIES * 2) * 3;
+
+      // star matrices
+      l_denseFlops += ( STAR_NNZ * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * 2 ) * 3;
+
+      // assert we are not doing more FLOPS in hardware than for dense-only stifness execution
+      TS_ASSERT_LESS_THAN_EQUALS( l_hardwareFlops, l_denseFlops );
+    }
 };

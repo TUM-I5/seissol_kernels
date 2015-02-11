@@ -145,8 +145,6 @@ l_commandLineArguments = l_commandLineParser.parse_args()
 ### Main
 ###
 
-print l_commandLineArguments.generateMatrixKernels
-
 l_logger.printWelcomeMessage()
 
 # construct configuration

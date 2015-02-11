@@ -64,7 +64,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
     std::string m_matricesDirectory;
 
     //! #repeats for random unit tests
-    int l_numberOfRepeats;
+    int m_numberOfRepeats;
 
     //! dense matrix functionality
     DenseMatrix m_denseMatrix;
@@ -72,7 +72,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
   public:
     void setUp() {
       // get number of reapeats
-      l_numberOfRepeats = m_configuration.getNumberOfRepeats();
+      m_numberOfRepeats = m_configuration.getNumberOfRepeats();
 
       // get unit tests src directory
       m_unitTestsSrcDirectory = m_configuration.getUnitTestsSrcDirectory();
@@ -159,7 +159,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       seissol::kernels::Boundary l_boundaryKernel;
 
       // repeat the test
-      for( int l_repeat = 0; l_repeat < l_numberOfRepeats; l_repeat++) {
+      for( int l_repeat = 0; l_repeat < m_numberOfRepeats; l_repeat++) {
         // initialize DOFs
         m_denseMatrix.setRandomValues( NUMBER_OF_DOFS,
                                        l_degreesOfFreedomUT );
@@ -288,5 +288,100 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
 
     // free memory
     _mm_free( l_fluxMatricesData );
+    }
+
+    /**
+     * Tests the local flop-counters.
+     **/
+    void testLocalFlops() {
+      unsigned int   l_nonZeroFlops  = -1;
+      unsigned int   l_hardwareFlops = -1;
+      enum faceType  l_faceTypes[4];
+
+      // volume kernel
+      seissol::kernels::Boundary l_boundaryKernel;
+
+      /*
+       * sparse <= dense
+       */
+      // get the flops for a single call
+      l_faceTypes[0] = l_faceTypes[1] = l_faceTypes[2] = l_faceTypes[3] = regular;
+      l_boundaryKernel.flopsLocalIntegral( l_faceTypes, l_nonZeroFlops, l_hardwareFlops );
+
+      // assert we are at least doing the sparse flops in hardware
+      TS_ASSERT_LESS_THAN_EQUALS( l_nonZeroFlops, l_hardwareFlops );
+
+      /*
+       * hardware <= dense
+       */
+      unsigned int l_denseFlops =  (NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES * 2) * 4;
+
+      // flux solvers
+      l_denseFlops += ( NUMBER_OF_QUANTITIES * NUMBER_OF_QUANTITIES * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * 2 ) * 4;
+      TS_ASSERT_LESS_THAN_EQUALS( l_hardwareFlops, l_denseFlops );
+
+      /*
+       * dr == 0
+       */
+      // get the flops for an DR-only setting
+      l_faceTypes[0] = l_faceTypes[1] = l_faceTypes[2] = l_faceTypes[3] = dynamicRupture;
+      l_boundaryKernel.flopsLocalIntegral( l_faceTypes, l_nonZeroFlops, l_hardwareFlops );
+
+      // assert we don't count any flops as they are done externally
+      TS_ASSERT_EQUALS( 0, l_nonZeroFlops );
+      TS_ASSERT_EQUALS( 0, l_hardwareFlops );
+    }
+
+    /**
+     * Tests the neighboring flop-counters.
+     **/
+    void testNeighboringFlops() {
+      unsigned int   l_nonZeroFlops  = -1;
+      unsigned int   l_hardwareFlops = -1;
+      enum faceType  l_faceTypes[4];
+      int   l_neighboringIndices[4][2];
+
+      // volume kernel
+      seissol::kernels::Boundary l_boundaryKernel;
+
+      // repeat the test
+      for( int l_repeat = 0; l_repeat < m_numberOfRepeats; l_repeat++) {
+        // set up neighboring indices
+        for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+          l_neighboringIndices[l_face][0] = rand()%4;
+          l_neighboringIndices[l_face][1] = rand()%3;
+        }
+
+        /*
+         * sparse <= dense
+         */
+        // get the flops for a single call
+        l_faceTypes[0] = l_faceTypes[1] = l_faceTypes[2] = l_faceTypes[3] = regular;
+
+        l_boundaryKernel.flopsNeighborsIntegral( l_faceTypes, l_neighboringIndices, l_nonZeroFlops, l_hardwareFlops );
+
+        // assert we are at least doing the sparse flops in hardware
+        TS_ASSERT_LESS_THAN_EQUALS( l_nonZeroFlops, l_hardwareFlops );
+
+        /*
+         * hardware <= dense
+         */
+        unsigned int l_denseFlops =  (NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * NUMBER_OF_BASIS_FUNCTIONS * NUMBER_OF_QUANTITIES * 2) * 4;
+
+        // flux solvers
+        l_denseFlops += ( NUMBER_OF_QUANTITIES * NUMBER_OF_QUANTITIES * NUMBER_OF_ALIGNED_BASIS_FUNCTIONS * 2 ) * 4;
+        TS_ASSERT_LESS_THAN_EQUALS( l_hardwareFlops, l_denseFlops );
+
+        /*
+         * outflow == 0
+         */
+        // get the flops for an outflow-only setting
+        l_faceTypes[0] = l_faceTypes[1] = l_faceTypes[2] = l_faceTypes[3] = outflow;
+        l_boundaryKernel.flopsNeighborsIntegral( l_faceTypes, l_neighboringIndices, l_nonZeroFlops, l_hardwareFlops );
+
+        // assert we don't count any flops
+        TS_ASSERT_EQUALS( 0, l_nonZeroFlops );
+        TS_ASSERT_EQUALS( 0, l_hardwareFlops );
+      }
     }
 };

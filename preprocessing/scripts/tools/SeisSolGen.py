@@ -186,7 +186,7 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' '+str(int(l_matrix['add']))
 
-        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
+        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' none ' + l_precision.upper() + 'P'
 
         # generate code C++-code for the current matrix
         self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
@@ -275,6 +275,16 @@ class SeisSolGen:
             if( l_kernel == 'time' ):
               l_numberOfBinds = 4 * (l_order-1)
 
+              # get the order and name of the matrices
+              l_matrixNames = {}
+              for l_bind in range(0, l_numberOfBinds):
+                l_matrixNames[l_bind] = { 'order': (l_numberOfBinds - l_bind - 1)/4 + 2,
+                                          'name' : self.m_configuration.m_matrixBinds['time'][l_bind%4] }
+
+                # decrease the order for star matrices which operate on reduced time derivatives
+                if (l_bind+1)%4 == 0:
+                  l_matrixNames[l_bind]['order'] = l_matrixNames[l_bind]['order'] - 1
+
               l_sparse      = self.m_matrixSetup.getSparseTimeMatrices(            i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
@@ -293,6 +303,12 @@ class SeisSolGen:
 
             if( l_kernel == 'volume' ):
               l_numberOfBinds = 4
+
+              # get the order and name of the matrices
+              l_matrixNames = {}
+              for l_bind in range(0, l_numberOfBinds):
+                l_matrixNames[l_bind] = { 'order': l_order,
+                                          'name' : self.m_configuration.m_matrixBinds['volume'][l_bind] }
 
               l_sparse =  self.m_matrixSetup.getSparseVolumeAndFluxMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
@@ -313,6 +329,12 @@ class SeisSolGen:
 
             if( l_kernel == 'boundary' ):
               l_numberOfBinds = 54
+
+              # get the order and name of the matrices
+              l_matrixNames = {}
+              for l_bind in range(0, l_numberOfBinds):
+                l_matrixNames[l_bind] = { 'order': l_order,
+                                          'name' : self.m_configuration.m_matrixBinds['boundary'][l_bind] }
 
               l_sparse      =  self.m_matrixSetup.getSparseVolumeAndFluxMatrices(  i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
@@ -372,6 +394,10 @@ class SeisSolGen:
                 # of the flux matrix multiplications
                 l_gemmId = l_gemmId + 1                
 
+              # get nonzeros
+              l_matrixOrder = l_matrixNames[l_bind]['order']
+              l_nonZeros = self.m_configuration.m_nonZeros[l_matrixOrder][l_matrixNames[l_bind]['name']]
+
               # this a local matrix
               if( (l_bind+1) % (l_localBind+1) == 0 ):
                 if ( l_kernel == 'boundary' ):
@@ -381,6 +407,7 @@ class SeisSolGen:
 
                 # increase gemm id for time kernel
                 l_gemmId = l_gemmId + 1
+                l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
               else:
                 # special case for the boundary integration, we have to flux dgemms
                 # one without prefetches (local) and one with prefetches (neighbor)
@@ -389,12 +416,16 @@ class SeisSolGen:
                 else:
                   l_gemmMatrix = l_globalDgemm[l_gemmId]        
                   
+                l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+
               # sparse setup
               if( len(l_match) == 1 ):
                 l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_match[0]['routine_name'] + ';\n'
+                l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_match[0]['flops'])   + ';\n'
               # dense setup
               else:
                 l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
 
             l_sourceCode = l_sourceCode + '#endif\n\n'
 
@@ -448,10 +479,14 @@ class SeisSolGen:
          l_sourceCode = l_sourceCode + "#endif\n"
 
     # precision switch
-    l_outFile = l_outputDir + '/' + 'precision.h'
-    open(l_outFile ,'w').close()
-    l_logger.writeFileHeader(l_outFile, '// ')
-    l_outFile = open(l_outFile ,'a')
+    l_outFilePath = l_outputDir + '/' + 'precision.h'
+    open(l_outFilePath ,'w').close()
+    l_outFile = open(l_outFilePath ,'a')
+    l_outFile.write( '#if 0\n' )
+    l_outFile.close()
+    l_logger.writeFileHeader(l_outFilePath, '// ')
+    l_outFile = open(l_outFilePath ,'a')
+    l_outFile.write( '#endif\n' )
     l_outFile.write(l_sourceCode)
     l_outFile.close()
 

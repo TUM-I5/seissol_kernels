@@ -154,6 +154,16 @@ class seissol::kernels::Time {
     void (*m_matrixKernels[(CONVERGENCE_ORDER-1)*4])( real *i_A,         real *i_B,         real *io_C,
                                                       real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
 
+    /**
+     * Number of non-zero floating point operations performed by each matrix kernel.
+     **/
+    unsigned int m_nonZeroFlops[(CONVERGENCE_ORDER-1)*4];
+
+    /**
+     * Number of floating point operations in hardware performed by each matrix kernels
+     **/
+    unsigned int m_hardwareFlops[(CONVERGENCE_ORDER-1)*4];
+
   public:
     /**
      * Gets the total size of the time derivative for a specific convergence order and alignment.
@@ -201,6 +211,14 @@ class seissol::kernels::Time {
                             real   i_starMatrices[3][STAR_NNZ],
                             real*  o_timeIntegrated,
                             real*  o_timeDerivatives = NULL );
+
+    /**
+     * Derives the number of non-zero and hardware floating point operation in the ADER procedure.
+     * @param o_nonZeroFlops number of performed non zero floating point operations.
+     * @param o_hardwareFlops number of performed floating point operations in hardware.
+     **/
+    void flopsAder( unsigned int &o_nonZeroFlops,
+                    unsigned int &o_hardwareFlops );
 
     /**
      * Evaluates the taylor series expansion at the given evaluation point.

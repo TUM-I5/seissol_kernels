@@ -171,6 +171,8 @@ class MatrixSetup:
                                                      + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
                                                      + "_beta0_pfsigonly";
 
+        l_flops = l_m * l_k * l_n * 2;
+
         # Add matrix to dictionary
         l_denseMatrices = l_denseMatrices + [ dict(\
                                                 routine_name = l_routineNameOfGeneratedKernel, \
@@ -180,6 +182,7 @@ class MatrixSetup:
                                                 ld_a         = l_ldA,                          \
                                                 ld_b         = l_ldB,                          \
                                                 ld_c         = l_ldC,                          \
+                                                flops        = l_flops,                        \
                                                 add          = False,                          \
                                                 bind         = -1,                             \
                                                 prefetch     = 'pfsigonly'
@@ -222,6 +225,8 @@ class MatrixSetup:
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
                                                    + "_beta0_pfsigonly";
 
+      l_flops = l_m * l_k * l_n * 2;
+
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
                                               routine_name = l_routineNameOfGeneratedKernel, \
@@ -231,6 +236,7 @@ class MatrixSetup:
                                               ld_a         = l_ldA,                          \
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
+                                              flops        = l_flops,                        \
                                               add          = False,                          \
                                               bind         = -1,                             \
                                               prefetch     = 'pfsigonly'
@@ -274,6 +280,8 @@ class MatrixSetup:
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
                                                    + "_beta0_" + i_prefetch;
 
+      l_flops = l_m * l_k * l_n * 2;
+
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
                                               routine_name = l_routineNameOfGeneratedKernel, \
@@ -283,6 +291,7 @@ class MatrixSetup:
                                               ld_a         = l_ldA,                          \
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
+                                              flops        = l_flops,                        \
                                               add          = False,                          \
                                               bind         = -1,                             \
                                               prefetch     = i_prefetch
@@ -331,6 +340,8 @@ class MatrixSetup:
                                                    + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
                                                    + "_beta1_" + i_prefetch;
 
+      l_flops = l_m * l_k * l_n * 2;
+
       # Add matrix to dictionary
       l_denseMatrices = l_denseMatrices + [ dict(\
                                               routine_name = l_routineNameOfGeneratedKernel, \
@@ -340,6 +351,7 @@ class MatrixSetup:
                                               ld_a         = l_ldA,                          \
                                               ld_b         = l_ldB,                          \
                                               ld_c         = l_ldC,                          \
+                                              flops        = l_flops,                        \
                                               add          = True,                           \
                                               bind         = -1,                             \
                                               prefetch     = i_prefetch
@@ -525,6 +537,8 @@ class MatrixSetup:
                             "_ldC"   + str(l_ldC)     +\
                             "_beta0_pfsigonly"
 
+            l_flops = self.m_configuration.m_nonZeros[l_associatedOrder][l_sparseMatrix] * l_n *2
+
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = l_sparseMatrix,
@@ -536,6 +550,7 @@ class MatrixSetup:
                                                       ld_a          = l_ldA,
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
+                                                      flops         = l_flops,
                                                       add           = False,
                                                       bind          = l_bindId,
                                                       prefetch      = 'pfsigonly'
@@ -575,6 +590,8 @@ class MatrixSetup:
                             "_ldC"   + str(l_ldC)   +\
                             "_beta1_pfsigonly"
 
+            l_flops = self.m_configuration.m_nonZeros[l_associatedOrder]['starMatrix'] * l_m * 2
+
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = 'starMatrix',
@@ -586,6 +603,7 @@ class MatrixSetup:
                                                       ld_a          = l_ldA,
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
+                                                      flops         = l_flops,
                                                       add           = True,
                                                       bind          = l_bindId,
                                                       prefetch      = 'pfsigonly'
@@ -669,6 +687,8 @@ class MatrixSetup:
                             "_ldC"   + str(l_ldC)     +\
                             "_beta0_pfsigonly"
 
+            l_flops = self.m_configuration.m_nonZeros[l_order][l_sparseMatrix] * l_n * 2
+
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = l_sparseMatrix,
@@ -680,6 +700,7 @@ class MatrixSetup:
                                                       ld_a          = l_ldA,
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
+                                                      flops         = l_flops,
                                                       add           = False,
                                                       bind          = l_bindId,
                                                       prefetch      = 'pfsigonly'
@@ -719,6 +740,8 @@ class MatrixSetup:
                             "_ldC"   + str(l_ldC)   +\
                             "_beta1_pfsigonly"
 
+            l_flops = self.m_configuration.m_nonZeros[l_order]['starMatrix'] * l_m * 2
+
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = "starMatrix",
@@ -730,6 +753,7 @@ class MatrixSetup:
                                                       ld_a          = l_ldA,
                                                       ld_b          = l_ldB,
                                                       ld_c          = l_ldC,
+                                                      flops         = l_flops,
                                                       add           = True,
                                                       bind          = l_bindId,
                                                       prefetch      = 'pfsigonly'

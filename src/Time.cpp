@@ -148,6 +148,33 @@ void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
 
 }
 
+void seissol::kernels::Time::flopsAder( unsigned int        &o_nonZeroFlops,
+                                        unsigned int        &o_hardwareFlops ) {
+  // reset flops
+  o_nonZeroFlops = 0; o_hardwareFlops =0;
+
+  // initialization
+  o_nonZeroFlops  += NUMBER_OF_DOFS;
+  o_hardwareFlops += NUMBER_OF_ALIGNED_DOFS;
+
+  // interate over derivatives
+  for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
+    // iterate over dimensions
+    for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
+      o_nonZeroFlops  += m_nonZeroFlops[  (l_derivative-1)*4 + l_c ];
+      o_hardwareFlops += m_hardwareFlops[ (l_derivative-1)*4 + l_c ];
+
+      o_nonZeroFlops  += m_nonZeroFlops[  (l_derivative-1)*4 + 3   ];
+      o_hardwareFlops += m_hardwareFlops[ (l_derivative-1)*4 + 3   ];
+    }
+
+    // update of time integrated DOFs
+    o_nonZeroFlops  += seissol::kernels::getNumberOfBasisFunctions(        CONVERGENCE_ORDER - l_derivative ) * NUMBER_OF_QUANTITIES * 2;
+    o_hardwareFlops += seissol::kernels::getNumberOfAlignedBasisFunctions( CONVERGENCE_ORDER - l_derivative ) * NUMBER_OF_QUANTITIES * 2;
+  }
+
+}
+
 void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint,
                                                          real   i_evaluationPoint,
                                                    const real*  i_timeDerivatives,

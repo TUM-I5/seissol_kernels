@@ -79,6 +79,16 @@ class seissol::kernels::Volume {
     void (*m_matrixKernels[4])( real *i_A,         real *i_B,         real *io_C,
                                 real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
 
+    /**
+     * Number of non-zero floating point operations performed by each matrix kernel.
+     **/
+    unsigned int m_nonZeroFlops[4];
+
+    /**
+     * Number of floating point operations in hardware performed by each matrix kernels
+     **/
+    unsigned int m_hardwareFlops[4];
+
   public:
     /**
      * Constructor, which initializes the volume kernel.
@@ -97,6 +107,14 @@ class seissol::kernels::Volume {
                           real*  i_timeIntegratedDegreesOfFreedom,
                           real   i_starMatrices[3][STAR_NNZ],
                           real*  io_degreesOfFreedom );
+
+    /**
+     * Derives the number of non-zero and hardware floating point operation in the volume integration.
+     * @param o_nonZeroFlops number of performed non zero floating point operations.
+     * @param o_hardwareFlops number of performed floating point operations in hardware.
+     **/
+    void flopsIntegral( unsigned int &o_nonZeroFlops,
+                        unsigned int &o_hardwareFlops );
 };
 
 #endif
