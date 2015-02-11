@@ -413,10 +413,10 @@ class SeisSolGen:
                 # one without prefetches (local) and one with prefetches (neighbor)
                 if ( l_kernel == 'boundary' and l_bind == l_localBind_pf ):
                   l_gemmMatrix = l_localDgemm[l_gemmId]
+                  l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
                 else:
-                  l_gemmMatrix = l_globalDgemm[l_gemmId]        
-                  
-                l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                  l_gemmMatrix = l_globalDgemm[l_gemmId]
+                  l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
 
               # sparse setup
               if( len(l_match) == 1 ):
