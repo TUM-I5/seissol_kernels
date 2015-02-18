@@ -45,9 +45,10 @@ import numpy
 import scipy.io.mmio
 import scipy.sparse
 import operator
-import xml.etree.ElementTree as etree
 import sys
 import os
+
+from lxml import etree
 
 # matrices
 l_matrices = {
@@ -250,7 +251,7 @@ for l_starSparse in [ [], ['starMatrix'] ]:
                                                   '_'  + str(len(l_boundaryLocalSparse))
           if not os.path.exists(l_outDir):
             os.makedirs(l_outDir)                    
-          l_tree.write( l_outDir + '/' + l_kernelConfig + '.xml' )
+          l_tree.write( l_outDir + '/' + l_kernelConfig + '.xml', pretty_print=True, encoding='utf-8')
 
 l_logger.info('********************************************')
 l_logger.info('| sparse-dense generation script finished! |')

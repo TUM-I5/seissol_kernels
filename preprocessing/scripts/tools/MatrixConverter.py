@@ -46,11 +46,9 @@ from scipy.sparse import *
 from matplotlib import pyplot, colors
 from pylab import savefig
 from numpy import arange, nonzero, sort
+from lxml import etree
 
 import tools.Logger as l_logger
-
-#from elementtree.SimpleXMLWriter import XMLWriter
-import tools.SimpleXMLWriter as XMLWriter
 
 import os
 
@@ -158,7 +156,7 @@ class MatrixConverter():
 
       l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
 
-      l_logger.log( 'adding star, stiffness and flux matrices to dictionaries for: '+str(l_degree)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
+      l_logger.log( 'adding star, stiffness and flux matrices to dictionaries for: '+str(l_degree+1)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
 
       # name and filename of the stiffness matrices, TODO: avoid copy and paste code..
       l_kXi =   dict( matrixName = 'kXiDivM',   matrixMarketFileName='kXiDivM_3D_'   + str(l_degree) + '_maple.mtx' )
@@ -716,16 +714,13 @@ end do
 
       l_logger.log('writing: '+ l_pathToOutputFile, 2);
 
-      # open xml file
-      l_xmlFile = XMLWriter(l_pathToOutputFile)
-
       # root element
-      l_xmlFile.start('matrices')
+      l_root = etree.Element("matrices")
 
       #
       # add global matrices for this degree
       #
-      l_xmlFile.start("global")
+      l_global = etree.SubElement(l_root, "global")
 
       for l_matrix in l_matrices:
         # read the matrix structure
@@ -747,37 +742,27 @@ end do
         assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['rows']   ) )
         assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['values'] ) )
 
-        l_xmlFile.start( l_matrixType,
-          # add matrix meta information
-                         name    = l_matrix['name'],
-                         id      = str(l_matrix['id']),
-                         rows    = str(l_matrixStructure['#rows']),
-                         columns = str(l_matrixStructure['#columns']) )
+        # matrix attributes
+        l_global_matrix_attributes = {"name": l_matrix['name'], "id": str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
+        # add node to XML
+        l_global_matrix = etree.SubElement(l_global, l_matrixType, l_global_matrix_attributes) 
       
         for l_entry in xrange( len( l_matrixStructure['rows'] ) ):
-          # add this matrix entry
-          l_xmlFile.element( "entry",
-                             row    = str(l_matrixStructure['rows'][l_entry]),
-                             column = str(l_matrixStructure['columns'][l_entry]),
-                             value  = l_matrixStructure['values'][l_entry] )
-
-        #print l_matrixEntries
-        l_xmlFile.end(l_matrixType)
-    
-      l_xmlFile.end('global')
-
+          # element attributes
+          l_global_entry_attributes = {"row": str(l_matrixStructure['rows'][l_entry]), "column": str(l_matrixStructure['columns'][l_entry]), "value" : l_matrixStructure['values'][l_entry]}
+          # add node to XML
+          l_global_entry = etree.SubElement(l_global_matrix, "entry", l_global_entry_attributes)
+         
       #
       # add local matrices for this degree
       # TODO: Hardcoded #variables for elastics
       #
-      l_xmlFile.start('local')
+      l_local = etree.SubElement(l_root, "local")
       
-      # Add flux solver
+      # Add flux solve
       # \f$  N_{k,i} A_k^+ N_{k,i}^{-1} \f$ and \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
-      l_xmlFile.element( 'fluxSolver',
-                         id='52',
-                         rows='9',
-                         columns='9' )
+      l_flux_attributes = {"id" : "52", "rows" : "9", "columns" : "9"}
+      l_flux = etree.SubElement(l_local, "fluxSolver", l_flux_attributes)
 
       # Add star matrices
       for l_matrix in l_matrices:
@@ -786,22 +771,19 @@ end do
           l_matrixStructure = self.readMatrixMarket( i_pathToMatrix = l_matrix['pathToMatrixMarketFile'] )
           
           # add matrix meta information
-          l_xmlFile.start( 'starMatrix',
-                           id      = str(l_matrix['id']),
-                           rows    = str(l_matrixStructure['#rows']),
-                           columns = str(l_matrixStructure['#columns']) )
-
+          l_star_attributes = {"id" : str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
+          l_star = etree.SubElement(l_local, "starMatrix", l_star_attributes)
       
           for l_entry in xrange( len(l_matrixStructure['rows']) ):
-            # add this matrix entry
-            l_xmlFile.element( "entry",
-                               row    = str(l_matrixStructure['rows'][l_entry]),
-                               column = str(l_matrixStructure['columns'][l_entry])
-                             )
-          l_xmlFile.end('starMatrix')
+            # element attributes
+            l_star_entry_attributes = {"row" : str(l_matrixStructure['rows'][l_entry]), "column" : str(l_matrixStructure['columns'][l_entry]) }
+            # add node to XML
+            l_star_entry = etree.SubElement(l_star, "entry", l_star_entry_attributes)
           
           # add only a single star matrix
           break
-      l_xmlFile.end('local')
 
-      l_xmlFile.end('matrices')
+      #write XML file
+      l_xml_tree = etree.ElementTree(l_root)
+      l_xml_tree.write(l_pathToOutputFile, pretty_print=True, encoding='utf-8')
+

@@ -39,16 +39,15 @@
 #
 # Generates theoretical performance models for SeisSol.
 #
+from scipy.io.mmio import *
+from lxml import etree
 
+import numpy as numpy
+import csv
+import ntpath
 import os
 
 import tools.Logger as l_logger
-from scipy.io.mmio import *
-import numpy as numpy
-import csv
-from elementtree.ElementTree import parse
-import csv
-import ntpath
 
 class PerformanceModeler():
   # mapping: #basis functions -> polynomial degree
