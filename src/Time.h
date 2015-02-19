@@ -134,7 +134,7 @@ class seissol::kernels::Time {
      *
      * Remark: The mass matrix \f$ M \f$ is diagonal.
      * 
-     * The matrix kernels might prefetch (TODO: not implemented!) matrices of the next matrix multiplication triple \f$ A =+ B.C \f$,
+     * The matrix kernels might prefetch matrices of the next matrix multiplication triple \f$ A =+ B.C \f$,
      * thus loading upcoming matrices into lower level memory while the FPUs are busy.
      * In the case of the time integrator this means prefetching the transposed stiffness matrices (multiplied by the inverse mass matrices)
      * or star matrices of the upcoming operations in the recursive computation of the time derivatives.

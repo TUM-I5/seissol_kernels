@@ -66,9 +66,14 @@ if( ${ARCHITECTURE_PLAIN} STREQUAL wsm )
 elseif( ${ARCHITECTURE_PLAIN} STREQUAL snb )
   add_definitions( -DALIGNMENT=32
                    -mavx )
+elseif( ${ARCHITECTURE_PLAIN} STREQUAL hsw )
+  add_definitions( -DALIGNMENT=32
+                   -xCORE-AVX2
+                   -fma )
 elseif( ${ARCHITECTURE_PLAIN} STREQUAL knc )
   add_definitions( -DALIGNMENT=64
-                   -mmic )
+                   -mmic
+                   -fma )
   set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -mmic" )
 else()
   message( FATAL_ERROR "GENERATED_KERNELS ${GENERATED_KERNELS} not supported" )

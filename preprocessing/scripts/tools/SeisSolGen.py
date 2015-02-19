@@ -140,10 +140,10 @@ class SeisSolGen:
         l_outputFile.close()
 
       # get dense matrices
-      l_denseMatrices = self.m_matrixSetup.getDenseMatrices( i_precision = l_precision )
+      l_denseMatrices = self.m_matrixSetup.getDenseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision )
 
       # get sparse matrices
-      l_sparseMatrices = self.m_matrixSetup.getSparseMatrices( i_precision = l_precision )
+      l_sparseMatrices = self.m_matrixSetup.getSparseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision )
 
       # generate code for all matrices
       for l_matrix in l_denseMatrices + l_sparseMatrices:
@@ -424,7 +424,7 @@ class SeisSolGen:
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                   elif (l_bind == 52):
                     l_gemmMatrix = l_localDgemm[0]
-                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
                     l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                   elif (l_bind > 3 and l_bind < 52):
@@ -439,7 +439,7 @@ class SeisSolGen:
                     l_sourceCode = l_sourceCode + '#endif\n'
                   elif (l_bind == 53):
                     l_gemmMatrix = l_localDgemm[1]
-                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
                     l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
                     l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'

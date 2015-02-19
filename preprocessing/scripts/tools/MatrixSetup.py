@@ -386,12 +386,13 @@ class MatrixSetup:
   #   *******  ****************
   #
   # @param i_architectures architectures to generate kernels for.
+  # @param i_precision machine precisions code should be generated for
   # @param i_numberOfQuantities number of quantities (elastics = 9, attenuation > 9)
   # @param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
   # @return dictionary conatinig the dense matrices described abover.
   def getDenseMatrices( self,
+                        i_architectures,
                         i_precision = ['s', 'd'],
-                        i_architectures = ['wsm', 'snb', 'knc', 'hsw', 'noarch'],
                         i_numberOfQuantities = 9,
                         i_maximumDegreeOfBasisFunctions = 8 ):
     
@@ -423,7 +424,7 @@ class MatrixSetup:
                                                                           i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision,
-                                                                          i_prefetch                = 'AL2' )
+                                                                          i_prefetch                = 'pfsigonly' )
 
         l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
                                                                           i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
@@ -434,7 +435,7 @@ class MatrixSetup:
                                                                           i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision,
-                                                                          i_prefetch                = 'BL2viaC' )
+                                                                          i_prefetch                = 'pfsigonly' )
 
         # remove all duplicates which might have been generated (recursive time integration)
         l_alignedGemm =  {l_value['routine_name']:l_value for l_value in l_alignedGemm}.values()
@@ -763,12 +764,13 @@ class MatrixSetup:
 
   # Returns a list of sparse matrix kernels for SeisSol.
   # @param i_architectures architectures to get sparse matrices for.
+  # @param i_precision machine precisions code should be generated for
   # @param i_numberOfQuantities number of quantities (elastics = 9, attenuation > 9)
   # @param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
   # @return dictionary containing the sparse matrices described.
   def getSparseMatrices( self,
+                         i_architectures,
                          i_precision = ['s', 'd'],
-                         i_architectures = ['wsm', 'snb', 'knc', 'hsw', 'noarch'],
                          i_numberOfQuantities = 9,
                          i_maximumDegreeOfBasisFunctions = 8 ):
 
