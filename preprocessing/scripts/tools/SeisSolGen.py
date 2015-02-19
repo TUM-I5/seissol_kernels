@@ -52,6 +52,7 @@ import pprint
 import os
 import scipy.io
 import numpy
+import sys
 
 import Configuration
 
@@ -186,7 +187,7 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' '+str(int(l_matrix['add']))
 
-        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' none ' + l_precision.upper() + 'P'
+        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
 
         # generate code C++-code for the current matrix
         self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
@@ -385,14 +386,8 @@ class SeisSolGen:
                 l_localBind = self.m_configuration.m_matrixBinds[l_kernel]['starMatrix']
               elif( l_kernel == 'boundary' ):
                 l_localBind = self.m_configuration.m_matrixBinds['boundary']['fluxSolver']
-                l_localBind_pf = self.m_configuration.m_matrixBinds['boundary']['fluxSolverPF']
               else:
-                assert( False )
-
-              if ( l_kernel == 'boundary' and l_bind == 4):
-                # increase gemm id for boundary kernel when entering the neighoring part
-                # of the flux matrix multiplications
-                l_gemmId = l_gemmId + 1                
+                assert( False )           
 
               # get nonzeros
               l_matrixOrder = l_matrixNames[l_bind]['order']
@@ -400,32 +395,64 @@ class SeisSolGen:
 
               # this a local matrix
               if( (l_bind+1) % (l_localBind+1) == 0 ):
-                if ( l_kernel == 'boundary' ):
-                  l_gemmId = 0                #reset to zero for local matrices of boundary integration
-                
                 l_gemmMatrix = l_localDgemm[l_gemmId]
 
                 # increase gemm id for time kernel
                 l_gemmId = l_gemmId + 1
-                l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
-              else:
-                # special case for the boundary integration, we have to flux dgemms
-                # one without prefetches (local) and one with prefetches (neighbor)
-                if ( l_kernel == 'boundary' and l_bind == l_localBind_pf ):
-                  l_gemmMatrix = l_localDgemm[l_gemmId]
+                if (l_kernel != 'boundary' ):
                   l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
-                else:
-                  l_gemmMatrix = l_globalDgemm[l_gemmId]
+              else:
+                l_gemmMatrix = l_globalDgemm[l_gemmId]
+                if (l_kernel != 'boundary' ):
                   l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
 
               # sparse setup
               if( len(l_match) == 1 ):
-                l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_match[0]['routine_name'] + ';\n'
+                if (l_kernel == 'boundary' ):
+                  l_gemmMatrix = l_globalDgemm[0]
+                  l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+
                 l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_match[0]['flops'])   + ';\n'
+                l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_match[0]['routine_name'] + ';\n'
               # dense setup
               else:
-                l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
-                l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+                if (l_kernel == 'boundary' ):
+                  if (l_bind < 4):
+                    l_gemmMatrix = l_globalDgemm[0]
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                  elif (l_bind == 52):
+                    l_gemmMatrix = l_localDgemm[0]
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                  elif (l_bind > 3 and l_bind < 52):
+                    l_gemmMatrix = l_globalDgemm[1]
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+                    l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                    l_sourceCode = l_sourceCode + '#else\n'
+                    l_gemmMatrix = l_globalDgemm[0]
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                    l_sourceCode = l_sourceCode + '#endif\n'
+                  elif (l_bind == 53):
+                    l_gemmMatrix = l_localDgemm[1]
+                    l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*l_gemmMatrix['n']*2)   + ';\n'
+                    l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+                    l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                    l_sourceCode = l_sourceCode + '#else\n'
+                    l_gemmMatrix = l_localDgemm[0]
+                    l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                    l_sourceCode = l_sourceCode + '#endif\n'
+                  else:
+                    sys.exit("generation error in binding for boundary kernel")
+                else:
+                  l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
+                  l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
+
 
             l_sourceCode = l_sourceCode + '#endif\n\n'
 

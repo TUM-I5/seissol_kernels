@@ -167,13 +167,25 @@ class seissol::kernels::Boundary {
      *        element \f$k\f$. \f$A_{k(i)}^-\f$ is the flux contribuation of the \f$i\f$-th face
      *        neighbor of cell \f$k\f$, thus assembled using negative eigenvalues of element \f$k(i)\f$.
      * @param io_degreesOfFreedom DOFs, which will be updated by the boundary integral.
+     * @param i_faceNeighbors_prefetch time integrated degrees of freedoms/time derivates of the neighboring cells 
+     *        which should be fetched into L2 cache in this call. There is no garantuee that these prefetchings
+     *        are acutally going to be executed. It depends on the employed GEMM implementation.
+     * @param i_fluxMatricies_prefetch pointer to a flux matrix which should be fetched into L2 cache in this call. 
+     *        There is no garantuee that these prefetchings are acutally going to be executed. 
+     *        It depends on the employed GEMM implementation.
      **/
     void computeNeighborsIntegral( const enum faceType i_faceTypes[4],
                                    const int           i_neighboringIndices[4][2],
                                          real         *i_fluxMatrices[52],
                                          real         *i_timeIntegrated[4],
                                          real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+#ifdef ENABLE_MATRIX_PREFETCH
+                                         real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                         real         *i_faceNeighbors_prefetch[4],
+                                         real         *i_fluxMatricies_prefetch[4] );
+#else
                                          real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] );
+#endif
 
     /**
      * Derives the number of sparse and hardware floating point opreations performed in the neighboring intergal.

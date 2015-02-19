@@ -122,7 +122,14 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
                                                                  real         *i_fluxMatrices[52],
                                                                  real         *i_timeIntegrated[4],
                                                                  real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+#ifdef ENABLE_MATRIX_PREFETCH
+                                                                 real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                                 real         *i_faceNeighbors_prefetch[4],
+                                                                 real         *i_fluxMatricies_prefetch[4] ) {
+#else
                                                                  real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
+#endif
+
   /*
    * assert valid input
    */
@@ -172,12 +179,21 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
       // assert we have a valid index.
       assert( l_id < 52 );
 
+#ifdef ENABLE_MATRIX_PREFETCH
+      // compute neighboring elements contribution
+      m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face],         l_temporaryResult,
+                             NULL,                 i_faceNeighbors_prefetch[l_face], NULL                 ); 
+
+      m_matrixKernels[53](   l_temporaryResult,                i_fluxSolvers[l_face],    io_degreesOfFreedom,
+                             i_fluxMatricies_prefetch[l_face], NULL,                     NULL                 ); 
+#else
       // compute neighboring elements contribution
       m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
-                             NULL,                 NULL,                     NULL                 ); // TODO: prefetches
+                             NULL,                 NULL,                     NULL                 );  // These will be be ignored
 
       m_matrixKernels[53](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
-                             NULL,                 NULL,                     NULL                 ); // TODO: prefetches
+                             NULL,                 NULL,                     NULL                 );  // These will be be ignored
+#endif
     }
   }
 }
