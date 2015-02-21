@@ -433,11 +433,11 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
          * Setup
          */
         // generate a random LTS setup
-        unsigned int l_ltsSetup = ((rand() % 16)<<8);
+        char l_ltsSetup = (rand() % 16);
 
         // iterate over neighbors and allocate memory for either an time integrated buffer or time derivatives
         for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-          if( ( l_ltsSetup >> (8 + l_neighbor) )%2 == 0 ) {
+          if( ( l_ltsSetup >> l_neighbor )%2 == 0 ) {
             // allocate memory for a time integrated buffer
             l_timeDofs[l_neighbor] = (real*) _mm_malloc( NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES*sizeof(real), ALIGNMENT );
 
@@ -480,7 +480,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
          */
         // reference implementation
         for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-          if( ( l_ltsSetup >> (8 + l_neighbor) )%2 == 0 ) {
+          if( ( l_ltsSetup >> l_neighbor )%2 == 0 ) {
             m_denseMatrix.copySubMatrix( l_timeDofs[l_neighbor],
                                          NUMBER_OF_ALIGNED_BASIS_FUNCTIONS,
                                          NUMBER_OF_QUANTITIES,
@@ -572,5 +572,56 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       // assert we are not doing more FLOPS in hardware than for dense-only stifness execution
       TS_ASSERT_LESS_THAN_EQUALS( l_hardwareFlops, l_denseFlops );
 
+    }
+
+    /*
+     * Tests the derivation of the LTS setup.
+     */
+    void testLtsSetup() {
+      unsigned int  l_localClusterId;
+      unsigned int  l_neighboringClusterIds[4];
+      enum faceType l_faceTypes[4];
+      unsigned char l_ltsSetup;
+
+      /*
+       * Global time stepping
+       */
+      l_localClusterId = 4;
+      for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+        l_neighboringClusterIds[l_face] = l_localClusterId;
+        l_faceTypes[l_face]             = regular;
+      }
+      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
+                                           l_faceTypes,      l_ltsSetup );
+      TS_ASSERT_EQUALS( l_ltsSetup, 0 );
+
+      /*
+       * Global time stepping with dynamic rupture.
+       */
+      l_faceTypes[3] = dynamicRupture;
+      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
+                                           l_faceTypes,      l_ltsSetup );
+      TS_ASSERT_EQUALS( l_ltsSetup, 8 );
+
+      /*
+       * Local time stepping.
+       */
+      l_faceTypes[3] = periodic;
+      l_neighboringClusterIds[0] = 5;
+      l_neighboringClusterIds[2] = 2;
+      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
+                                           l_faceTypes,      l_ltsSetup );
+      TS_ASSERT_EQUALS( l_ltsSetup, 1 );
+
+      /*
+       * Local time stepping with dynamic rupture and boundary conditions.
+       */
+      l_faceTypes[0]           = outflow;
+      l_faceTypes[3]           = dynamicRupture;
+      l_neighboringClusterIds[1] = 10;
+      l_neighboringClusterIds[2] = 0;
+      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
+                                           l_faceTypes,      l_ltsSetup );
+      TS_ASSERT_EQUALS( l_ltsSetup, 10 );
     }
 };

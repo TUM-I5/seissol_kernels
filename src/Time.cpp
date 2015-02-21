@@ -5,7 +5,7 @@
  * @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
  *
  * @section LICENSE
- * Copyright (c) 2013-2014, SeisSol Group
+ * Copyright (c) 2013-2015, SeisSol Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,7 @@ void seissol::kernels::Time::computeIntegral(       real  i_expansionPoint,
 
 }
 
-void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
+void seissol::kernels::Time::computeIntegrals( unsigned char       i_ltsSetup,
                                                const enum faceType i_faceTypes[4],
                                                const real          i_currentTime[5],
                                                real                i_timeStepWidth,
@@ -303,7 +303,7 @@ void seissol::kernels::Time::computeIntegrals( unsigned int        i_ltsSetup,
     // collect information only in the case that neighboring element contributions are required
     if( i_faceTypes[l_neighbor] != outflow && i_faceTypes[l_neighbor] != dynamicRupture ) {
       // check if the time integration is already done (-> copy pointer)
-      if( (i_ltsSetup >> (8 + l_neighbor) ) % 2 == 0 ) {
+      if( (i_ltsSetup >> l_neighbor ) % 2 == 0 ) {
         o_timeIntegrated[l_neighbor] = i_timeDofs[l_neighbor];
       }
       // integrate the DOFs in time via the derivatives and set pointer to local buffer

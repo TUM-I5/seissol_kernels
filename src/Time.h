@@ -5,7 +5,7 @@
  * @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
  *
  * @section LICENSE
- * Copyright (c) 2013-2014, SeisSol Group
+ * Copyright (c) 2013-2015, SeisSol Group
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -166,12 +166,54 @@ class seissol::kernels::Time {
 
   public:
     /**
+     * Gets the lts setup in relation to the four face neighbors.
+     *  0 in one of the first four bits: Face neighboring data are buffers.
+     *  1 in one of the first four bits: Face neighboring data are derivatives.
+     *
+     *     Example:
+     *     [  4 unused   | buf/der bits ]
+     *     [ -  -  -  -  |  0  1  1  0  ]
+     *     [ 7  6  5  4  |  3  2  1  0  ]
+     *  In the example the data for face neighbors 0 and 3 are buffers and for
+     *  1 and 2 derivatives.
+     *
+     * TODO: Add two bits for the local setup.
+     **/
+    static void getLtsSetup( unsigned int         i_localClusterId,
+                             unsigned int         i_neighboringClusterIds[4],
+                             const enum faceType  i_faceTypes[4],
+                             unsigned char       &o_ltsSetup ) {
+      // reset the LTS setup
+      o_ltsSetup = 0;
+
+      // iterate over the faces
+      for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+        // continue for boundary conditions
+        if( i_faceTypes[l_face] != regular        &&
+            i_faceTypes[l_face] != dynamicRupture &&
+            i_faceTypes[l_face] != periodic ) {
+          continue;
+        }
+        // dynamic rupture faces are always global time stepping but operate on derivatives
+        else if( i_faceTypes[l_face] == dynamicRupture ) {
+          o_ltsSetup |= ( 1 << l_face );
+        }
+        // derive the LTS setup based on the cluster ids
+        else {
+          // neighboring cluster has a larger time step than this cluster
+          if( i_localClusterId < i_neighboringClusterIds[l_face] ) {
+            o_ltsSetup |= ( 1 << l_face );
+          }
+        }
+      }
+    }
+
+    /**
      * Gets the total size of the time derivative for a specific convergence order and alignment.
      *
      * @param i_convergenceOrder convergence order of the ADER-DG method.
      * @param i_numberOfQuantities number of quantities.
      * @param i_alignment memory alignment in bits.
-     *
      **/
     static unsigned int getAlignedTimeDerivativesSize( unsigned int i_convergenceOrder   = CONVERGENCE_ORDER,
                                                        unsigned int i_numberOfQuantities = NUMBER_OF_QUANTITIES,
@@ -250,18 +292,18 @@ class seissol::kernels::Time {
 
     /**
      * Either copies pointers to the DOFs in the time buffer or integrates the DOFs via time derivatives.
-     *   Evaluation depends on bit 07-11  of the LTS setup.
+     *   Evaluation depends on bit 0-3  of the LTS setup.
      *   0 -> copy buffer; 1 -> integrate via time derivatives
      *     Example:
 
-     *     [     4 unused     | copy or int bits  |   "<" elements    |   ">" elements    ]
-     *     [ -    -    -    - |  0    1    1    0 |  *    *    *    * |  *    *    *    * ]
-     *     [15   14   13   12 | 11   10   09   08 | 07   06   05   04 | 03   02   01   00 ]
+     *     [     4 unused     | copy or int bits  ]
+     *     [ -    -    -    - |  0    1    1    0 ]
+     *     [ 7    6    5    4 |  3    2    1    0 ]
      *
-     *   08 - 0: time integrated DOFs of cell 0 are copied from the buffer.
-     *   09 - 1: DOFs of cell 1 are integrated in time via time derivatives.
-     *   10 - 1: DOFs of cell 2 are integrated in time via time derivaitves.
-     *   11 - 0: time itnegrated DOFs of cell 3 are copied from the buffer.
+     *   0 - 0: time integrated DOFs of cell 0 are copied from the buffer.
+     *   1 - 1: DOFs of cell 1 are integrated in time via time derivatives.
+     *   2 - 1: DOFs of cell 2 are integrated in time via time derivaitves.
+     *   3 - 0: time itnegrated DOFs of cell 3 are copied from the buffer.
      *
      * @param i_ltsSetup bitmask for the LTS setup.
      * @param i_faceTypes face types of the neighboring cells.
@@ -271,7 +313,7 @@ class seissol::kernels::Time {
      * @param i_integrationBuffer memory where the time integration goes if derived from derivatives. Ensure thread safety!
      * @param o_timeIntegrated pointers to the time integrated DOFs of the four neighboring cells (either local integration buffer or integration buffer of input).
      **/
-    void computeIntegrals( unsigned int        i_ltsSetup,
+    void computeIntegrals( unsigned char       i_ltsSetup,
                            const enum faceType i_faceTypes[4],
                            const real          i_currentTime[5],
                            real                i_timeStepWidth,
