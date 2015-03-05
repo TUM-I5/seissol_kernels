@@ -591,16 +591,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
         l_neighboringClusterIds[l_face] = l_localClusterId;
         l_faceTypes[l_face]             = regular;
       }
-      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
-                                           l_faceTypes,      l_ltsSetup );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
       TS_ASSERT_EQUALS( l_ltsSetup, 0 );
 
       /*
        * Global time stepping with dynamic rupture.
        */
       l_faceTypes[3] = dynamicRupture;
-      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
-                                           l_faceTypes,      l_ltsSetup );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
       TS_ASSERT_EQUALS( l_ltsSetup, 8 );
 
       /*
@@ -609,8 +607,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       l_faceTypes[3] = periodic;
       l_neighboringClusterIds[0] = 5;
       l_neighboringClusterIds[2] = 2;
-      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
-                                           l_faceTypes,      l_ltsSetup );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
       TS_ASSERT_EQUALS( l_ltsSetup, 1 );
 
       /*
@@ -620,8 +617,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       l_faceTypes[3]           = dynamicRupture;
       l_neighboringClusterIds[1] = 10;
       l_neighboringClusterIds[2] = 0;
-      seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds,
-                                           l_faceTypes,      l_ltsSetup );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
       TS_ASSERT_EQUALS( l_ltsSetup, 10 );
     }
 };

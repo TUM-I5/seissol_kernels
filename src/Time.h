@@ -178,13 +178,16 @@ class seissol::kernels::Time {
      *  1 and 2 derivatives.
      *
      * TODO: Add two bits for the local setup.
+     *
+     * @param i_localCluster global id of the cluster to which this cell belongs.
+     * @param i_neighboringClusterIds global ids of the clusters the face neighbors belong to (if present).
+     * @param i_faceTypes types of the four faces.
      **/
-    static void getLtsSetup( unsigned int         i_localClusterId,
-                             unsigned int         i_neighboringClusterIds[4],
-                             const enum faceType  i_faceTypes[4],
-                             unsigned char       &o_ltsSetup ) {
+    static unsigned char getLtsSetup( unsigned int         i_localClusterId,
+                                      unsigned int         i_neighboringClusterIds[4],
+                                      const enum faceType  i_faceTypes[4] ) {
       // reset the LTS setup
-      o_ltsSetup = 0;
+      unsigned char l_ltsSetup = 0;
 
       // iterate over the faces
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
@@ -196,16 +199,18 @@ class seissol::kernels::Time {
         }
         // dynamic rupture faces are always global time stepping but operate on derivatives
         else if( i_faceTypes[l_face] == dynamicRupture ) {
-          o_ltsSetup |= ( 1 << l_face );
+          l_ltsSetup |= ( 1 << l_face );
         }
         // derive the LTS setup based on the cluster ids
         else {
           // neighboring cluster has a larger time step than this cluster
           if( i_localClusterId < i_neighboringClusterIds[l_face] ) {
-            o_ltsSetup |= ( 1 << l_face );
+            l_ltsSetup |= ( 1 << l_face );
           }
         }
       }
+
+      return l_ltsSetup;
     }
 
     /**
