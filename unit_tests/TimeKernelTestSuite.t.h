@@ -580,44 +580,114 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
     void testLtsSetup() {
       unsigned int  l_localClusterId;
       unsigned int  l_neighboringClusterIds[4];
+      unsigned int  l_faceNeighborIds[4];
       enum faceType l_faceTypes[4];
-      unsigned char l_ltsSetup;
+      unsigned short l_ltsSetup;
 
       /*
        * Global time stepping
+       * | - - 0 1 | 1 1 1 1 | 0 0 0 0 |
        */
       l_localClusterId = 4;
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
         l_neighboringClusterIds[l_face] = l_localClusterId;
+        l_faceNeighborIds[l_face]       = rand()%10000;
         l_faceTypes[l_face]             = regular;
       }
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
-      TS_ASSERT_EQUALS( l_ltsSetup, 0 );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 496 );
 
       /*
        * Global time stepping with dynamic rupture.
+       * | - - 1 1 | 1 1 1 1 | 1 0 0 0 |
        */
       l_faceTypes[3] = dynamicRupture;
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
-      TS_ASSERT_EQUALS( l_ltsSetup, 8 );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 1016 );
+
+      /*
+       * GTS with dynamic rupture and cell is part of the ghost layer.
+       * | - - 1 0 | 1 1 1 1 | 1 0 0 0 |
+       */
+      l_faceNeighborIds[1] = std::numeric_limits<unsigned int>::max();
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 760 );
+      l_faceNeighborIds[1] = rand()%10000;
 
       /*
        * Local time stepping.
+       * | - - 1 1 | 1 0 1 0 | 0 0 0 1 |
        */
       l_faceTypes[3] = periodic;
       l_neighboringClusterIds[0] = 5;
       l_neighboringClusterIds[2] = 2;
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
-      TS_ASSERT_EQUALS( l_ltsSetup, 1 );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 929 );
+
+      /*
+       * Local time stepping and cell is part of the ghost layer. -> Only derivatives are communicated.
+       * | - - 1 1 | 1 0 1 0 | 0 0 0 1 |
+       */
+      l_faceNeighborIds[0] = std::numeric_limits<unsigned int>::max();
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 673 );
+      l_faceNeighborIds[0] = rand()%10000;
 
       /*
        * Local time stepping with dynamic rupture and boundary conditions.
+       * | - - 1 1 | 1 0 0 0 | 1 0 1 0 |
        */
       l_faceTypes[0]           = outflow;
       l_faceTypes[3]           = dynamicRupture;
       l_neighboringClusterIds[1] = 10;
       l_neighboringClusterIds[2] = 0;
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes );
-      TS_ASSERT_EQUALS( l_ltsSetup, 10 );
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 906 );
+    }
+
+    /*
+     * Test LTS normalization.
+     */
+    void testLtsNormalization() {
+      unsigned short int l_localSetup;
+      unsigned short int l_neighboringSetups[4];
+
+      /*
+       * GTS: No changes are required
+       */
+      l_localSetup = l_neighboringSetups[0] = l_neighboringSetups[1] =
+                     l_neighboringSetups[2] = l_neighboringSetups[3] = 240;
+
+      seissol::kernels::Time::normalizeLtsSetup( l_neighboringSetups, l_localSetup );
+      TS_ASSERT_EQUALS( l_localSetup, 240 );
+
+      /*
+       * LTS with uncritical time relations in the neighbors: no changes are required.
+       *
+       * l: | - - 0 1 | 1 1 1 1 | 0 0 0 0 | 
+       *
+       * 1: | - - 1 1 | 0 1 1 0 | 1 0 0 1 |
+       * 2: | - - 1 1 | 1 0 0 0 | 0 1 1 1 |
+       */
+      l_neighboringSetups[1] = 873;
+      l_neighboringSetups[2] = 903;
+
+      seissol::kernels::Time::normalizeLtsSetup( l_neighboringSetups, l_localSetup );
+      TS_ASSERT_EQUALS( l_localSetup, 240 );
+
+      /*
+       * LTS with critical time relation in the neighbor.
+       *
+       * l: | - - 0 1 | 1 1 1 1 | 0 0 0 0 |
+       *
+       * 1: | - - 1 1 | 1 1 1 0 | 0 0 0 0 |
+       */
+      l_localSetup = l_neighboringSetups[0] =
+                     l_neighboringSetups[2] = l_neighboringSetups[3] = 240;
+
+      l_neighboringSetups[1] = 992;
+
+      seissol::kernels::Time::normalizeLtsSetup( l_neighboringSetups, l_localSetup );
+      TS_ASSERT_EQUALS( l_localSetup, 242 );
     }
 };

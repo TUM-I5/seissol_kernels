@@ -41,8 +41,9 @@
 #ifndef TIME_H_
 #define TIME_H_
 
-#include "typedefs.hpp"
 #include <cassert>
+#include <limits>
+#include "typedefs.hpp"
 #include "common.hpp"
 
 namespace seissol {
@@ -167,27 +168,66 @@ class seissol::kernels::Time {
   public:
     /**
      * Gets the lts setup in relation to the four face neighbors.
+     *   Remark: Remember to perform the required normalization step.
+     *
+     * -------------------------------------------------------------------------------
+     *
      *  0 in one of the first four bits: Face neighboring data are buffers.
      *  1 in one of the first four bits: Face neighboring data are derivatives.
      *
-     *     Example:
-     *     [  4 unused   | buf/der bits ]
-     *     [ -  -  -  -  |  0  1  1  0  ]
-     *     [ 7  6  5  4  |  3  2  1  0  ]
-     *  In the example the data for face neighbors 0 and 3 are buffers and for
-     *  1 and 2 derivatives.
+     *     Example 1:
+     *     [           12 rem. bits               | buf/der bits ]
+     *     [  -  -  -  -  -  -  -  -  -  -  -  -  |  0  1  1  0  ]
+     *     [ 15 14 13 12 11 10  9  8  7  6  5  4  |  3  2  1  0  ]
+     *  In Example 1 the data for face neighbors 0 and 3 are buffers and for 1 and 2 derivatives.
      *
-     * TODO: Add two bits for the local setup.
+     *  0 in one of bits 4 - 7: No global time stepping
+     *  1 in one of bits 4 - 7: The  current cell has a global time stepping relation with the face neighbor.
      *
+     *     Example 2:
+     *     [       8 rem. bits       |   GTS bits  | buf/der bits ]
+     *     [  -  -  -  -  -  -  -  - | 0  0  1  1  |  0  1  1  0  ]
+     *     [ 15 14 13 12 11 10  9  8 | 7  6  5  4  |  3  2  1  0  ]
+     *  In Example 2 the data of face neighbors 0 and 3 are buffers, 1 and 2 deliver derivatives
+     *  Face neighbor 0 has a GTS-relation and this cell works directly on the delivered buffer.
+     *  Face neighbor 1 has a GTS-relation, but delivers derivatives -> The derivatives have to translated to time integrated DOFs first.
+     *  Face neighbor 2 has a LTS-relation and receives derivatives from its neighbor -> The derivates have to be used for a partial time integration.
+     *  Face neighbor 3 has a LTS-relation and can operate on the buffers directly.
+     *
+     * -------------------------------------------------------------------------------
+     *
+     *  1 in the eigth bit: the cell is required to work on time integration buffers.
+     *  1 in the nineth bit: the cell is required to compute time derivatives.
+     *
+     *     Example 3:
+     *     [     remaining     | der. buf. |       first 8 bits       ]
+     *     [  -  -  -  -  -  - |  0    1   |  -  -  -  -  -  -  -  -  ]
+     *     [ 15 14 13 12 11 10 |  9    8   |  7  6  5  4  3  2  1  0  ]
+     *  In Example 3 only a buffer is stored as for example in global time stepping.
+     *
+     *     Example 4:
+     *     [     remaining     | der. buf. |       first 8 bits       ]
+     *     [  -  -  -  -  -  - |  1    1   |  -  -  -  -  -  -  -  -  ]
+     *     [ 15 14 13 12 11 10 |  9    8   |  7  6  5  4  3  2  1  0  ]
+     *  In Example 4 both (buffer+derivative) is stored.
+     *
+     * @return lts setup.
      * @param i_localCluster global id of the cluster to which this cell belongs.
      * @param i_neighboringClusterIds global ids of the clusters the face neighbors belong to (if present).
      * @param i_faceTypes types of the four faces.
+     * @param i_faceNeighborIds face neighbor ids; max uint face neighbors are assumed to be in the neighboring interior domain.
+     * @param i_ghost true if the cell is part of the ghost layer (only required for correctness if all face neighbors are part of the current computational domain).
      **/
-    static unsigned char getLtsSetup( unsigned int         i_localClusterId,
-                                      unsigned int         i_neighboringClusterIds[4],
-                                      const enum faceType  i_faceTypes[4] ) {
+    static unsigned short getLtsSetup(      unsigned int   i_localClusterId,
+                                            unsigned int   i_neighboringClusterIds[4],
+                                      const enum faceType  i_faceTypes[4],
+                                      const unsigned int   i_faceNeighborIds[4],
+                                            bool           i_ghost = false ) {
       // reset the LTS setup
-      unsigned char l_ltsSetup = 0;
+      unsigned short l_ltsSetup = 0;
+
+      // true if this cell is in the ghost layer
+      bool l_ghost = false;
 
       // iterate over the faces
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
@@ -199,7 +239,14 @@ class seissol::kernels::Time {
         }
         // dynamic rupture faces are always global time stepping but operate on derivatives
         else if( i_faceTypes[l_face] == dynamicRupture ) {
-          l_ltsSetup |= ( 1 << l_face );
+          // face-neighbor provides derivatives
+          l_ltsSetup |= ( 1 << l_face     );
+          l_ltsSetup |= ( 1 << l_face + 4 );
+
+          // cell is required to provide derivatives for dynamic rupture
+          if( i_faceNeighborIds[l_face] != std::numeric_limits<unsigned int>::max() ) {
+            l_ltsSetup |= ( 1 << 9 );
+          }
         }
         // derive the LTS setup based on the cluster ids
         else {
@@ -207,10 +254,67 @@ class seissol::kernels::Time {
           if( i_localClusterId < i_neighboringClusterIds[l_face] ) {
             l_ltsSetup |= ( 1 << l_face );
           }
+          // GTS relation
+          else if( i_localClusterId == i_neighboringClusterIds[l_face] ) {
+            l_ltsSetup |= ( 1 << l_face + 4 );
+          }
+
+          if( i_faceNeighborIds[l_face] != std::numeric_limits<unsigned int>::max() ) {
+            // cell is required to provide derivatives
+            if( i_localClusterId > i_neighboringClusterIds[l_face] ) {
+              l_ltsSetup |= ( 1 << 9 );
+            }
+            // cell is required to provide a buffer
+            else {
+              l_ltsSetup |= ( 1 << 8 );
+            }
+          }
         }
+
+        if( i_faceNeighborIds[l_face] == std::numeric_limits<unsigned int>::max() ) l_ghost = true;
+      }
+
+      // set buffer to zero if derivatives are communicated
+      if( (i_ghost || l_ghost) && (l_ltsSetup >> 9 ) % 2 == 1 ) {
+        l_ltsSetup ^= ( 1 << 8 );
       }
 
       return l_ltsSetup;
+    }
+
+    /**
+     * Normalizes the LTS setup for the special case "GTS on derivatives":
+     *   If a face neighbor provides true buffers to cells with larger time steps,
+     *   the local cell is required to operate on derivatives of this face neighbor.
+     *
+     *   Example:
+     *         ___________________________________
+     *        | own |  fn 1 |  fn 2 | fn 3 | fn 4 |
+     *   local|  dt |    dt | 0.5dt |   dt |   dt |
+     *   fn 4 |  dt | 0.5dt |   2dt |   dt |   dt |
+     *         -----------------------------------
+     *   In the example the local cell is connected via face 4 with to a GTS neighbor.
+     *   Face neighbor 4 is required to deliver true buffers to its second face neighbor.
+     *   It follows that the local cell has to operate on the derivatives of face neighbor 4.
+     **/
+    static void normalizeLtsSetup( unsigned short  i_neighboringLtsSetups[4],
+                                   unsigned short &io_localLtsSetup ) {
+      // iterate over the face neighbors
+      for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+        // check if the face neighbor has to provide true buffers (buffer is updated more than once in an LTS fashion)
+        bool l_trueBuffers = false;
+        for( unsigned int l_neighborFace = 0; l_neighborFace < 4; l_neighborFace++ ) {
+          if(     (i_neighboringLtsSetups[l_face] >> l_neighborFace  )%2 == 0      // buffers?
+               && (i_neighboringLtsSetups[l_face] >> l_neighborFace+4)%2 == 0 ) {  // LTS?
+            l_trueBuffers = true;
+          }
+        }
+
+        // enforce derivatives if this is a "GTS on derivatives" relation
+        if( (io_localLtsSetup >> l_face + 4)%2 && l_trueBuffers ) {
+          io_localLtsSetup |= 1 << l_face;
+        }
+      }
     }
 
     /**
