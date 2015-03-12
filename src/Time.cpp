@@ -71,7 +71,7 @@ seissol::kernels::Time::Time() {
 #undef TIME_KERNEL
 }
 
-void seissol::kernels::Time::computeAder(       real   i_timeStepWidth,
+void seissol::kernels::Time::computeAder(       double i_timeStepWidth,
                                                 real** i_stiffnessMatrices,
                                           const real*  i_degreesOfFreedom,
                                                 real   i_starMatrices[3][STAR_NNZ],
@@ -218,11 +218,11 @@ void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint
 
 }
 
-void seissol::kernels::Time::computeIntegral(       real  i_expansionPoint,
-                                                    real  i_integrationStart,
-                                                    real  i_integrationEnd,
-                                              const real* i_timeDerivatives,
-                                                    real  o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] ) {
+void seissol::kernels::Time::computeIntegral(       double i_expansionPoint,
+                                                    double i_integrationStart,
+                                                    double i_integrationEnd,
+                                              const real*  i_timeDerivatives,
+                                                    real   o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] ) {
   /*
    * assert alignments.
    */
@@ -272,10 +272,10 @@ void seissol::kernels::Time::computeIntegral(       real  i_expansionPoint,
 
 }
 
-void seissol::kernels::Time::computeIntegrals( unsigned char       i_ltsSetup,
+void seissol::kernels::Time::computeIntegrals( unsigned short      i_ltsSetup,
                                                const enum faceType i_faceTypes[4],
-                                               const real          i_currentTime[5],
-                                               real                i_timeStepWidth,
+                                               const double        i_currentTime[5],
+                                               double              i_timeStepWidth,
                                                real  *const        i_timeDofs[4],
                                                real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
                                                real  *             o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] ) {
@@ -318,4 +318,25 @@ void seissol::kernels::Time::computeIntegrals( unsigned char       i_ltsSetup,
       }
     }
   }
+}
+
+void seissol::kernels::Time::computeIntegrals( unsigned short      i_ltsSetup,
+                                               const enum faceType i_faceTypes[4],
+                                               const double        i_timeStepStart,
+                                               const double        i_timeStepWidth,
+                                               real * const        i_timeDofs[4],
+                                               real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
+                                               real *              o_timeIntegrated[4] ) {
+  double l_startTimes[5];
+  l_startTimes[0] = i_timeStepStart;
+  l_startTimes[1] = l_startTimes[2] = l_startTimes[3] = l_startTimes[4] = 0;
+
+  // call the more general assembly
+  computeIntegrals( i_ltsSetup,
+                    i_faceTypes,
+                    l_startTimes,
+                    i_timeStepWidth,
+                    i_timeDofs,
+                    o_integrationBuffer,
+                    o_timeIntegrated );
 }

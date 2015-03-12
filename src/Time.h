@@ -288,7 +288,6 @@ class seissol::kernels::Time {
      *   the local cell is required to operate on derivatives of this face neighbor.
      *
      *   Example:
-     *         ___________________________________
      *        | own |  fn 1 |  fn 2 | fn 3 | fn 4 |
      *   local|  dt |    dt | 0.5dt |   dt |   dt |
      *   fn 4 |  dt | 0.5dt |   2dt |   dt |   dt |
@@ -296,6 +295,9 @@ class seissol::kernels::Time {
      *   In the example the local cell is connected via face 4 with to a GTS neighbor.
      *   Face neighbor 4 is required to deliver true buffers to its second face neighbor.
      *   It follows that the local cell has to operate on the derivatives of face neighbor 4.
+     *
+     * @param i_neighboringSetups local time stepping setups for the neighboring cells, set to GTS (240) if not defined (e.g. in case of boundary conditions).
+     * @param io_localLtsSetup local time stepping setup of the local cell.
      **/
     static void normalizeLtsSetup( unsigned short  i_neighboringLtsSetups[4],
                                    unsigned short &io_localLtsSetup ) {
@@ -356,7 +358,7 @@ class seissol::kernels::Time {
      * @param i_timeIntegrated time integrated DOFs.
      * @param o_timeDerivatives (optional) time derivatives of the degrees of freedom in compressed format. If NULL only time integrated DOFs are returned.
      **/
-    void computeAder(       real   i_timeStepWidth,
+    void computeAder(       double i_timeStepWidth,
                             real** i_stiffnessMatrices,
                       const real*  i_degreesOfFreedom,
                             real   i_starMatrices[3][STAR_NNZ],
@@ -379,8 +381,8 @@ class seissol::kernels::Time {
      * @param i_timeDerivatives time derivatives.
      * @param o_degreesOfFreedom degrees of freedom at the time of the evaluation point.
      **/
-    void computeExtrapolation(       real   i_expansionPoint,
-                                     real   i_evaluationPoint,
+    void computeExtrapolation(       double i_expansionPoint,
+                                     double i_evaluationPoint,
                                const real*  i_timeDerivatives,
                                      real*  o_degreesOfFreedom );
 
@@ -393,11 +395,11 @@ class seissol::kernels::Time {
      * @param i_timeDerivatives time derivatives.
      * @param o_timeIntegratedDofs time integrated DOFs over the interval: \f$ [ t^\text{start},  t^\text{end} ] \f$ 
      **/
-    void computeIntegral(       real  i_expansionPoint,
-                                real  i_integrationStart,
-                                real  i_integrationEnd,
-                          const real* i_timeDerivatives,
-                                real  o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] );
+    void computeIntegral(       double i_expansionPoint,
+                                double i_integrationStart,
+                                double i_integrationEnd,
+                          const real*  i_timeDerivatives,
+                                real   o_timeIntegrated[NUMBER_OF_ALIGNED_DOFS] );
 
     /**
      * Either copies pointers to the DOFs in the time buffer or integrates the DOFs via time derivatives.
@@ -422,14 +424,32 @@ class seissol::kernels::Time {
      * @param i_integrationBuffer memory where the time integration goes if derived from derivatives. Ensure thread safety!
      * @param o_timeIntegrated pointers to the time integrated DOFs of the four neighboring cells (either local integration buffer or integration buffer of input).
      **/
-    void computeIntegrals( unsigned char       i_ltsSetup,
+    void computeIntegrals( unsigned short      i_ltsSetup,
                            const enum faceType i_faceTypes[4],
-                           const real          i_currentTime[5],
-                           real                i_timeStepWidth,
+                           const double        i_currentTime[5],
+                           double              i_timeStepWidth,
                            real * const        i_timeDofs[4],
                            real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
                            real *              o_timeIntegrated[4] );
 
+    /**
+     * Special case of the computeIntergals function, which assumes a common "current time" for all face neighbors which provide derivatives.
+     *
+     * @param i_ltsSetup bitmask for the LTS setup.
+     * @param i_faceTypes face types of the neighboring cells.
+     * @param i_timeStepStart start time of the current cell with respect to the common point zero: Time of the larger time step width prediction of the face neighbors.
+     * @param i_timeStepWidth time step width of the cell.
+     * @param i_timeDofs pointers to time integrated buffers or time derivatives of the four neighboring cells.
+     * @param i_integrationBuffer memory where the time integration goes if derived from derivatives. Ensure thread safety!
+     * @param o_timeIntegrated pointers to the time integrated DOFs of the four neighboring cells (either local integration buffer or integration buffer of input).
+     **/
+    void computeIntegrals( unsigned short      i_ltsSetup,
+                           const enum faceType i_faceTypes[4],
+                           const double        i_timeStepStart,
+                           const double        i_timeStepWidth,
+                           real * const        i_timeDofs[4],
+                           real                o_integrationBuffer[4][NUMBER_OF_ALIGNED_DOFS],
+                           real *              o_timeIntegrated[4] );
 };
 
 #endif
