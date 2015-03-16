@@ -282,11 +282,8 @@ void seissol::kernels::Time::computeIntegrals( unsigned short      i_ltsSetup,
   /*
    * assert valid input.
    */
-  // only lower 12 bits are used for lts encoding
-  assert (i_ltsSetup < 4096 );
-
-  // neighboring cells can't have a time step size smaller and larger than the one of the current cell at the same time
-  assert ( ( (i_ltsSetup >> 4) & ( (i_ltsSetup << 4) >> 4) ) == 0);
+  // only lower 10 bits are used for lts encoding
+  assert (i_ltsSetup < 2048 );
 
 #ifndef NDEBUG
   // alignment of the time derivatives/integrated dofs and the buffer
@@ -330,6 +327,13 @@ void seissol::kernels::Time::computeIntegrals( unsigned short      i_ltsSetup,
   double l_startTimes[5];
   l_startTimes[0] = i_timeStepStart;
   l_startTimes[1] = l_startTimes[2] = l_startTimes[3] = l_startTimes[4] = 0;
+
+  // adjust start times for GTS on derivatives
+  for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+    if( (i_ltsSetup >> l_face + 4 ) % 2 ) {
+      l_startTimes[l_face+1] = i_timeStepStart;
+    }
+  }
 
   // call the more general assembly
   computeIntegrals( i_ltsSetup,

@@ -599,7 +599,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       /*
        * Global time stepping with dynamic rupture.
-       * | - - 1 1 | 1 1 1 1 | 1 0 0 0 |
+       * | - 0 1 1 | 1 1 1 1 | 1 0 0 0 |
        */
       l_faceTypes[3] = dynamicRupture;
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
@@ -607,7 +607,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       /*
        * GTS with dynamic rupture and cell is part of the ghost layer.
-       * | - - 1 0 | 1 1 1 1 | 1 0 0 0 |
+       * | - 0 1 0 | 1 1 1 1 | 1 0 0 0 |
        */
       l_faceNeighborIds[1] = std::numeric_limits<unsigned int>::max();
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
@@ -616,13 +616,13 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       /*
        * Local time stepping.
-       * | - - 1 1 | 1 0 1 0 | 0 0 0 1 |
+       * | - 1 1 1 | 1 0 1 0 | 0 0 0 1 |
        */
       l_faceTypes[3] = periodic;
       l_neighboringClusterIds[0] = 5;
       l_neighboringClusterIds[2] = 2;
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
-      TS_ASSERT_EQUALS( l_ltsSetup, 929 );
+      TS_ASSERT_EQUALS( l_ltsSetup, 1953 );
 
       /*
        * Local time stepping and cell is part of the ghost layer. -> Only derivatives are communicated.
@@ -635,14 +635,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
 
       /*
        * Local time stepping with dynamic rupture and boundary conditions.
-       * | - - 1 1 | 1 0 0 0 | 1 0 1 0 |
+       * | - 1 1 1 | 1 0 0 0 | 1 0 1 0 |
        */
       l_faceTypes[0]           = outflow;
       l_faceTypes[3]           = dynamicRupture;
       l_neighboringClusterIds[1] = 10;
       l_neighboringClusterIds[2] = 0;
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
-      TS_ASSERT_EQUALS( l_ltsSetup, 906 );
+      TS_ASSERT_EQUALS( l_ltsSetup, 1930 );
     }
 
     /*
@@ -678,14 +678,14 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       /*
        * LTS with critical time relation in the neighbor.
        *
-       * l: | - - 0 1 | 1 1 1 1 | 0 0 0 0 |
+       * l: | - - | 0 1 | 1 1 1 1 | 0 0 0 0 |
        *
-       * 1: | - - 1 1 | 1 1 1 0 | 0 0 0 0 |
+       * 1: | - 1 | 1 1 | 1 1 1 0 | 0 0 0 0 |
        */
       l_localSetup = l_neighboringSetups[0] =
                      l_neighboringSetups[2] = l_neighboringSetups[3] = 240;
 
-      l_neighboringSetups[1] = 992;
+      l_neighboringSetups[1] = 2016;
 
       seissol::kernels::Time::normalizeLtsSetup( l_neighboringSetups, l_localSetup );
       TS_ASSERT_EQUALS( l_localSetup, 242 );

@@ -211,6 +211,16 @@ class seissol::kernels::Time {
      *     [ 15 14 13 12 11 10 |  9    8   |  7  6  5  4  3  2  1  0  ]
      *  In Example 4 both (buffer+derivative) is stored.
      *
+     * -------------------------------------------------------------------------------
+     *
+     *  1 in the tenth bit: the cell local buffer is a LTS buffer (reset in every time step).
+     *
+     *     Example 5:
+     *     [   remaining    | LTS buf. |          first 10 bits         ]
+     *     [  -  -  -  -  - |     1    |  -  1  -  -  -  -  -  -  -  -  ]
+     *     [ 15 14 13 12 11 |    10    |  9  8  7  6  5  4  3  2  1  0  ]
+     *  In Example 5 the buffer is a LTS buffer (reset on request only). GTS buffers are updated in every time step.
+     *
      * @return lts setup.
      * @param i_localCluster global id of the cluster to which this cell belongs.
      * @param i_neighboringClusterIds global ids of the clusters the face neighbors belong to (if present).
@@ -252,7 +262,11 @@ class seissol::kernels::Time {
         else {
           // neighboring cluster has a larger time step than this cluster
           if( i_localClusterId < i_neighboringClusterIds[l_face] ) {
+            // neighbor delivers time derivatives
             l_ltsSetup |= ( 1 << l_face );
+
+            // the cell-local buffer is used in LTS-fashion
+            l_ltsSetup |= ( 1 << 10     );
           }
           // GTS relation
           else if( i_localClusterId == i_neighboringClusterIds[l_face] ) {
@@ -271,12 +285,18 @@ class seissol::kernels::Time {
           }
         }
 
+        // true lts buffer with gts required derivatives
+        if( (l_ltsSetup >> 10)%2 == 1 && (l_ltsSetup >> 4)%16 != 0 ) {
+          l_ltsSetup |= ( 1 << 9 );
+        }
+
         if( i_faceNeighborIds[l_face] == std::numeric_limits<unsigned int>::max() ) l_ghost = true;
       }
 
       // set buffer to zero if derivatives are communicated
       if( (i_ghost || l_ghost) && (l_ltsSetup >> 9 ) % 2 == 1 ) {
-        l_ltsSetup ^= ( 1 << 8 );
+        l_ltsSetup &= ( ~(1 << 8 ) );
+        l_ltsSetup &= ( ~(1 << 10) );
       }
 
       return l_ltsSetup;
@@ -303,17 +323,8 @@ class seissol::kernels::Time {
                                    unsigned short &io_localLtsSetup ) {
       // iterate over the face neighbors
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
-        // check if the face neighbor has to provide true buffers (buffer is updated more than once in an LTS fashion)
-        bool l_trueBuffers = false;
-        for( unsigned int l_neighborFace = 0; l_neighborFace < 4; l_neighborFace++ ) {
-          if(     (i_neighboringLtsSetups[l_face] >> l_neighborFace  )%2 == 0      // buffers?
-               && (i_neighboringLtsSetups[l_face] >> l_neighborFace+4)%2 == 0 ) {  // LTS?
-            l_trueBuffers = true;
-          }
-        }
-
         // enforce derivatives if this is a "GTS on derivatives" relation
-        if( (io_localLtsSetup >> l_face + 4)%2 && l_trueBuffers ) {
+        if( (io_localLtsSetup >> l_face + 4)%2 && (i_neighboringLtsSetups[l_face] >> 10)%2 == 1 ) {
           io_localLtsSetup |= 1 << l_face;
         }
       }
