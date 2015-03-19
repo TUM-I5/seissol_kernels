@@ -244,8 +244,13 @@ class seissol::kernels::Time {
         // continue for boundary conditions
         if( i_faceTypes[l_face] != regular        &&
             i_faceTypes[l_face] != dynamicRupture &&
-            i_faceTypes[l_face] != periodic ) {
+            i_faceTypes[l_face] != periodic       &&
+            i_faceTypes[l_face] != freeSurface ) {
           continue;
+        }
+        // free surface fake neighbors are GTS
+        else if( i_faceTypes[l_face] == freeSurface ) {
+          l_ltsSetup |= (1 << l_face+4 );
         }
         // dynamic rupture faces are always global time stepping but operate on derivatives
         else if( i_faceTypes[l_face] == dynamicRupture ) {
@@ -290,7 +295,24 @@ class seissol::kernels::Time {
           l_ltsSetup |= ( 1 << 9 );
         }
 
-        if( i_faceNeighborIds[l_face] == std::numeric_limits<unsigned int>::max() ) l_ghost = true;
+        if( i_faceNeighborIds[l_face] == std::numeric_limits<unsigned int>::max() && i_faceTypes[l_face] != freeSurface ) l_ghost = true;
+      }
+
+      /*
+       * Normalize for special case "free surface on derivatives":
+       *   If a cell provides either buffers in a LTS fashion or derivatives only,
+       *   the neighboring contribution of the boundary intergral is required to work on the cells derivatives.
+       *   Free surface boundary conditions work on the cells DOFs in the neighboring contribution:
+       *   Enable cell local derivatives in this case and mark that the "fake neighbor" provides derivatives.
+       */
+      for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
+        // check for special case free-surface requirements
+        if( i_faceTypes[l_face] == freeSurface &&       // free surface face
+           ( (l_ltsSetup >> 10) % 2 == 1 ||             // lts fashion buffer
+             (l_ltsSetup >> 8 ) % 2 == 0 )         ) {  // no buffer at all
+          l_ltsSetup |= ( 1 << 9 );       // enable derivatives computation
+          l_ltsSetup |= ( 1 << l_face );  // enable derivatives for the fake face neighbor
+        }
       }
 
       // set buffer to zero if derivatives are communicated
@@ -325,7 +347,7 @@ class seissol::kernels::Time {
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
         // enforce derivatives if this is a "GTS on derivatives" relation
         if( (io_localLtsSetup >> l_face + 4)%2 && (i_neighboringLtsSetups[l_face] >> 10)%2 == 1 ) {
-          io_localLtsSetup |= 1 << l_face;
+          io_localLtsSetup |= (1 << l_face);
         }
       }
     }

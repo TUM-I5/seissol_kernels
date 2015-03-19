@@ -643,6 +643,27 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       l_neighboringClusterIds[2] = 0;
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
       TS_ASSERT_EQUALS( l_ltsSetup, 1930 );
+
+      /*
+       * Local time stepping with "free surface on buffers".
+       * | - 0 1 1 | 0 1 1 1 | 0 0 0 0 |
+       */
+      l_faceTypes[0] = l_faceTypes[2] = l_faceTypes[3] = regular;
+      l_faceTypes[1] = freeSurface;
+      l_neighboringClusterIds[0] = l_neighboringClusterIds[1] = l_neighboringClusterIds[2] =  4;
+      l_neighboringClusterIds[3] = 3;
+
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 880 );
+
+      /*
+       * Local time stepping with "free surface on derivatives".
+       * | - 0 1 0 | 0 0 1 0 | 0 0 1 0 |
+       */
+
+      l_neighboringClusterIds[0] = l_neighboringClusterIds[2] =  3;
+      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
+      TS_ASSERT_EQUALS( l_ltsSetup, 546 );
     }
 
     /*
