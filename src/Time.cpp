@@ -175,8 +175,8 @@ void seissol::kernels::Time::flopsAder( unsigned int        &o_nonZeroFlops,
 
 }
 
-void seissol::kernels::Time::computeExtrapolation(       real   i_expansionPoint,
-                                                         real   i_evaluationPoint,
+void seissol::kernels::Time::computeExtrapolation(       double i_expansionPoint,
+                                                         double i_evaluationPoint,
                                                    const real*  i_timeDerivatives,
                                                          real*  o_timeEvaluated ) {
   /*
