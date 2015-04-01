@@ -182,10 +182,10 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
 #ifdef ENABLE_MATRIX_PREFETCH
       // compute neighboring elements contribution
       m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face],         l_temporaryResult,
-                             NULL,                 i_faceNeighbors_prefetch[l_face], NULL                 ); 
+                             i_fluxMatricies_prefetch[l_face], i_faceNeighbors_prefetch[l_face], NULL                 ); 
 
       m_matrixKernels[53](   l_temporaryResult,                i_fluxSolvers[l_face],    io_degreesOfFreedom,
-                             i_fluxMatricies_prefetch[l_face], NULL,                     NULL                 ); 
+                             i_fluxMatricies_prefetch[l_face], i_faceNeighbors_prefetch[l_face],                     NULL                 ); 
 #else
       // compute neighboring elements contribution
       m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
