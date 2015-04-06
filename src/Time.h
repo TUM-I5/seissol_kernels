@@ -225,7 +225,7 @@ class seissol::kernels::Time {
      * @param i_localCluster global id of the cluster to which this cell belongs.
      * @param i_neighboringClusterIds global ids of the clusters the face neighbors belong to (if present).
      * @param i_faceTypes types of the four faces.
-     * @param i_faceNeighborIds face neighbor ids; max uint face neighbors are assumed to be in the neighboring interior domain.
+     * @param i_faceNeighborIds face neighbor ids.
      * @param i_ghost true if the cell is part of the ghost layer (only required for correctness if all face neighbors are part of the current computational domain).
      **/
     static unsigned short getLtsSetup(      unsigned int   i_localClusterId,
@@ -235,9 +235,6 @@ class seissol::kernels::Time {
                                             bool           i_ghost = false ) {
       // reset the LTS setup
       unsigned short l_ltsSetup = 0;
-
-      // true if this cell is in the ghost layer
-      bool l_ghost = false;
 
       // iterate over the faces
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
@@ -259,9 +256,7 @@ class seissol::kernels::Time {
           l_ltsSetup |= ( 1 << l_face + 4 );
 
           // cell is required to provide derivatives for dynamic rupture
-          if( i_faceNeighborIds[l_face] != std::numeric_limits<unsigned int>::max() ) {
-            l_ltsSetup |= ( 1 << 9 );
-          }
+          l_ltsSetup |= ( 1 << 9 );
         }
         // derive the LTS setup based on the cluster ids
         else {
@@ -278,15 +273,13 @@ class seissol::kernels::Time {
             l_ltsSetup |= ( 1 << l_face + 4 );
           }
 
-          if( i_faceNeighborIds[l_face] != std::numeric_limits<unsigned int>::max() ) {
-            // cell is required to provide derivatives
-            if( i_localClusterId > i_neighboringClusterIds[l_face] ) {
-              l_ltsSetup |= ( 1 << 9 );
-            }
-            // cell is required to provide a buffer
-            else {
-              l_ltsSetup |= ( 1 << 8 );
-            }
+          // cell is required to provide derivatives
+          if( i_localClusterId > i_neighboringClusterIds[l_face] ) {
+            l_ltsSetup |= ( 1 << 9 );
+          }
+          // cell is required to provide a buffer
+          else {
+            l_ltsSetup |= ( 1 << 8 );
           }
         }
 
@@ -294,8 +287,6 @@ class seissol::kernels::Time {
         if( (l_ltsSetup >> 10)%2 == 1 && (l_ltsSetup >> 4)%16 != 0 ) {
           l_ltsSetup |= ( 1 << 9 );
         }
-
-        if( i_faceNeighborIds[l_face] == std::numeric_limits<unsigned int>::max() && i_faceTypes[l_face] != freeSurface ) l_ghost = true;
       }
 
       /*
@@ -316,7 +307,7 @@ class seissol::kernels::Time {
       }
 
       // set buffer to zero if derivatives are communicated
-      if( (i_ghost || l_ghost) && (l_ltsSetup >> 9 ) % 2 == 1 ) {
+      if( i_ghost && (l_ltsSetup >> 9 ) % 2 == 1 ) {
         l_ltsSetup &= ( ~(1 << 8 ) );
         l_ltsSetup &= ( ~(1 << 10) );
       }
