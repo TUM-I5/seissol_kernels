@@ -157,19 +157,30 @@ class seissol::kernels::Time {
      **/
     unsigned int m_hardwareFlops[(CONVERGENCE_ORDER-1)*4];
 
+    /**
+     * Stream-Copy (no-read-before-write) the degress of freedom into the first position of the time derivatives buffer
+     *
+     * @param i_degreesOfFreedom of the current time step \f$ t^\text{cell} \f$
+     * @param o_derivativesBuffer time derivatives of the degrees of freedom in compressed format, this needs to be start address
+     */
     inline void streamstoreFirstDerivative( const real*   i_degreesOfFreedom,
-                                                   real*   o_derivativesBuffer );
+                                                  real*   o_derivativesBuffer );
 
+    /**
+     * Compute the time integraion of derivative i_derivative and add it to the timeIntegrated buffer o_timeIntegrated, optionally the 
+     * the derivatives are stream-copied into o_timeDerivatives
+     *
+     * @param i_derivativeBuffer buffer containing the derivatives in compressed format
+     * @param i_scalar the scalar factor of the time integration for the derivative which is currently being processed
+     * @param i_derivative the current derivative
+     * @param o_timeIntegrated the buffer into which the time integration is accumulated to
+     * @param o_timeDerivatives (optional) time derivatives of the degrees of freedom in compressed format. If NULL only time integrated DOFs are returned.
+     */
     inline void integrateInTime( const real*        i_derivativeBuffer,
                                        real         i_scalar,
                                        unsigned int i_derivative,
-                                       real*        o_timeIntegrated );
-
-    inline void integrateInTimeStreamstoreDerivatives( const real*        i_derivativeBuffer,
-                                                             real         i_scalar,
-                                                             unsigned int i_derivative,
-                                                             real*        o_timeIntegrated,
-                                                             real*        o_timeDerivatives );
+                                       real*        o_timeIntegrated,
+                                       real*        o_timeDerivatives );
 
   public:
     /**
