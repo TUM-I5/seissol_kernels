@@ -468,7 +468,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
         }
 
         // current timings of all cells
-        real l_currentTime[5];
+        double l_currentTime[5];
         m_denseMatrix.setRandomValues( 5, l_currentTime );
 
         for( int l_neighbor = 1; l_neighbor < 5; l_neighbor++ ) {

@@ -61,8 +61,6 @@ seissol::kernels::Time::Time() {
       m_derivativesOffsets[l_order]  =  m_numberOfAlignedBasisFunctions[l_order-1] * NUMBER_OF_QUANTITIES;
       m_derivativesOffsets[l_order] +=  m_derivativesOffsets[l_order-1];
     }
-
-    m_dummyOffsets[l_order] = l_order%2 * NUMBER_OF_ALIGNED_DOFS;
   }
 
   // intialize the function pointers to the matrix kernels
@@ -88,48 +86,40 @@ void seissol::kernels::Time::computeAder(       double i_timeStepWidth,
   assert( ((uintptr_t)o_timeDerivatives)      % ALIGNMENT == 0 || o_timeDerivatives == NULL );
 
   /*
-   * Fall back to integration only if no derivatives are requested
-   */
-  real l_derivativesBuffer[NUMBER_OF_ALIGNED_DOFS*2] __attribute__((aligned(ALIGNMENT)));
-  unsigned int *l_derivativesOffsets;
-
-  if( o_timeDerivatives == NULL ) {
-    o_timeDerivatives = l_derivativesBuffer;
-    l_derivativesOffsets = m_dummyOffsets;
-  }
-  else {
-    l_derivativesOffsets = m_derivativesOffsets;
-  }
-
-  /*
    * compute ADER scheme.
    */
   // scalars in the taylor-series expansion
   real l_scalar = i_timeStepWidth;
 
   // temporary result
-  real l_temporaryResult[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(64)));
+  real l_temporaryResult[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(4096)));
+  real l_derivativesBuffer[NUMBER_OF_ALIGNED_DERS] __attribute__((aligned(4096)));
 
   // initialize time integrated DOFs and derivatives
   for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof++ ) {
-    o_timeDerivatives[l_dof] = i_degreesOfFreedom[l_dof];
+    l_derivativesBuffer[l_dof] = i_degreesOfFreedom[l_dof];
     o_timeIntegrated[l_dof]  = i_degreesOfFreedom[l_dof] * l_scalar;
+  }
+
+  for( unsigned int l_dof = NUMBER_OF_ALIGNED_DOFS; l_dof < NUMBER_OF_ALIGNED_DERS; l_dof++ ) {
+    l_derivativesBuffer[l_dof] = 0.0;
+  }
+
+  // stream out frist derivative (order 0)
+  if ( o_timeDerivatives != NULL ) {
+    streamstoreFirstDerivative( i_degreesOfFreedom,
+                                o_timeDerivatives );
   }
 
   // compute all derivatives and contributions to the time integrated DOFs
   for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
-    // reset derivatives to zero
-    memset( o_timeDerivatives+l_derivativesOffsets[l_derivative],
-            0,
-            m_numberOfAlignedBasisFunctions[l_derivative]*NUMBER_OF_QUANTITIES*sizeof(real) );
-
     // iterate over dimensions 
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
       // compute $K_{\xi_c}.Q_k$ and $(K_{\xi_c}.Q_k).A*$
-      m_matrixKernels[ (l_derivative-1)*4 + l_c ] ( i_stiffnessMatrices[l_c], o_timeDerivatives+l_derivativesOffsets[l_derivative-1],  l_temporaryResult,
+      m_matrixKernels[ (l_derivative-1)*4 + l_c ] ( i_stiffnessMatrices[l_c], l_derivativesBuffer+m_derivativesOffsets[l_derivative-1],  l_temporaryResult,
                                                     NULL,                     NULL,                                                    NULL                                                  ); // These will be be ignored
 
-      m_matrixKernels[ (l_derivative-1)*4 + 3   ] ( l_temporaryResult,        i_starMatrices[l_c],                                     o_timeDerivatives+l_derivativesOffsets[l_derivative],
+      m_matrixKernels[ (l_derivative-1)*4 + 3   ] ( l_temporaryResult,        i_starMatrices[l_c],                                     l_derivativesBuffer+m_derivativesOffsets[l_derivative],
                                                     NULL,                     NULL,                                                    NULL                                                  ); // These will be be ignored
     }
 
@@ -137,15 +127,304 @@ void seissol::kernels::Time::computeAder(       double i_timeStepWidth,
     l_scalar *= i_timeStepWidth / real(l_derivative+1);
 
     // update time integrated DOFs
-    for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
-      for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[l_derivative]; l_basisFunction++ ) {
-        o_timeIntegrated[ l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS + l_basisFunction ] += l_scalar * o_timeDerivatives[   l_derivativesOffsets[l_derivative]
-                                                                                                                            + l_quantity*m_numberOfAlignedBasisFunctions[l_derivative]
-                                                                                                                            + l_basisFunction  ];
-      }
+    if (o_timeDerivatives != NULL) {
+      integrateInTimeStreamstoreDerivatives( l_derivativesBuffer,
+                                             l_scalar,
+                                             l_derivative,
+                                             o_timeIntegrated,
+                                             o_timeDerivatives );
+    } else {
+      integrateInTime( l_derivativesBuffer,
+                       l_scalar,
+                       l_derivative,
+                       o_timeIntegrated );
     }
   }
+}
 
+void seissol::kernels::Time::streamstoreFirstDerivative( const real* i_degreesOfFreedom,
+                                                                real* o_derivativesBuffer ) {
+#if defined(__AVX512F__) 
+#if defined(DOUBLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=8 ) {
+    _mm512_stream_pd(&(o_derivativesBuffer[l_dof]), _mm512_load_pd(&(i_degreesOfFreedom[l_dof])));
+  }
+#elif defined(SINGLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=16 ) {
+    _mm512_stream_ps(&(o_derivativesBuffer[l_dof]), _mm512_load_ps(&(i_degreesOfFreedom[l_dof])));
+  }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__AVX__)
+#if defined(DOUBLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=4 ) {
+    _mm256_stream_pd(&(o_derivativesBuffer[l_dof]), _mm256_load_pd(&(i_degreesOfFreedom[l_dof])));
+  }
+#elif defined(SINGLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=8 ) {
+    _mm256_stream_ps(&(o_derivativesBuffer[l_dof]), _mm256_load_ps(&(i_degreesOfFreedom[l_dof])));
+  }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__SSE3__)
+#if defined(DOUBLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=2 ) {
+    _mm_stream_pd(&(o_derivativesBuffer[l_dof]), _mm_load_pd(&(i_degreesOfFreedom[l_dof])));
+  }
+#elif defined(SINGLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=4 ) {
+    _mm_stream_ps(&(o_derivativesBuffer[l_dof]), _mm_load_ps(&(i_degreesOfFreedom[l_dof])));
+  }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__MIC__)
+#if defined(DOUBLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=8 ) {
+    _mm512_storenrngo_pd(&(o_derivativesBuffer[l_dof]), _mm512_load_pd(&(i_degreesOfFreedom[l_dof])));
+  }
+#elif defined(SINGLE_PRECISION)
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof+=16 ) {
+    _mm512_storenrngo_ps(&(o_derivativesBuffer[l_dof]), _mm512_load_ps(&(i_degreesOfFreedom[l_dof])));
+  }
+#else
+#error no precision was defined 
+#endif
+#else
+  for( unsigned int l_dof = 0; l_dof < NUMBER_OF_ALIGNED_DOFS; l_dof++ ) {
+    o_derivativesBuffer[l_dof] = i_degreesOfFreedom[l_dof];
+  }
+#endif
+}
+
+void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBuffer,
+                                                    real         i_scalar,
+                                                    unsigned int i_derivative,
+                                                    real*        o_timeIntegrated ) {
+#if defined(DOUBLE_PRECISION)
+#if defined(__AVX512F__)
+  __m512d l_intrin_scalar = _mm512_broadcast_f64x4(_mm256_broadcast_sd(&i_scalar));
+#elif defined(__AVX__)
+  __m256d l_intrin_scalar = _mm256_broadcast_sd(&i_scalar);
+#elif defined(__SSE3__)
+  __m128d l_intrin_scalar = _mm_loaddup_pd(&i_scalar);
+#elif defined(__MIC__)
+  __m512d l_intrin_scalar = _mm512_extload_pd(&i_scalar, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+#endif
+#elif defined(SINGLE_PRECISION)
+#if defined(__AVX512F__)
+  __m512 l_intrin_scalar = _mm512_broadcast_f32x8(_mm256_broadcast_ss(&i_scalar));
+#elif defined(__AVX__)
+  __m256 l_intrin_scalar = _mm256_broadcast_ss(&i_scalar);
+#elif defined(__SSE3__)
+  __m128 l_intrin_scalar = _mm_load_ss(&i_scalar);
+  l_intrin_scalar = _mm_shuffle_ps(l_intrin_scalar, l_intrin_scalar, 0x00);
+#elif defined(__MIC__)
+  __m512 l_intrin_scalar = _mm512_extload_ps(&i_scalar, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, _MM_HINT_NONE);
+#endif
+#else
+#error no precision was defined 
+#endif
+
+  for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
+    unsigned int l_tint_offset = l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS;
+    unsigned int l_ders_offset = m_derivativesOffsets[i_derivative] + (l_quantity*m_numberOfAlignedBasisFunctions[i_derivative]);
+#if defined(__AVX512F__) || defined(__MIC__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m512d l_source =  _mm512_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm512_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm512_fmadd_pd(l_intrin_scalar, l_source, _mm512_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=16 ) {
+      __m512 l_source =  _mm512_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm512_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm512_fmadd_ps(l_intrin_scalar, l_source, _mm512_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__AVX2__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m256d l_source = _mm256_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_fmadd_pd(l_intrin_scalar, l_source, _mm256_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m256 l_source = _mm256_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_fmadd_ps(l_intrin_scalar, l_source, _mm256_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__AVX__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m256d l_source = _mm256_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_add_pd(_mm256_mul_pd(l_intrin_scalar, l_source), _mm256_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m256 l_source = _mm256_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_add_ps(_mm256_mul_ps(l_intrin_scalar, l_source), _mm256_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__SSE3__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=2 ) {
+      __m128d l_source = _mm_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm_add_pd(_mm_mul_pd(l_intrin_scalar, l_source), _mm_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m128 l_source = _mm_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm_add_ps(_mm_mul_ps(l_intrin_scalar, l_source), _mm_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+    }
+#else
+#error no precision was defined 
+#endif
+#else
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction++ ) {
+      o_timeIntegrated[ l_tint_offset + l_basisFunction ] += l_scalar * i_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
+    }
+#endif
+  }
+}
+
+void seissol::kernels::Time::integrateInTimeStreamstoreDerivatives( const real*        i_derivativesBuffer,
+                                                                          real         i_scalar,
+                                                                          unsigned int i_derivative,
+                                                                          real*        o_timeIntegrated,
+                                                                          real*        o_timeDerivatives ) {
+#if defined(DOUBLE_PRECISION)
+#if defined(__AVX512F__)
+  __m512d l_intrin_scalar = _mm512_broadcast_f64x4(_mm256_broadcast_sd(&i_scalar));
+#elif defined(__AVX__)
+  __m256d l_intrin_scalar = _mm256_broadcast_sd(&i_scalar);
+#elif defined(__SSE3__)
+  __m128d l_intrin_scalar = _mm_loaddup_pd(&i_scalar);
+#elif defined(__MIC__)
+  __m512d l_intrin_scalar = _mm512_extload_pd(&i_scalar, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+#endif
+#elif defined(SINGLE_PRECISION)
+#if defined(__AVX512F__)
+  __m512 l_intrin_scalar = _mm512_broadcast_f32x8(_mm256_broadcast_ss(&i_scalar));
+#elif defined(__AVX__)
+  __m256 l_intrin_scalar = _mm256_broadcast_ss(&i_scalar);
+#elif defined(__SSE3__)
+  __m128 l_intrin_scalar = _mm_load_ss(&i_scalar);
+  l_intrin_scalar = _mm_shuffle_ps(l_intrin_scalar, l_intrin_scalar, 0x00);
+#elif defined(__MIC__)
+  __m512 l_intrin_scalar = _mm512_extload_ps(&i_scalar, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, _MM_HINT_NONE);
+#endif
+#else
+#error no precision was defined 
+#endif
+
+  for( unsigned int l_quantity = 0; l_quantity < NUMBER_OF_QUANTITIES; l_quantity++ ) {
+    unsigned int l_tint_offset = l_quantity*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS;
+    unsigned int l_ders_offset = m_derivativesOffsets[i_derivative] + (l_quantity*m_numberOfAlignedBasisFunctions[i_derivative]);
+#if defined(__AVX512F__) || defined(__MIC__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m512d l_source =  _mm512_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm512_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm512_fmadd_pd(l_intrin_scalar, l_source, _mm512_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+#ifdef __AVX512F__
+      _mm512_stream_pd(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+#endif
+#ifdef __MIC__
+      _mm512_storenrngo_pd(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+#endif
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=16 ) {
+      __m512 l_source =  _mm512_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm512_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm512_fmadd_ps(l_intrin_scalar, l_source, _mm512_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+#ifdef __AVX512F__
+      _mm512_stream_ps(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+#endif
+#ifdef __MIC__
+      _mm512_storenrngo_ps(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+#endif
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__AVX2__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m256d l_source = _mm256_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_fmadd_pd(l_intrin_scalar, l_source, _mm256_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm256_stream_pd(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m256 l_source = _mm256_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_fmadd_ps(l_intrin_scalar, l_source, _mm256_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm256_stream_ps(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__AVX__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m256d l_source = _mm256_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_add_pd(_mm256_mul_pd(l_intrin_scalar, l_source), _mm256_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm256_stream_pd(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=8 ) {
+      __m256 l_source = _mm256_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm256_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm256_add_ps(_mm256_mul_ps(l_intrin_scalar, l_source), _mm256_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm256_stream_ps(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#else
+#error no precision was defined 
+#endif
+#elif defined(__SSE3__)
+#if defined(DOUBLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=2 ) {
+      __m128d l_source = _mm_load_pd(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm_store_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm_add_pd(_mm_mul_pd(l_intrin_scalar, l_source), _mm_load_pd(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm_stream_pd(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#elif defined(SINGLE_PRECISION)
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction+=4 ) {
+      __m128 l_source = _mm_load_ps(&(i_derivativesBuffer[ l_ders_offset + l_basisFunction  ]));
+      _mm_store_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]),
+                      _mm_add_ps(_mm_mul_ps(l_intrin_scalar, l_source), _mm_load_ps(&(o_timeIntegrated[ l_tint_offset + l_basisFunction ]))));
+      _mm_stream_ps(&(o_timeDerivatives[ l_ders_offset + l_basisFunction ]), l_source);
+    }
+#else
+#error no precision was defined 
+#endif
+#else
+    for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction++ ) {
+      o_timeIntegrated[ l_tint_offset + l_basisFunction ] += l_scalar * i_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
+      o_timeDerivatives[ l_ders_offset + l_basisFunction ] = l_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
+    }
+#endif
+  }
 }
 
 void seissol::kernels::Time::flopsAder( unsigned int        &o_nonZeroFlops,
@@ -287,31 +566,31 @@ void seissol::kernels::Time::computeIntegrals( unsigned short      i_ltsSetup,
 
 #ifndef NDEBUG
   // alignment of the time derivatives/integrated dofs and the buffer
-  for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    assert( ((uintptr_t)i_timeDofs[l_neighbor])          % ALIGNMENT == 0 );
-    assert( ((uintptr_t)o_integrationBuffer[l_neighbor]) % ALIGNMENT == 0 );
+  for( int l_dofeighbor = 0; l_dofeighbor < 4; l_dofeighbor++ ) {
+    assert( ((uintptr_t)i_timeDofs[l_dofeighbor])          % ALIGNMENT == 0 );
+    assert( ((uintptr_t)o_integrationBuffer[l_dofeighbor]) % ALIGNMENT == 0 );
   }
 #endif
 
   /*
    * set/compute time integrated DOFs.
    */
-  for( unsigned int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
+  for( unsigned int l_dofeighbor = 0; l_dofeighbor < 4; l_dofeighbor++ ) {
     // collect information only in the case that neighboring element contributions are required
-    if( i_faceTypes[l_neighbor] != outflow && i_faceTypes[l_neighbor] != dynamicRupture ) {
+    if( i_faceTypes[l_dofeighbor] != outflow && i_faceTypes[l_dofeighbor] != dynamicRupture ) {
       // check if the time integration is already done (-> copy pointer)
-      if( (i_ltsSetup >> l_neighbor ) % 2 == 0 ) {
-        o_timeIntegrated[l_neighbor] = i_timeDofs[l_neighbor];
+      if( (i_ltsSetup >> l_dofeighbor ) % 2 == 0 ) {
+        o_timeIntegrated[l_dofeighbor] = i_timeDofs[l_dofeighbor];
       }
       // integrate the DOFs in time via the derivatives and set pointer to local buffer
       else {
-        seissol::kernels::Time::computeIntegral(  i_currentTime[    l_neighbor+1],
+        seissol::kernels::Time::computeIntegral(  i_currentTime[    l_dofeighbor+1],
                                                   i_currentTime[    0           ],
                                                   i_currentTime[    0           ] + i_timeStepWidth,
-                                                  i_timeDofs[       l_neighbor],
-                                                  o_integrationBuffer[ l_neighbor]                  );
+                                                  i_timeDofs[       l_dofeighbor],
+                                                  o_integrationBuffer[ l_dofeighbor]                  );
 
-        o_timeIntegrated[l_neighbor] = o_integrationBuffer[ l_neighbor];
+        o_timeIntegrated[l_dofeighbor] = o_integrationBuffer[ l_dofeighbor];
       }
     }
   }

@@ -89,9 +89,15 @@ class unit_test::DenseMatrix {
      * @param i_length length of the array.
      * @param o_array array to fill.
      **/
-    void setRandomValues( int i_length, real *o_array ) {
+    void setRandomValues( int i_length, double *o_array ) {
       for( int l_i = 0; l_i < i_length; l_i++) {
-        o_array[l_i] = ((real)rand()/(real)RAND_MAX)*0.1;
+        o_array[l_i] = ((double)rand()/(double)RAND_MAX)*0.1;
+      }
+    }
+
+    void setRandomValues( int i_length, float *o_array ) {
+      for( int l_i = 0; l_i < i_length; l_i++) {
+        o_array[l_i] = ((float)rand()/(float)RAND_MAX)*0.1;
       }
     }
 

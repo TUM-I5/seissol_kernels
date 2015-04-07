@@ -112,14 +112,6 @@ class seissol::kernels::Time {
     unsigned int m_derivativesOffsets[CONVERGENCE_ORDER];
 
     /**
-     * Dummy offsets for non-derivative ADER calls.
-     *
-     * * (index modulo 2 == 0) is always zero.
-     * * (index modulo 2 == 1) is always NUMBER_OF_ALIGNED_DOFS
-     **/
-    unsigned int m_dummyOffsets[CONVERGENCE_ORDER];
-
-    /**
      * Collection of matrix kernels, which perform the matrix product \f$ C += A.B\f$,
      * where \f$ A \f$ is a global transposed stiffness matrix (case a) or B a star matrix (case b).
      * Each matrix kernel can be dense or sparse.
@@ -164,6 +156,20 @@ class seissol::kernels::Time {
      * Number of floating point operations in hardware performed by each matrix kernels
      **/
     unsigned int m_hardwareFlops[(CONVERGENCE_ORDER-1)*4];
+
+    inline void streamstoreFirstDerivative( const real*   i_degreesOfFreedom,
+                                                   real*   o_derivativesBuffer );
+
+    inline void integrateInTime( const real*        i_derivativeBuffer,
+                                       real         i_scalar,
+                                       unsigned int i_derivative,
+                                       real*        o_timeIntegrated );
+
+    inline void integrateInTimeStreamstoreDerivatives( const real*        i_derivativeBuffer,
+                                                             real         i_scalar,
+                                                             unsigned int i_derivative,
+                                                             real*        o_timeIntegrated,
+                                                             real*        o_timeDerivatives );
 
   public:
     /**
