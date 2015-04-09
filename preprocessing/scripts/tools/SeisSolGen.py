@@ -129,6 +129,7 @@ class SeisSolGen:
         l_includeGuardName = re.sub("[^a-zA-Z]","",  l_file).upper() # remove non letters, uppercase
         l_includeCommand = '#ifndef ' + l_includeGuardName + '\n' \
                            '#define ' + l_includeGuardName + '\n\n' \
+                           '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'\
                            '#include <cstddef>\n'\
                            '#ifndef NDEBUG\n'\
                            'extern long long libxsmm_num_total_flops;\n'\
