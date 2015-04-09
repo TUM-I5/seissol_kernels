@@ -70,13 +70,13 @@ class seissol::kernels::Boundary {
      *
      * @param i_A left/flux matrix (case a) or unknowns matrix (case b).
      * @param i_B right/unknowns matrix (case a) or flux solver (case b).
-     * @param i_C result matrix.
+     * @param io_C result matrix.
      * @param i_APrefetch left matrix \f$ A \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[54])( real *i_A,         real *i_B,         real *io_C,
-                                 real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
+    void (*m_matrixKernels[54])( const real *i_A,         const real *i_B,               real *io_C,
+                                 const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );
 
     /**
      * Number of non-zero floating point operations performed by each matrix kernel.

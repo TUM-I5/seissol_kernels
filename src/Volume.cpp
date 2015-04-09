@@ -49,6 +49,9 @@
 
 #include <cassert>
 #include <stdint.h>
+#if defined(__SSE3__) || defined(__MIC__)
+#include <immintrin.h>
+#endif
 
 seissol::kernels::Volume::Volume() {
   // intialize the function pointers to the matrix kernels

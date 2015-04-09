@@ -129,10 +129,9 @@ class SeisSolGen:
         l_includeGuardName = re.sub("[^a-zA-Z]","",  l_file).upper() # remove non letters, uppercase
         l_includeCommand = '#ifndef ' + l_includeGuardName + '\n' \
                            '#define ' + l_includeGuardName + '\n\n' \
-                           '#if defined( __SSE3__) || defined(__MIC__)\n#include <immintrin.h>\n#endif\n\n'\
                            '#include <cstddef>\n'\
                            '#ifndef NDEBUG\n'\
-                           'extern unsigned long long num_flops;\n'\
+                           'extern long long libxsmm_num_total_flops;\n'\
                            '#endif\n\n'
         l_outputFile = open(l_pathToOutputFile ,'a')
 
@@ -149,8 +148,8 @@ class SeisSolGen:
       for l_matrix in l_denseMatrices + l_sparseMatrices:
         # write header
         l_header = open(l_outputDir+'/'+l_matrix['fileNameOfGeneratedKernel']+'.h', 'a')
-        l_header.write( 'void ' + l_matrix['routine_name']+'(real *i_A, real *i_B, real *io_C,'\
-                                                            'real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );\n' )
+        l_header.write( 'void ' + l_matrix['routine_name']+'(const real *i_A, const real *i_B, real *io_C,'\
+                                                            'const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );\n' )
         l_header.close()
 
         # output file

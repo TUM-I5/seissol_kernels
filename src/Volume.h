@@ -76,8 +76,8 @@ class seissol::kernels::Volume {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[4])( real *i_A,         real *i_B,         real *io_C,
-                                real *i_APrefetch, real *i_BPrefetch, real *i_CPrefetch );
+    void (*m_matrixKernels[4])( const real *i_A,         const real *i_B,               real *io_C,
+                                const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );
 
     /**
      * Number of non-zero floating point operations performed by each matrix kernel.
