@@ -45,6 +45,7 @@
 
 #ifndef NDEBUG
 #pragma message "compiling time kernel with assertions"
+extern long long libxsmm_num_total_flops;
 #endif
 
 #include <cstring>
@@ -103,6 +104,13 @@ void seissol::kernels::Time::computeAder(       double i_timeStepWidth,
     l_derivativesBuffer[l_dof] = i_degreesOfFreedom[l_dof];
     o_timeIntegrated[l_dof]  = i_degreesOfFreedom[l_dof] * l_scalar;
   }
+
+#ifndef NDEBUG
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+  libxsmm_num_total_flops += NUMBER_OF_ALIGNED_DOFS;
+#endif
 
   for( unsigned int l_dof = NUMBER_OF_ALIGNED_DOFS; l_dof < NUMBER_OF_ALIGNED_DERS; l_dof++ ) {
     l_derivativesBuffer[l_dof] = 0.0;
@@ -223,6 +231,14 @@ void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBu
 #endif
 #else
 #error no precision was defined 
+#endif
+
+#ifndef NDEBUG
+  long long temp_flops = NUMBER_OF_QUANTITIES*(m_numberOfAlignedBasisFunctions[i_derivative])*2.0;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+  libxsmm_num_total_flops += temp_flops;
 #endif
 
   if (o_timeDerivatives == NULL) {
