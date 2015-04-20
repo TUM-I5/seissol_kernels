@@ -353,7 +353,10 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
 
-              l_fluxMatrix_prefetch = 'pfsigonly'
+              if l_architecture in ['wsm', 'snb', 'hsw']:
+                l_fluxMatrix_prefetch = 'BL2viaC'
+              else:
+                l_fluxMatrix_prefetch = 'pfsigonly'
 
               l_globalDgemm = l_globalDgemm + self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
@@ -366,11 +369,16 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
 
+              if l_architecture in ['wsm', 'snb', 'hsw']:
+                l_starSolver_prefetch = 'pfsigonly'
+              else:
+                l_starSolver_prefetch = 'pfsigonly'
+
               l_localDgemm  = l_localDgemm + self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision,
-                                                                                   i_prefetch                = 'pfsigonly' )
+                                                                                   i_prefetch                = l_starSolver_prefetch )
 
             l_sourceCode = l_sourceCode + '\n#ifdef ' + l_kernel.upper() + '_KERNEL\n'
 
