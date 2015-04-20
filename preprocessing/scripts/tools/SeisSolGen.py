@@ -166,7 +166,9 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_a'])     +\
                                     ' '+str(l_matrix['ld_b'])     +\
                                     ' '+str(l_matrix['ld_c'])     +\
+                                    ' 1 1'                        +\
                                     ' '+str(int(l_matrix['add']))
+          # 1 1: we always rely on alignment based on LDA and LDC
         else:
           # convert to temporary csc file
           l_cscFile = tempfile.NamedTemporaryFile(); l_csrFile = tempfile.NamedTemporaryFile();
@@ -185,7 +187,9 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_a'])     +\
                                     ' '+str(l_matrix['ld_b'])     +\
                                     ' '+str(l_matrix['ld_c'])     +\
+                                    ' 1 1'                        +\
                                     ' '+str(int(l_matrix['add']))
+          # 1 1: we always rely on alignment based on LDA and LDC
 
         l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
 
