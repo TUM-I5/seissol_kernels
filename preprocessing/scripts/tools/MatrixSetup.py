@@ -420,8 +420,10 @@ class MatrixSetup:
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
         
-        if l_architecture in ['wsm', 'snb', 'hsw']:
+        if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
           l_fluxMatrix_prefetch = 'BL2viaC'
+        elif l_architecture in ['knl']:
+          l_fluxMatrix_prefetch = 'curAL2_BL2viaC'
         else:
           l_fluxMatrix_prefetch = 'pfsigonly'
 
@@ -436,8 +438,10 @@ class MatrixSetup:
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
-        if l_architecture in ['wsm', 'snb', 'hsw']:
+        if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
           l_starSolver_prefetch = 'pfsigonly'
+        elif l_architecture in ['knl']:
+          l_starSolver_prefetch = 'AL2jpst_BL2viaC'
         else:
           l_starSolver_prefetch = 'pfsigonly'
 

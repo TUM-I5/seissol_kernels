@@ -70,11 +70,19 @@ elseif( ${ARCHITECTURE_PLAIN} STREQUAL hsw )
   add_definitions( -DALIGNMENT=32
                    -xCORE-AVX2
                    -fma )
+elseif( ${ARCHITECTURE_PLAIN} STREQUAL skx )
+  add_definitions( -DALIGNMENT=64
+                   -xCORE-AVX512
+                   -fma )
 elseif( ${ARCHITECTURE_PLAIN} STREQUAL knc )
   add_definitions( -DALIGNMENT=64
                    -mmic
                    -fma )
   set( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -mmic" )
+elseif( ${ARCHITECTURE_PLAIN} STREQUAL knl )
+  add_definitions( -DALIGNMENT=64
+                   -xMIC-AVX512
+                   -fma )
 else()
   message( FATAL_ERROR "GENERATED_KERNELS ${GENERATED_KERNELS} not supported" )
 endif()
