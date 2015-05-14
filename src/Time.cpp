@@ -217,6 +217,8 @@ void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBu
   __m128d l_intrin_scalar = _mm_loaddup_pd(&i_scalar);
 #elif defined(__MIC__)
   __m512d l_intrin_scalar = _mm512_extload_pd(&i_scalar, _MM_UPCONV_PD_NONE, _MM_BROADCAST_1X8, _MM_HINT_NONE);
+#else
+  real l_scalar = i_scalar;
 #endif
 #elif defined(SINGLE_PRECISION)
 #if defined(__AVX512F__)
@@ -228,6 +230,8 @@ void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBu
   l_intrin_scalar = _mm_shuffle_ps(l_intrin_scalar, l_intrin_scalar, 0x00);
 #elif defined(__MIC__)
   __m512 l_intrin_scalar = _mm512_extload_ps(&i_scalar, _MM_UPCONV_PS_NONE, _MM_BROADCAST_1X16, _MM_HINT_NONE);
+#else
+  real l_scalar = i_scalar;
 #endif
 #else
 #error no precision was defined 
@@ -404,7 +408,7 @@ void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBu
 #else
       for( unsigned int l_basisFunction = 0; l_basisFunction < m_numberOfAlignedBasisFunctions[i_derivative]; l_basisFunction++ ) {
         o_timeIntegrated[ l_tint_offset + l_basisFunction ] += l_scalar * i_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
-        o_timeDerivatives[ l_ders_offset + l_basisFunction ] = l_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
+        o_timeDerivatives[ l_ders_offset + l_basisFunction ] = i_derivativesBuffer[ l_ders_offset + l_basisFunction  ];
       }
 #endif
     }
