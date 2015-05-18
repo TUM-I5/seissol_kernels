@@ -140,7 +140,7 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
       real l_degreesOfFreedomUT[NUMBER_OF_DOFS];
 
       // setup matrix path
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesFile();
 
       // read in the matrices for our unit tests
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -255,8 +255,8 @@ class unit_test::VolumeKernelTestSuite: public CxxTest::TestSuite {
      * Tests the flop-counters.
      **/
     void testIntegralFlops() {
-      unsigned int l_nonZeroFlops  = -1;
-      unsigned int l_hardwareFlops = -1;
+      unsigned int l_nonZeroFlops  = 0;
+      unsigned int l_hardwareFlops = 0;
 
       // volume kernel
       seissol::kernels::Volume l_volumeKernel;

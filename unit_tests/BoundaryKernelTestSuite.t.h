@@ -60,9 +60,6 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
     //! path to the source directory of the unit tests
     std::string m_unitTestsSrcDirectory;
 
-    //! path to the matrice directory
-    std::string m_matricesDirectory;
-
     //! #repeats for random unit tests
     int m_numberOfRepeats;
 
@@ -77,8 +74,6 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
       // get unit tests src directory
       m_unitTestsSrcDirectory = m_configuration.getUnitTestsSrcDirectory();
 
-      m_matricesDirectory = m_configuration.getMatricesDirectory();
-
       // generate random seed
       srand(time(NULL));
     }
@@ -88,7 +83,7 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
      **/
     void testBoundaryKernel() {
       //! path to matrix set-up
-      std::string l_matricesPath = m_matricesDirectory + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesFile();
 
       //! matrix of degrees of freedom
       real l_degreesOfFreedom[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(ALIGNMENT)));
@@ -294,8 +289,8 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
      * Tests the local flop-counters.
      **/
     void testLocalFlops() {
-      unsigned int   l_nonZeroFlops  = -1;
-      unsigned int   l_hardwareFlops = -1;
+      unsigned int   l_nonZeroFlops  = 0;
+      unsigned int   l_hardwareFlops = 0;
       enum faceType  l_faceTypes[4];
 
       // volume kernel
@@ -336,8 +331,8 @@ class unit_test::BoundaryIntegratorTestSuite: public CxxTest::TestSuite {
      * Tests the neighboring flop-counters.
      **/
     void testNeighboringFlops() {
-      unsigned int   l_nonZeroFlops  = -1;
-      unsigned int   l_hardwareFlops = -1;
+      unsigned int   l_nonZeroFlops  = 0;
+      unsigned int   l_hardwareFlops = 0;
       enum faceType  l_faceTypes[4];
       int   l_neighboringIndices[4][2];
 

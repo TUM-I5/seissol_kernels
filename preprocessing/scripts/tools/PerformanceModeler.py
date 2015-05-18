@@ -47,7 +47,7 @@ import csv
 import ntpath
 import os
 
-import tools.Logger as l_logger
+import Logger as l_logger
 
 class PerformanceModeler():
   # mapping: #basis functions -> polynomial degree

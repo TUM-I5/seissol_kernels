@@ -37,12 +37,36 @@
 # @section DESCRIPTION
 # Builds the seissol_kernels unit tests.
 
-cmake_minimum_required( VERSION 2.6 )
+cmake_minimum_required( VERSION 2.8 )
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 #option( GENERATED_KERNELS "Generated kernels to use: swsm, dwsm, ssnb, dsnb, sknc, dknc, shsw, dhsw" )
 #option( CONVERGENCE_ORDER "Convergence order of the ADER-DG scheme" )
 #option( GENERATED_CODE    "Generated code to use" )
-#option( SEISSOL_PROXY     "Location to the the seissol proxy" )
+option( SEISSOL_PROXY     "Location to the the seissol proxy" )
+
+macro (test_cache_enum var)
+	get_property (value CACHE ${var} PROPERTY VALUE)
+	get_property (enum CACHE ${var} PROPERTY STRINGS)
+	list (FIND enum "${value}" val_in_enum)
+	if (val_in_enum LESS 0)
+		message (FATAL_ERROR "Set ${var} to one of the following: ${enum}")
+	endif ()
+endmacro ()
+
+set (GENERATED_KERNELS "" CACHE STRING "Generated kernels to use")
+set_property (CACHE GENERATED_KERNELS PROPERTY STRINGS swsm dwsm ssnb dsnb sknc dknc shsw dhsw)
+test_cache_enum (GENERATED_KERNELS)
+
+set (CONVERGENCE_ORDER "" CACHE STRING "Convergence order")
+set_property (CACHE CONVERGENCE_ORDER PROPERTY STRINGS 2 3 4 5 6 7 8)
+test_cache_enum (CONVERGENCE_ORDER)
+
+set (GENERATED_CODE "" CACHE PATH "Path to generated code")
+if (NOT EXISTS "${GENERATED_CODE}/matrix_kernels/")
+	message("Could not find ${GENERATED_CODE}/matrix_kernels/. Did you set GENERATED_CODE?")
+endif ()
+
 
 # set convergence order
 add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
@@ -140,9 +164,6 @@ endif()
 # add unit tests
 find_package( CxxTest )
 if(CXXTEST_FOUND)
-  # enable C++11
-  ADD_DEFINITIONS( -std=c++11 )
-
   set( CXXTEST_USE_PYTHON TRUE )
   include_directories( ${CXXTEST_INCLUDE_DIR} )
   enable_testing()

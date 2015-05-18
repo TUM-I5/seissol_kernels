@@ -40,8 +40,8 @@
 # Generates unit tests for matrix kernels.
 #
 
-import tools.Logger as l_logger
-import tools.SeisSolGen as l_seisSolGen
+import Logger as l_logger
+import SeisSolGen as l_seisSolGen
 
 class UnitTestGenerator():
   ###

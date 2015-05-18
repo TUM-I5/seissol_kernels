@@ -51,8 +51,8 @@ from datetime import datetime
 from matplotlib import pyplot, colors
 from pylab import *
 
-import tools.MatrixConverter as l_matrixConverter
-import tools.Logger as l_logger
+import MatrixConverter as l_matrixConverter
+import Logger as l_logger
 
 ###
 ### Local functions

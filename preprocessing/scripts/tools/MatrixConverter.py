@@ -48,7 +48,7 @@ from pylab import savefig
 from numpy import arange, nonzero, sort
 from lxml import etree
 
-import tools.Logger as l_logger
+import Logger as l_logger
 
 import os
 
