@@ -166,8 +166,9 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_a'])     +\
                                     ' '+str(l_matrix['ld_b'])     +\
                                     ' '+str(l_matrix['ld_c'])     +\
-                                    ' 1 1'                        +\
-                                    ' '+str(int(l_matrix['add']))
+                                    ' 1'                          +\
+                                    ' '+str(int(l_matrix['add'])) +\
+                                    ' 1 1'
           # 1 1: we always rely on alignment based on LDA and LDC
         else:
           # convert to temporary csc file
@@ -187,8 +188,9 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_a'])     +\
                                     ' '+str(l_matrix['ld_b'])     +\
                                     ' '+str(l_matrix['ld_c'])     +\
-                                    ' 1 1'                        +\
-                                    ' '+str(int(l_matrix['add']))
+                                    ' 1'                          +\
+                                    ' '+str(int(l_matrix['add'])) +\
+                                    ' 1 1'
           # 1 1: we always rely on alignment based on LDA and LDC
 
         l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
@@ -353,8 +355,10 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw']:
+              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
                 l_fluxMatrix_prefetch = 'BL2viaC'
+              elif l_architecture in ['knl']:
+                l_fluxMatrix_prefetch = 'curAL2_BL2viaC'
               else:
                 l_fluxMatrix_prefetch = 'pfsigonly'
 
@@ -369,8 +373,10 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = 9,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw']:
+              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
                 l_starSolver_prefetch = 'pfsigonly'
+              elif l_architecture in ['knl']:
+                l_starSolver_prefetch = 'AL2jpst_BL2viaC'
               else:
                 l_starSolver_prefetch = 'pfsigonly'
 

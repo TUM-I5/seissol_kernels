@@ -197,7 +197,7 @@ class Configuration():
   m_matrixMarketFiles = {}
   m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81 } }
 
-  m_architectures = ['wsm', 'snb', 'hsw', 'knc', 'noarch']
+  m_architectures = ['wsm', 'snb', 'hsw', 'skx', 'knc', 'knl', 'noarch']
 
 
   m_bytesPerReal = { 's': 4,
@@ -206,7 +206,9 @@ class Configuration():
   m_alignments = {  'wsm': 16,
                     'snb': 32,
                     'hsw': 32,
+                    'skx': 64,
                     'knc': 64,
+                    'knl': 64,
                     'noarch': 16 }
 
   m_maximumDegree = 0
