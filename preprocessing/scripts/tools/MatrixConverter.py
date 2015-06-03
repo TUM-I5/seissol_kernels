@@ -45,7 +45,7 @@ from scipy.sparse import *
 
 from matplotlib import pyplot, colors
 from pylab import savefig
-from numpy import arange, nonzero, sort
+from numpy import arange, nonzero, sort, float64
 from lxml import etree
 
 import Logger as l_logger
@@ -148,7 +148,7 @@ class MatrixConverter():
     assert( l_matrixDimension[1] == l_numberOfQuantities )
 
     ###
-    # stiffness and flux matrices
+    # stiffness, flux, and mass matrices
     ##
     for l_degree in range(1,i_maximumDegreeOfBasisFunctions):
       #each matric is a dictionary containing information about it
@@ -156,7 +156,7 @@ class MatrixConverter():
 
       l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
 
-      l_logger.log( 'adding star, stiffness and flux matrices to dictionaries for: '+str(l_degree+1)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
+      l_logger.log( 'adding star, stiffness, flux, and mass matrices to dictionaries for: '+str(l_degree+1)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
 
       # name and filename of the stiffness matrices, TODO: avoid copy and paste code..
       l_kXi =   dict( matrixName = 'kXiDivM',   matrixMarketFileName='kXiDivM_3D_'   + str(l_degree) + '_maple.mtx' )
@@ -276,10 +276,33 @@ class MatrixConverter():
             l_matrixDimension = (open(l_fluxPlus[-1]['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
             assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
             assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      ###
+      # Mass matrices
+      ##
+      
+      l_m = dict( matrixName = 'm', matrixMarketFileName='m_3D_' + str(l_degree) + '_maple.mtx')
+      
+      # assert existence
+      assert( l_m['matrixMarketFileName']   in l_matrixFiles )
+
+      # build complete paths
+      l_m['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_m['matrixMarketFileName']
+
+      # assert correct dimensions within the files
+      l_matrixDimension = (open(l_m['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
 
       ###
       # Combine all matrices
       ##
+      
+      # add mass matrix
+      l_sparseMatrices.append( dict( name                   = l_m['matrixName'],
+                                     id                     = 60,
+                                     pathToMatrixMarketFile = l_m['pathToMatrixMarketFile']
+                                   )
+                             )
 
       # add star matrices for the volume integration to list of matrices (TODO: this loop needs to be extended for attenuation)
       l_sparseMatrices.append( dict( fileNameOfGeneratedKernel    = 'star_matrices_3d.hpp_include',
@@ -638,55 +661,36 @@ end do
     l_file.write(l_sourceCode)
     l_file.close()
 
-  # reads a matrix in market format.
+  # Reads a matrix in market format. We do not use mmread here, as we do
+  # not want any alteration of the values due to rounding issues.
   #
   # \input i_pathToMatrix path to the matrix.
   # \return dictionary with the matrix structure in coordinate format
   def readMatrixMarket( self,
-                        i_pathToMatrix,
-                      ):
-    l_matrixFile = open(i_pathToMatrix)
-
-    # jump over header
-    if(    l_matrixFile.readline() != "%%MatrixMarket matrix array real general\n" ):
-      print( 'aborting, wrong matrix market format' )
+                        i_pathToMatrix ):
+    matrixFile = open(i_pathToMatrix)
+    
+    if (not matrixFile.readline().startswith('%%MatrixMarket matrix array real general')):
+      print('Wrong matrix market format.')
       exit(1)
-
-    l_dimensions = l_matrixFile.readline().split()
-    l_numberOfRows    = int( l_dimensions[0] )
-    l_numberOfColumns = int( l_dimensions[1] )
-
-    l_row = 1; l_column = 1;
-
-    l_values = []
-    l_rows   = []
-    l_columns = []
-
-    while( True ):
-      l_value = l_matrixFile.readline().rstrip("\n");
-
-      if not l_value:
-        assert( l_row    == 1                   );
-        assert( l_column == l_numberOfColumns+1 );
-        break
       
-      if( l_value != "0." ):
-        l_values = l_values + [l_value]
-        l_rows = l_rows       + [l_row]
-        l_columns = l_columns + [l_column]
-
-      l_row = l_row + 1
-      if( l_row > l_numberOfRows ):
-        l_row = 1
-        l_column = l_column + 1
-
-    # return everythin
-    return { '#rows':    l_numberOfRows,
-             '#columns': l_numberOfColumns,
-             '#nnz':     len( l_values ),
-             'rows':     l_rows,
-             'columns':  l_columns,
-             'values':   l_values }
+    dimensions = matrixFile.readline().split()
+    numberOfRows = int(dimensions[0])
+    numberOfColumns = int(dimensions[1])
+    
+    matrix = numberOfRows * numberOfColumns * [(0, 0, '')]  # pre-allocate matrix
+    entry = 0
+    for line in matrixFile:
+      # format: row, column, value
+      matrix[entry] = (entry % numberOfRows + 1, entry / numberOfRows + 1, line.strip());
+      entry = entry + 1
+      
+    sparseMatrix = filter(lambda x: float64(x[2]) != 0.0, matrix)
+    
+    return { '#rows':     numberOfRows,
+             '#columns':  numberOfColumns,
+             'matrix':    sparseMatrix
+    }
 
   # Converts a given set of dense matrices to a single xml-file with sparse index storage.
   #
@@ -735,21 +739,20 @@ end do
           l_matrixType = "flux"
         elif 'kXi' in l_matrix['name'] or 'kEta' in l_matrix['name'] or 'kZeta' in l_matrix['name']:
           l_matrixType = "stiffness"
+        elif 'm' in l_matrix['name']:
+          l_matrixType = "inverseMass"
+          l_matrixStructure['matrix'] = [(x[0], x[1], '%.20f' % (1.0 / float64(x[2]))) for x in l_matrixStructure['matrix']]
         else:
           assert(False)
-
-        # assert dimensions match
-        assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['rows']   ) )
-        assert( len( l_matrixStructure['columns'] ) == len( l_matrixStructure['values'] ) )
 
         # matrix attributes
         l_global_matrix_attributes = {"name": l_matrix['name'], "id": str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
         # add node to XML
         l_global_matrix = etree.SubElement(l_global, l_matrixType, l_global_matrix_attributes) 
       
-        for l_entry in xrange( len( l_matrixStructure['rows'] ) ):
+        for l_entry in l_matrixStructure['matrix']:
           # element attributes
-          l_global_entry_attributes = {"row": str(l_matrixStructure['rows'][l_entry]), "column": str(l_matrixStructure['columns'][l_entry]), "value" : l_matrixStructure['values'][l_entry]}
+          l_global_entry_attributes = {"row": str(l_entry[0]), "column": str(l_entry[1]), "value" : l_entry[2]}
           # add node to XML
           l_global_entry = etree.SubElement(l_global_matrix, "entry", l_global_entry_attributes)
          
@@ -774,9 +777,9 @@ end do
           l_star_attributes = {"id" : str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
           l_star = etree.SubElement(l_local, "starMatrix", l_star_attributes)
       
-          for l_entry in xrange( len(l_matrixStructure['rows']) ):
+          for l_entry in l_matrixStructure['matrix']:
             # element attributes
-            l_star_entry_attributes = {"row" : str(l_matrixStructure['rows'][l_entry]), "column" : str(l_matrixStructure['columns'][l_entry]) }
+            l_star_entry_attributes = {"row" : str(l_entry[0]), "column" : str(l_entry[1]) }
             # add node to XML
             l_star_entry = etree.SubElement(l_star, "entry", l_star_entry_attributes)
           

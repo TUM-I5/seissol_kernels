@@ -320,7 +320,7 @@ class PerformanceModeler():
   def readMatricesFile( self, i_pathToMatricesFile ):
     l_logger.log( 'reading xml-file ' + i_pathToMatricesFile, 2 )
     # parse XML-file
-    l_xmlRoot = parse( i_pathToMatricesFile ).getroot()
+    l_xmlRoot = etree.parse( i_pathToMatricesFile ).getroot()
 
     l_matrices = {}
 
