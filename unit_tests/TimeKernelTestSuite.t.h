@@ -167,7 +167,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       real l_timeExtrapolatedUT[NUMBER_OF_DOFS];
 
       // location of the matrices
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesFile();
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -406,7 +406,7 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       m_denseMatrix.setRandomValues( 1, &l_timeStepWidth );
 
       // location of the matrices
-      std::string l_matricesPath = m_configuration.getMatricesDirectory() + "/matrices_" + std::to_string( (long long) NUMBER_OF_BASIS_FUNCTIONS) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesFile();
 
       // read matrices
       m_denseMatrix.readMatrices( l_matricesPath );
@@ -538,8 +538,8 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
     }
 
     void testAderFlops() {
-      unsigned int l_nonZeroFlops  = -1;
-      unsigned int l_hardwareFlops = -1;
+      unsigned int l_nonZeroFlops  = 0;
+      unsigned int l_hardwareFlops = 0;
 
       // volume kernel
       seissol::kernels::Time l_timeKernel;

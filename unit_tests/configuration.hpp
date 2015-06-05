@@ -134,6 +134,16 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       return m_matricesDirectory;
     }
 
+   /**
+    * Get the path of the matrices files.
+    * @return path to the matrices file.
+    **/
+    std::string getMatricesFile() const {
+      std::stringstream l_matricesFile;
+      l_matricesFile << m_matricesDirectory << "/matrices_" << NUMBER_OF_BASIS_FUNCTIONS << ".xml";
+      return l_matricesFile.str();
+    }
+
     /**
      * Get the minimum order to test against.
      * @return minimum order.

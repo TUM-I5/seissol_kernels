@@ -44,7 +44,7 @@
 import re
 import subprocess
 import tempfile
-import tools.Logger as l_logger
+import Logger as l_logger
 import MatrixConverter
 import xmltodict
 import logging

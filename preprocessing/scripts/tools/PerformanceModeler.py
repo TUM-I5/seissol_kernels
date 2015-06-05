@@ -47,7 +47,7 @@ import csv
 import ntpath
 import os
 
-import tools.Logger as l_logger
+import Logger as l_logger
 
 class PerformanceModeler():
   # mapping: #basis functions -> polynomial degree
@@ -320,7 +320,7 @@ class PerformanceModeler():
   def readMatricesFile( self, i_pathToMatricesFile ):
     l_logger.log( 'reading xml-file ' + i_pathToMatricesFile, 2 )
     # parse XML-file
-    l_xmlRoot = parse( i_pathToMatricesFile ).getroot()
+    l_xmlRoot = etree.parse( i_pathToMatricesFile ).getroot()
 
     l_matrices = {}
 
