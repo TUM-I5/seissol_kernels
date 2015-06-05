@@ -230,7 +230,7 @@ class seissol::kernels::Time {
      *
      * -------------------------------------------------------------------------------
      *
-     *  1 in the tenth bit: the cell local buffer is a LTS buffer (reset in every time step).
+     *  1 in the tenth bit: the cell local buffer is a LTS buffer (reset on request only).
      *
      *     Example 5:
      *     [   remaining    | LTS buf. |          first 10 bits         ]
@@ -243,13 +243,13 @@ class seissol::kernels::Time {
      * @param i_neighboringClusterIds global ids of the clusters the face neighbors belong to (if present).
      * @param i_faceTypes types of the four faces.
      * @param i_faceNeighborIds face neighbor ids.
-     * @param i_ghost true if the cell is part of the ghost layer (only required for correctness if all face neighbors are part of the current computational domain).
+     * @param i_copy true if the cell is part of the copy layer (only required for correctness in dynamic rupture computations).
      **/
     static unsigned short getLtsSetup(      unsigned int   i_localClusterId,
                                             unsigned int   i_neighboringClusterIds[4],
                                       const enum faceType  i_faceTypes[4],
                                       const unsigned int   i_faceNeighborIds[4],
-                                            bool           i_ghost = false ) {
+                                            bool           i_copy = false ) {
       // reset the LTS setup
       unsigned short l_ltsSetup = 0;
 
@@ -268,12 +268,17 @@ class seissol::kernels::Time {
         }
         // dynamic rupture faces are always global time stepping but operate on derivatives
         else if( i_faceTypes[l_face] == dynamicRupture ) {
-          // face-neighbor provides derivatives
+          // face-neighbor provides GTS derivatives
           l_ltsSetup |= ( 1 << l_face     );
           l_ltsSetup |= ( 1 << l_face + 4 );
 
           // cell is required to provide derivatives for dynamic rupture
           l_ltsSetup |= ( 1 << 9 );
+
+          if( i_copy ) { // set the buffer invalid in copy layers
+                         // TODO: Minor improvements possible: Non-DR MPI-neighbor for example
+            l_ltsSetup |= ( 1 << 10 );
+          }
         }
         // derive the LTS setup based on the cluster ids
         else {
@@ -321,12 +326,6 @@ class seissol::kernels::Time {
           l_ltsSetup |= ( 1 << 9 );       // enable derivatives computation
           l_ltsSetup |= ( 1 << l_face );  // enable derivatives for the fake face neighbor
         }
-      }
-
-      // set buffer to zero if derivatives are communicated
-      if( i_ghost && (l_ltsSetup >> 9 ) % 2 == 1 ) {
-        l_ltsSetup &= ( ~(1 << 8 ) );
-        l_ltsSetup &= ( ~(1 << 10) );
       }
 
       return l_ltsSetup;

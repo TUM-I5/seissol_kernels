@@ -141,7 +141,7 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
 
   // alignment of the time integrated dofs
   for( int l_neighbor = 0; l_neighbor < 4; l_neighbor++ ) {
-    if( i_faceTypes[l_neighbor] != outflow ) { // no alignment for outflow boundaries required
+    if( i_faceTypes[l_neighbor] != outflow && i_faceTypes[l_neighbor] != dynamicRupture ) { // no alignment for outflow and DR boundaries required
       assert( ((uintptr_t)i_timeIntegrated[l_neighbor]) % ALIGNMENT == 0 );
     }
   }
