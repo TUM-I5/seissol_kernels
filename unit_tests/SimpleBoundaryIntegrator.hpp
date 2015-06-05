@@ -41,7 +41,7 @@
 #ifndef SIMPLEBOUNDARYINTEGRATOR_HPP_
 #define SIMPLEBOUNDARYINTEGRATOR_HPP_
 
-#include <Initializer/typedefs.hpp>
+#include <typedefs.hpp>
 
 #include "DenseMatrix.hpp"
 
@@ -55,10 +55,10 @@ namespace unit_test {
 class unit_test::SimpleBoundaryIntegrator {
   //private:
     //! flux matrices (elements contribution): \f$ F^{-, i} \f$
-    double m_fluxMatricesNeg[4][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
+    real m_fluxMatricesNeg[4][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! flux matrices (neighboring elements contribution): \f$ F^+{+, i, j, h} \f$
-    double m_fluxMatricesPos[48][NUMBEROFBASISFUNCTIONS*NUMBEROFBASISFUNCTIONS];
+    real m_fluxMatricesPos[48][NUMBER_OF_BASIS_FUNCTIONS*NUMBER_OF_BASIS_FUNCTIONS];
 
     //! dense matrix functionality
     unit_test::DenseMatrix m_denseMatrix;
@@ -74,15 +74,15 @@ class unit_test::SimpleBoundaryIntegrator {
 
       for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
         m_denseMatrix.initializeMatrix( l_face,
-                                        NUMBEROFBASISFUNCTIONS,
-                                        NUMBEROFBASISFUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
                                         m_fluxMatricesNeg[l_face] );
       } 
      
       for( unsigned int l_id = 0; l_id < 48; l_id++) {
         m_denseMatrix.initializeMatrix( 4+l_id,
-                                        NUMBEROFBASISFUNCTIONS,
-                                        NUMBEROFBASISFUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
+                                        NUMBER_OF_BASIS_FUNCTIONS,
                                         m_fluxMatricesPos[l_id] );
       }
     }
@@ -92,42 +92,42 @@ class unit_test::SimpleBoundaryIntegrator {
      *
      * @param i_timeIntegratedUnknownsElement time integrated unknowns of the element.
      * @param i_timeIntegratedUnknownsNeighbors time integrated unknwons of the neighboring elements.
-     * @param i_boundaryConditons boundary conditions at the faces.
+     * @param i_faceTypes types of the faces.
      * @param i_neighboringIndices oriantation of the element in relation to the neighboring element (ref. element).
      * @param i_nApNm1DivM flux solvers for elements contribution.
      * @param i_nAmNm1DivM flux solvers for the neighboring elements contributions.
      * @param io_unknowns degrees of freedom of the element, which are updated.
      **/
-    void computeBoundaryIntegration(       double i_timeIntegratedUnknownsElement[NUMBEROFUNKNOWNS],
-                                           double i_timeIntegratedUnknownsNeighbors[4][NUMBEROFUNKNOWNS],
-                                     const int    i_boundaryConditons[4],
-                                     const int    i_neighboringIndices[4][2],
-                                           double i_nApNm1DivM[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                           double i_nAmNm1DivM[4][NUMBEROFVARIABLES*NUMBEROFVARIABLES],
-                                           double io_unknowns[NUMBEROFUNKNOWNS] ) {
+    void computeBoundaryIntegration(       real          i_timeIntegratedUnknownsElement[NUMBER_OF_DOFS],
+                                           real          i_timeIntegratedUnknownsNeighbors[4][NUMBER_OF_DOFS],
+                                     const enum faceType i_faceTypes[4],
+                                     const int           i_neighboringIndices[4][2],
+                                           real          i_nApNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           real          i_nAmNm1DivM[4][NUMBER_OF_QUANTITIES*NUMBER_OF_QUANTITIES],
+                                           real          io_unknowns[NUMBER_OF_DOFS] ) {
       //! temporary product (we have to multiply a matrix from the left and the right)
-      double l_temporaryProduct[ NUMBEROFUNKNOWNS ];
+      real l_temporaryProduct[ NUMBER_OF_DOFS ];
 
 
       // compute the elements contribution
       for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
         // set temporary product to zero
-        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0 );
+        std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0 );
 
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                      m_fluxMatricesNeg[l_localFace], i_timeIntegratedUnknownsElement, l_temporaryProduct );
 
 
-        m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+        m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                      l_temporaryProduct, i_nApNm1DivM[l_localFace], io_unknowns );
       }
 
       // compute the neighboring elements contribution
       for( unsigned int l_localFace = 0; l_localFace < 4; l_localFace++) {
         // no contribution of the neighboring element in case of absorbing boundary conditions
-        if( i_boundaryConditons[l_localFace] != 5 ) { 
+        if( i_faceTypes[l_localFace] != outflow ) {
           // set temporary product to zero
-          std::fill( l_temporaryProduct, l_temporaryProduct+NUMBEROFUNKNOWNS, 0 );
+          std::fill( l_temporaryProduct, l_temporaryProduct+NUMBER_OF_DOFS, 0 );
 
           // compute matrix index
           unsigned l_fluxIndex = l_localFace * 12
@@ -136,10 +136,10 @@ class unit_test::SimpleBoundaryIntegrator {
 
           TS_ASSERT( l_fluxIndex < 48 );
 
-          m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFBASISFUNCTIONS,
+          m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_BASIS_FUNCTIONS,
                                                        m_fluxMatricesPos[l_fluxIndex], i_timeIntegratedUnknownsNeighbors[l_localFace], l_temporaryProduct );
 
-          m_denseMatrix.executeStandardMultiplication( NUMBEROFBASISFUNCTIONS, NUMBEROFVARIABLES, NUMBEROFVARIABLES,
+          m_denseMatrix.executeStandardMultiplication( NUMBER_OF_BASIS_FUNCTIONS, NUMBER_OF_QUANTITIES, NUMBER_OF_QUANTITIES,
                                                        l_temporaryProduct, i_nAmNm1DivM[l_localFace], io_unknowns );
         }
       }

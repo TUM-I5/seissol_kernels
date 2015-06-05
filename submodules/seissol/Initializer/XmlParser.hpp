@@ -93,7 +93,7 @@ class seissol::XmlParser {
                                    std::vector< bool         >              &io_sparsities,
                                    std::vector< std::vector<unsigned int> > &io_rows,
                                    std::vector< std::vector<unsigned int> > &io_columns,
-                                   std::vector< std::vector<double>       > &io_values ) const {
+                                   std::vector< std::vector<real>       >   &io_values ) const {
       for( pugi::xml_node l_matrix = m_matrices.child("matrices").child("global").child(i_type.c_str());
            l_matrix;
            l_matrix = l_matrix.next_sibling(i_type.c_str()) ) {
@@ -107,7 +107,7 @@ class seissol::XmlParser {
         // read entries
         io_rows.push_back(    std::vector<unsigned int>() );
         io_columns.push_back( std::vector<unsigned int>() );
-        io_values.push_back(  std::vector<double>()       );
+        io_values.push_back(  std::vector<real>()         );
         for( pugi::xml_node l_entry = l_matrix.child("entry");
              l_entry;
              l_entry = l_entry.next_sibling("entry") ) {

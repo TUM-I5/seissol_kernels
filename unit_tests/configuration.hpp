@@ -42,6 +42,7 @@
 #define CONFIGURATION_HPP
 
 #include <cstdio>
+#include <typedefs.hpp>
 #include <cxxtest/TestSuite.h>
 #include <cxxtest/GlobalFixture.h>
 
@@ -71,7 +72,10 @@ class unit_test::Configuration: public CxxTest::TestSuite {
     unsigned int m_maximumOrder;
 
     //! zero tolerance
-    double m_zeroTolerance;
+    real m_zeroTolerance;
+
+    //! sparse dense switch
+    int m_sparseSwitch[60];
 
   public:
     /**
@@ -99,6 +103,11 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       m_maximumOrder = 6;
 
       m_zeroTolerance = 10e-13;
+
+      // set up sparse switch
+#define SPARSE_SWITCH
+#include <initialization/bind.h>
+#undef SPARSE_SWITCH
     }
 
     /**
@@ -125,6 +134,16 @@ class unit_test::Configuration: public CxxTest::TestSuite {
       return m_matricesDirectory;
     }
 
+   /**
+    * Get the path of the matrices files.
+    * @return path to the matrices file.
+    **/
+    std::string getMatricesFile() const {
+      std::stringstream l_matricesFile;
+      l_matricesFile << m_matricesDirectory << "/matrices_" << NUMBER_OF_BASIS_FUNCTIONS << ".xml";
+      return l_matricesFile.str();
+    }
+
     /**
      * Get the minimum order to test against.
      * @return minimum order.
@@ -145,8 +164,18 @@ class unit_test::Configuration: public CxxTest::TestSuite {
      * Get the numerical zero toleratnce to test again.
      * @return numerical zero tolerance.
      **/
-    double getNumericalZeroTolerance() const {
+    real getNumericalZeroTolerance() const {
       return m_zeroTolerance;
+    }
+
+    /**
+     * Get the sparse switch of a specific matrix.
+     * @param i_matrixId matrix id.
+     * @return true if sparse, false if dense.
+     **/
+    bool getSparseSwitch( unsigned int i_matrixId ) {
+      if( m_sparseSwitch[i_matrixId] != -1 ) return true;
+      else return false;
     }
 };
 

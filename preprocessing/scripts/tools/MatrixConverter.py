@@ -6,7 +6,7 @@
 # @author Alexander Breuer (breuer AT mytum.de, http://www5.in.tum.de/wiki/index.php/Dipl.-Math._Alexander_Breuer)
 #
 # @section LICENSE
-# Copyright (c) 2013, SeisSol Group
+# Copyright (c) 2013-2015, SeisSol Group
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,12 +45,12 @@ from scipy.sparse import *
 
 from matplotlib import pyplot, colors
 from pylab import savefig
-from numpy import arange, nonzero, sort
+from numpy import arange, nonzero, sort, float64
+from lxml import etree
 
-import tools.Logger as l_logger
-import tools.SeisSolGen as l_seisSolGen
+import Logger as l_logger
 
-from elementtree.SimpleXMLWriter import XMLWriter
+import os
 
 class MatrixConverter():
 ###
@@ -95,16 +95,286 @@ class MatrixConverter():
   ### Global functions
   ###
 
+  # Returns a list of matrix directories contataining star, stiffness and flux matrices.
+  #   Each matrix is specified by:
+  #     fileNameOfGeneratedKernel    - base name of generated matrix kernel
+  #     routineNameOfGeneratedKernel - name of the routine inside the generated kernel
+  #     pathToMatrixMarketFile       - location of the matrix in MatrixMarkeitFormat
+  #     multiplicationSide           - side on which the matrix appears within the kernel call
+  #                                    left: sparse * dense, right: dense * matrix
+  #     numberOfDenseRows            - #(dense rows) of the matrix
+  #     numberOfDenseColumns         - #(dense columns) of the matrix
+  #     sizeOfDenseLeadingDimension  - size of the leading dimension
+  #     aderZeroBlocks               - recursively appearing blocks of zeros appearing in the ADER time integration
+  #                                    True: matrix is part of the ADER time integration and zero blocks occur recursively
+  #                                    False: otherwise
+  #     add                          - True: C += A.B, False: C = A.B
+  #
+  # \param i_pathToMatrices path to the directory, which contains the matrices.
+  # \param i_numberOfQuantities number of quantities (elastics = 9, attenuation > 9)
+  # \param i_maximumDegreeOfBasisFunctions maximum order of the involved basis functions
+  def getSparseMatrices( self,
+                         i_pathToMatrices,
+                         i_numberOfQuantities = 9,
+                         i_maximumDegreeOfBasisFunctions = 7 ):
+    l_logger.log('getting matrices', 2)
+
+    # list which holds the different matrix structures
+    l_sparseMatrices = []
+
+    # get and sort the matrix files
+    l_matrixFiles = os.listdir(i_pathToMatrices)
+    l_matrixFiles.sort()
+
+    # convert input parameters to str
+    l_numberOfQuantities = str(i_numberOfQuantities)
+
+    ###
+    # star matrices
+    ###  
+
+    # name of the star matrices
+    l_starMatrix = 'starMatrix_3D_maple.mtx'
+
+    # assert existance
+    assert( l_starMatrix in l_matrixFiles )
+
+    # build complete path
+    l_starMatrix = i_pathToMatrices+'/'+l_starMatrix
+    
+    # assert correct dimensions within the file
+    l_matrixDimension = (open(l_starMatrix, 'r').readlines()[1]).split()
+    assert( l_matrixDimension[0] == l_numberOfQuantities )
+    assert( l_matrixDimension[1] == l_numberOfQuantities )
+
+    ###
+    # stiffness, flux, and mass matrices
+    ##
+    for l_degree in range(1,i_maximumDegreeOfBasisFunctions):
+      #each matric is a dictionary containing information about it
+      l_matrix = dict()
+
+      l_numberOfBasisFunctions = str((l_degree+1)*(l_degree+2)*(l_degree+3)/6)
+
+      l_logger.log( 'adding star, stiffness, flux, and mass matrices to dictionaries for: '+str(l_degree+1)+' (order of basis), '+l_numberOfBasisFunctions+' (#basis functions), '+l_numberOfQuantities+' (#quantities)', 3)
+
+      # name and filename of the stiffness matrices, TODO: avoid copy and paste code..
+      l_kXi =   dict( matrixName = 'kXiDivM',   matrixMarketFileName='kXiDivM_3D_'   + str(l_degree) + '_maple.mtx' )
+      l_kEta =  dict( matrixName = 'kEtaDivM',  matrixMarketFileName='kEtaDivM_3D_'  + str(l_degree) + '_maple.mtx' )
+      l_kZeta = dict( matrixName = 'kZetaDivM', matrixMarketFileName='kZetaDivM_3D_' + str(l_degree) + '_maple.mtx' )
+      
+      l_kXiTransposed =   dict( matrixName = 'kXiDivMT',   matrixMarketFileName='kXiDivMT_3D_'   + str(l_degree) + '_maple.mtx' )
+      l_kEtaTransposed =  dict( matrixName = 'kEtaDivMT',  matrixMarketFileName='kEtaDivMT_3D_'  + str(l_degree) + '_maple.mtx' )
+      l_kZetaTransposed = dict( matrixName = 'kZetaDivMT', matrixMarketFileName='kZetaDivMT_3D_' + str(l_degree) + '_maple.mtx' )
+
+      # assert existance
+      assert( l_kXi['matrixMarketFileName']   in l_matrixFiles )
+      assert( l_kEta['matrixMarketFileName']  in l_matrixFiles )
+      assert( l_kZeta['matrixMarketFileName'] in l_matrixFiles )
+      
+      assert( l_kXiTransposed['matrixMarketFileName']   in l_matrixFiles )
+      assert( l_kEtaTransposed['matrixMarketFileName']  in l_matrixFiles )
+      assert( l_kZetaTransposed['matrixMarketFileName'] in l_matrixFiles )  
+
+      # build complete paths
+      l_kXi['pathToMatrixMarketFile']   = i_pathToMatrices+'/'+l_kXi['matrixMarketFileName']
+      l_kEta['pathToMatrixMarketFile']  = i_pathToMatrices+'/'+l_kEta['matrixMarketFileName']
+      l_kZeta['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_kZeta['matrixMarketFileName']
+      
+      l_kXiTransposed['pathToMatrixMarketFile']   = i_pathToMatrices+'/'+l_kXiTransposed['matrixMarketFileName']
+      l_kEtaTransposed['pathToMatrixMarketFile']  = i_pathToMatrices+'/'+l_kEtaTransposed['matrixMarketFileName']
+      l_kZetaTransposed['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_kZetaTransposed['matrixMarketFileName']
+
+      # assert correct dimensions within the files
+      l_matrixDimension = (open(l_kXi['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      l_matrixDimension = (open(l_kEta['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      
+      l_matrixDimension = (open(l_kXiTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      l_matrixDimension = (open(l_kEtaTransposed['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+
+      ###
+      # Flux matrices
+      ##
+     
+      # initialize empty list for flux matrices accounting for the elements contribution $F^{-,i}, \quad i \in \{1..4\}$
+      l_fluxPlus = []   
+      
+      # initialize empty list for flux matrices accounting for the contribution of the neighboring elemetns $F^{+,i,j,h}, \quad i,j \in \{1..4\}, \; h \in \{1..3\}$
+      l_fluxMinus = []
+
+      # generate dictionaries, assert existance, build complete path and assert correct dimensions
+      # for the flux matrices (i <-> local face, j <-> neighboring face, h <-> vertex combination)
+      for l_localFace in range(0,4):
+        ## element local flux matrix
+        # generate dictionary
+        #   matrixIds:
+        #     0:  \f$ F^{-, 1} \f$
+        #     1:  \f$ F^{-, 2} \f$
+        #     2:  \f$ F^{-, 3} \f$
+        #     3:  \f$ F^{-, 4} \f$
+        l_fluxMinus = l_fluxMinus + [ dict( matrixName = 'fM'+str(l_localFace+1),
+                                            matrixId = l_localFace,
+                                            matrixMarketFileName='fM'+str(l_localFace+1)+'DivM_3D_'   + str(l_degree) + '_maple.mtx' ) ]
+        
+        # assert existance
+        assert( l_fluxMinus[-1]['matrixMarketFileName']   in l_matrixFiles )
+
+        # generate complete path
+        l_fluxMinus[-1]['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_fluxMinus[l_localFace]['matrixMarketFileName']
+
+        # assert correct dimensions
+        l_matrixDimension = (open(l_fluxMinus[-1]['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+        assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+        assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+
+        for l_neighboringFace in range(0,4):
+          for l_vertexCombination in range (0,3):
+            ## neigboring element flux matrix
+            # matrix ids
+            #   4:  \f$ F^+{+, 1, 1, 1} \f$
+            #   5:  \f$ F^+{+, 1, 1, 2} \f$
+            #   6:  \f$ F^+{+, 1, 1, 3} \f$
+            #   7:  \f$ F^+{+, 1, 1, 1} \f$
+            #   [...]
+            #  51:  \f$ F^+{+, 4, 4, 3} \f$
+            # jump over elements contribute \f$ f^{-,i} \f$
+            l_matrixId = 4
+            # local face contribution to the id
+            l_matrixId += 12*l_localFace
+            # neighboring face contribution to the id
+            l_matrixId += 3*l_neighboringFace
+            # contribution of vertex orientation to the id
+            l_matrixId += l_vertexCombination
+
+            # generate dictionary
+            l_multiIndex = str(l_localFace+1)+str(l_neighboringFace+1)+str(l_vertexCombination+1)
+            l_fluxPlus = l_fluxPlus + [ dict( matrixName = 'fP'+l_multiIndex,
+                                              matrixId   = l_matrixId,
+                                              matrixMarketFileName='fP'+l_multiIndex+'DivM_3D_'   + str(l_degree) + '_maple.mtx' ) ]
+
+            # assert existance
+            assert( l_fluxPlus[-1]['matrixMarketFileName']   in l_matrixFiles )
+
+            # generate complete path
+            l_fluxPlus[-1]['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_fluxPlus[-1]['matrixMarketFileName']
+
+            # assert correct dimensions
+            l_matrixDimension = (open(l_fluxPlus[-1]['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+            assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+            assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+      ###
+      # Mass matrices
+      ##
+      
+      l_m = dict( matrixName = 'm', matrixMarketFileName='m_3D_' + str(l_degree) + '_maple.mtx')
+      
+      # assert existence
+      assert( l_m['matrixMarketFileName']   in l_matrixFiles )
+
+      # build complete paths
+      l_m['pathToMatrixMarketFile'] = i_pathToMatrices+'/'+l_m['matrixMarketFileName']
+
+      # assert correct dimensions within the files
+      l_matrixDimension = (open(l_m['pathToMatrixMarketFile'], 'r').readlines()[1]).split()
+      assert( l_matrixDimension[0] == l_numberOfBasisFunctions )
+      assert( l_matrixDimension[1] == l_numberOfBasisFunctions )
+
+      ###
+      # Combine all matrices
+      ##
+      
+      # add mass matrix
+      l_sparseMatrices.append( dict( name                   = l_m['matrixName'],
+                                     id                     = 60,
+                                     pathToMatrixMarketFile = l_m['pathToMatrixMarketFile']
+                                   )
+                             )
+
+      # add star matrices for the volume integration to list of matrices (TODO: this loop needs to be extended for attenuation)
+      l_sparseMatrices.append( dict( fileNameOfGeneratedKernel    = 'star_matrices_3d.hpp_include',
+                               name='volumeStarMatrix',
+                               id = 59,
+                               routineNameOfGeneratedKernel = 'generatedMatrixMultiplication_volumeStarMatrix_3D_'+l_numberOfQuantities+'_'+l_numberOfBasisFunctions,
+                               pathToMatrixMarketFile       = l_starMatrix,
+                               multiplicationSide           = '0',
+                               numberOfDenseRows            = l_numberOfBasisFunctions,
+                               numberOfDenseColumns         = l_numberOfQuantities,
+                               sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
+                               aderZeroBlocks               = False,
+                               add                          = True
+                             )
+                       )
+      # star matrix multiplications in the time integration kernel
+      l_sparseMatrices.append( dict(l_sparseMatrices[-1]) )
+      l_sparseMatrices[-1]['name']                         = 'aderStarMatrix'
+      l_sparseMatrices[-1]['routineNameOfGeneratedKernel'] = 'generatedMatrixMultiplication_aderStarMatrix_3D_'+l_numberOfQuantities+'_'+l_numberOfBasisFunctions
+      l_sparseMatrices[-1]['aderZeroBlocks']               = True
+      
+    
+      # add stiffness matrices to list of matrices
+      l_stiffnessMatrixId = 53 # matrix id of \f$ K^\xi \f$, rest follows ascending
+      for l_stiffnessMatrix in [l_kXi, l_kEta, l_kZeta, l_kXiTransposed, l_kEtaTransposed, l_kZetaTransposed]:
+        l_sparseMatrices.append( dict( fileNameOfGeneratedKernel    = 'stiffness_matrices_3d.hpp_include',
+                                       name                         = l_stiffnessMatrix['matrixName'],
+                                       id                           = l_stiffnessMatrixId,
+                                       routineNameOfGeneratedKernel = 'generatedMatrixMultiplication_'+l_stiffnessMatrix['matrixName']+'_'+l_numberOfQuantities+'_'+l_numberOfBasisFunctions+'',
+                                       pathToMatrixMarketFile       = l_stiffnessMatrix['pathToMatrixMarketFile'],
+                                       multiplicationSide           = '1',
+                                       numberOfDenseRows            = l_numberOfBasisFunctions,
+                                       numberOfDenseColumns         = l_numberOfQuantities,
+                                       sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
+                                       aderZeroBlocks               = False,
+                                       add                          = False
+                                     )
+                               )
+        # increase matrix id
+        l_stiffnessMatrixId = l_stiffnessMatrixId + 1
+
+        # transposed stiffness matrices are used recursively in the ADER time integration
+        if l_stiffnessMatrix in [l_kXiTransposed, l_kEtaTransposed, l_kZetaTransposed]:
+          l_sparseMatrices[-1]['aderZeroBlocks'] = True
+
+      # add flux matrices
+      for l_fluxMatrix in l_fluxMinus+l_fluxPlus:
+        l_sparseMatrices.append( dict( fileNameOfGeneratedKernel    = 'flux_matrices_3d.hpp_include',
+                                 name=l_fluxMatrix['matrixName'],
+                                 id = l_fluxMatrix['matrixId'],
+                                 routineNameOfGeneratedKernel = 'generatedMatrixMultiplication_'+l_fluxMatrix['matrixName']+'_'+l_numberOfQuantities+'_'+l_numberOfBasisFunctions+'',
+                                 pathToMatrixMarketFile       = l_fluxMatrix['pathToMatrixMarketFile'],
+                                 multiplicationSide           = '1',
+                                 numberOfDenseRows            = l_numberOfBasisFunctions,
+                                 numberOfDenseColumns         = l_numberOfQuantities,
+                                 sizeOfDenseLeadingDimension  = l_numberOfBasisFunctions,
+                                 aderZeroBlocks               = False,
+                                 add                          = False
+                               )
+                         )
+    # done, return the matrices
+    return l_sparseMatrices
+
   # Converts a given full matrix to compressed sparse row and compressed sparse column format
-  #   An "_csr" and "_csc" will be appended to the base name.
   #
   # \param i_pathToFullMatrix path to the full matrix (format: matrix market).
-  # \param i_baseName base name of the sparse output.
-  # \param i_pathToOutputDirectory path to the output directory.
-  def convertFullToSparse(  self,
-                            i_pathToFullMatrix,
-                            i_baseName,
-                            i_pathToOutputDirectory ):
+  # \param i_cscFile open file object to csc file.
+  # \param i_csrFile open file object to csr file.
+  @staticmethod
+  def convertFullToSparse(  i_pathToFullMatrix,
+                            i_cscFile,
+                            i_csrFile ):
     l_logger.log('converting to CSR and CSC: '+i_pathToFullMatrix, 2)
 
     # read the full matrix
@@ -139,8 +409,8 @@ class MatrixConverter():
       l_sortedMatrices[l_format] = coo_matrix( (l_data, (l_row,l_col)), shape=l_fullMatrix.shape)
 
     # write csr and csc
-    mmwrite(i_pathToOutputDirectory+'/'+i_baseName+'_csr', l_sortedMatrices['csr'])
-    mmwrite(i_pathToOutputDirectory+'/'+i_baseName+'_csc', l_sortedMatrices['csc'])
+    mmwrite(i_csrFile, l_sortedMatrices['csr'])
+    mmwrite(i_cscFile, l_sortedMatrices['csc'])
 
   # Plot the sparsity pattern of a given full matrix.
   #
@@ -391,55 +661,52 @@ end do
     l_file.write(l_sourceCode)
     l_file.close()
 
-  # reads a matrix in market format.
+  # Reads a matrix in market format. We do not use mmread here, as we do
+  # not want any alteration of the values due to rounding issues.
   #
   # \input i_pathToMatrix path to the matrix.
   # \return dictionary with the matrix structure in coordinate format
   def readMatrixMarket( self,
-                        i_pathToMatrix,
-                      ):
-    # read the full matrix
-    l_matrixEntries = mmread( i_pathToMatrix )
-
-    # convert matrix to coordinate format
-    l_matrixEntries = coo_matrix(l_matrixEntries)
-
-    # get #rows and #columns
-    l_numberOfRows = l_matrixEntries.shape[0]
-    l_numberOfColumns = l_matrixEntries.shape[1]
-
-    # get #nnz
-    l_numberOfNonZeros = l_matrixEntries.nnz
-
-    # get row, columns and values
-    l_rows    = l_matrixEntries.row
-    l_columns = l_matrixEntries.col
-    l_values  = l_matrixEntries.data
-
-    # return everythin
-    return { '#rows':    l_numberOfRows,
-             '#columns': l_numberOfColumns,
-             '#nnz':     l_numberOfNonZeros,
-             'rows':     l_rows,
-             'columns':  l_columns,
-             'values':   l_values }
+                        i_pathToMatrix ):
+    matrixFile = open(i_pathToMatrix)
+    
+    if (not matrixFile.readline().startswith('%%MatrixMarket matrix array real general')):
+      print('Wrong matrix market format.')
+      exit(1)
+      
+    dimensions = matrixFile.readline().split()
+    numberOfRows = int(dimensions[0])
+    numberOfColumns = int(dimensions[1])
+    
+    matrix = numberOfRows * numberOfColumns * [(0, 0, '')]  # pre-allocate matrix
+    entry = 0
+    for line in matrixFile:
+      # format: row, column, value
+      matrix[entry] = (entry % numberOfRows + 1, entry / numberOfRows + 1, line.strip());
+      entry = entry + 1
+      
+    sparseMatrix = filter(lambda x: float64(x[2]) != 0.0, matrix)
+    
+    return { '#rows':     numberOfRows,
+             '#columns':  numberOfColumns,
+             'matrix':    sparseMatrix
+    }
 
   # Converts a given set of dense matrices to a single xml-file with sparse index storage.
   #
   # \param i_pathToMatrices path to the dense matrix (format: matrix market).
   def convertToXml(  self,
                      i_pathToMatrices,
-                     i_pathToOutputDirectory,
-                     i_sparseDenseSwitch = 0.2 ):
+                     i_pathToOutputDirectory ):
     l_logger.log('converting matrices in folder \''+i_pathToMatrices )
 
     # #(basis functions) we write XML files for
-    l_numberOfBasisFunctionsList = [4, 10, 20, 35, 56];
+    l_numberOfBasisFunctionsList = [4, 10, 20, 35, 56, 84];
 
     # get sparse matrices
-    l_matrices = l_seisSolGen.getSparseMatrices( i_pathToMatrices = i_pathToMatrices,
-                                                 i_numberOfQuantities = 9,
-                                                 i_maximumDegreeOfBasisFunctions = 7 )
+    l_matrices = self.getSparseMatrices( i_pathToMatrices                = i_pathToMatrices,
+                                         i_numberOfQuantities            = 9,
+                                         i_maximumDegreeOfBasisFunctions = 8 )
 
     # iterate over basis functions
     #   Remark: Each matrix is a subset of the matrix for the next degree.
@@ -447,20 +714,17 @@ end do
     #           the same matrix should be handled sparse or dense.
     for l_numberOfBasisFunctions in l_numberOfBasisFunctionsList:
       # generate file name
-      l_pathToOutputFile = i_pathToOutputDirectory+'/matrices_'+("%0.2f" % i_sparseDenseSwitch)+'_'+str(l_numberOfBasisFunctions)+'.xml'
+      l_pathToOutputFile = i_pathToOutputDirectory+'/matrices_'+str(l_numberOfBasisFunctions)+'.xml'
 
       l_logger.log('writing: '+ l_pathToOutputFile, 2);
 
-      # open xml file
-      l_xmlFile = XMLWriter(l_pathToOutputFile)
-
       # root element
-      l_xmlFile.start('matrices')
+      l_root = etree.Element("matrices")
 
       #
       # add global matrices for this degree
       #
-      l_xmlFile.start("global")
+      l_global = etree.SubElement(l_root, "global")
 
       for l_matrix in l_matrices:
         # read the matrix structure
@@ -475,53 +739,33 @@ end do
           l_matrixType = "flux"
         elif 'kXi' in l_matrix['name'] or 'kEta' in l_matrix['name'] or 'kZeta' in l_matrix['name']:
           l_matrixType = "stiffness"
+        elif 'm' in l_matrix['name']:
+          l_matrixType = "inverseMass"
+          l_matrixStructure['matrix'] = [(x[0], x[1], '%.20f' % (1.0 / float64(x[2]))) for x in l_matrixStructure['matrix']]
         else:
           assert(False)
 
-        # assert dimensions match
-        assert( l_matrixStructure['rows'].size      == l_matrixStructure['rows'].size )
-        assert( l_matrixStructure['columns'].size   == l_matrixStructure['values'].size  )
-
-        # TODO: add proper sparse/dense switch here
-        if( l_matrixStructure['#nnz'] / float( l_matrixStructure['#rows'] * l_matrixStructure['#columns'] ) > i_sparseDenseSwitch ):
-          l_sparse = 'false'
-        else:
-          l_sparse = 'true'
-
-        l_xmlFile.start( l_matrixType,
-          # add matrix meta information
-                         name    = l_matrix['name'],
-                         id      = str(l_matrix['id']),
-                         sparse  = l_sparse,
-                         rows    = str(l_matrixStructure['#rows']),
-                         columns = str(l_matrixStructure['#columns']) )
-
+        # matrix attributes
+        l_global_matrix_attributes = {"name": l_matrix['name'], "id": str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
+        # add node to XML
+        l_global_matrix = etree.SubElement(l_global, l_matrixType, l_global_matrix_attributes) 
       
-        for l_entry in xrange( l_matrixStructure['rows'].size ):
-          # add this matrix entry
-          l_xmlFile.element( "entry",
-                             row    = str(l_matrixStructure['rows'][l_entry]+1),
-                             column = str(l_matrixStructure['columns'][l_entry]+1),
-                             value  = repr(l_matrixStructure['values'][l_entry]) )
-
-        #print l_matrixEntries
-        l_xmlFile.end(l_matrixType)
-    
-      l_xmlFile.end('global')
-
+        for l_entry in l_matrixStructure['matrix']:
+          # element attributes
+          l_global_entry_attributes = {"row": str(l_entry[0]), "column": str(l_entry[1]), "value" : l_entry[2]}
+          # add node to XML
+          l_global_entry = etree.SubElement(l_global_matrix, "entry", l_global_entry_attributes)
+         
       #
       # add local matrices for this degree
       # TODO: Hardcoded #variables for elastics
       #
-      l_xmlFile.start('local')
+      l_local = etree.SubElement(l_root, "local")
       
-      # Add flux solver
+      # Add flux solve
       # \f$  N_{k,i} A_k^+ N_{k,i}^{-1} \f$ and \f$ N_{k,i} A_{k(i)}^- N_{k,i}^{-1} \f$
-      l_xmlFile.element( 'fluxSolver',
-                         id='52',
-                         sparse='false',
-                         rows='9',
-                         columns='9' )
+      l_flux_attributes = {"id" : "52", "rows" : "9", "columns" : "9"}
+      l_flux = etree.SubElement(l_local, "fluxSolver", l_flux_attributes)
 
       # Add star matrices
       for l_matrix in l_matrices:
@@ -530,23 +774,19 @@ end do
           l_matrixStructure = self.readMatrixMarket( i_pathToMatrix = l_matrix['pathToMatrixMarketFile'] )
           
           # add matrix meta information
-          l_xmlFile.start( 'starMatrix',
-                           id      = str(l_matrix['id']),
-                           sparse  = 'true', # TODO: Always sparse, dense switch?
-                           rows    = str(l_matrixStructure['#rows']),
-                           columns = str(l_matrixStructure['#columns']) )
-
+          l_star_attributes = {"id" : str(l_matrix['id']), "rows" : str(l_matrixStructure['#rows']), "columns" : str(l_matrixStructure['#columns'])}
+          l_star = etree.SubElement(l_local, "starMatrix", l_star_attributes)
       
-          for l_entry in xrange( l_matrixStructure['rows'].size ):
-            # add this matrix entry
-            l_xmlFile.element( "entry",
-                               row    = str(l_matrixStructure['rows'][l_entry]+1),
-                               column = str(l_matrixStructure['columns'][l_entry]+1)
-                             )
-          l_xmlFile.end('starMatrix')
+          for l_entry in l_matrixStructure['matrix']:
+            # element attributes
+            l_star_entry_attributes = {"row" : str(l_entry[0]), "column" : str(l_entry[1]) }
+            # add node to XML
+            l_star_entry = etree.SubElement(l_star, "entry", l_star_entry_attributes)
           
           # add only a single star matrix
           break
-      l_xmlFile.end('local')
 
-      l_xmlFile.end('matrices')
+      #write XML file
+      l_xml_tree = etree.ElementTree(l_root)
+      l_xml_tree.write(l_pathToOutputFile, pretty_print=True, encoding='utf-8')
+

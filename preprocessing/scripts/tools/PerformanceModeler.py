@@ -39,16 +39,15 @@
 #
 # Generates theoretical performance models for SeisSol.
 #
-
-import os
-
-import tools.Logger as l_logger
 from scipy.io.mmio import *
+from lxml import etree
+
 import numpy as numpy
 import csv
-from elementtree.ElementTree import parse
-import csv
 import ntpath
+import os
+
+import Logger as l_logger
 
 class PerformanceModeler():
   # mapping: #basis functions -> polynomial degree
@@ -321,7 +320,7 @@ class PerformanceModeler():
   def readMatricesFile( self, i_pathToMatricesFile ):
     l_logger.log( 'reading xml-file ' + i_pathToMatricesFile, 2 )
     # parse XML-file
-    l_xmlRoot = parse( i_pathToMatricesFile ).getroot()
+    l_xmlRoot = etree.parse( i_pathToMatricesFile ).getroot()
 
     l_matrices = {}
 

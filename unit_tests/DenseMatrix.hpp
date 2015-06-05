@@ -41,11 +41,26 @@
 #ifndef DENSEMATRIX_HPP_
 #define DENSEMATRIX_HPP_
 
-#include <Initializer/MemoryAllocator.h>
+#include <typedefs.hpp>
 #include <Initializer/XmlParser.hpp>
+#include <cxxtest/TestSuite.h>
 
 const int s_maximumOrder = 6;
-const double s_zeroTolerance = 10e-13;
+#ifdef DOUBLE_PRECISION
+#if CONVERGENCE_ORDER < 6
+const long double s_zeroTolerance = 10e-11;
+#else
+const long double s_zeroTolerance = 10e-09;
+#endif
+#endif
+
+#ifdef SINGLE_PRECISION
+#if CONVERGENCE_ORDER < 5
+const long double s_zeroTolerance = 10e-04;
+#else
+const long double s_zeroTolerance = 10e-02;
+#endif
+#endif
 
 namespace unit_test {
   class DenseMatrix;
@@ -56,9 +71,6 @@ namespace unit_test {
  **/
 class unit_test::DenseMatrix {
   //private:
-    //! aligned memory allocation
-    seissol::MemoryAllocator m_memoryAllocator;
-
     //! vectors, which hold information about our matrices
     std::vector< unsigned int > m_matrixIds;
     std::vector< std::string  > m_matrixNames;
@@ -68,7 +80,7 @@ class unit_test::DenseMatrix {
 
     std::vector< std::vector<unsigned int> > m_matrixRows;
     std::vector< std::vector<unsigned int> > m_matrixColumns;
-    std::vector< std::vector<double>       > m_matrixValues;
+    std::vector< std::vector<real>       > m_matrixValues;
 
   public:
     /**
@@ -83,6 +95,12 @@ class unit_test::DenseMatrix {
       }
     }
 
+    void setRandomValues( int i_length, float *o_array ) {
+      for( int l_i = 0; l_i < i_length; l_i++) {
+        o_array[l_i] = ((float)rand()/(float)RAND_MAX)*0.1;
+      }
+    }
+
     /**
      * Sets the all rows, which are behind the given number of non zero rows to zero.
      * @param i_numberOfRows #rows of the matrix.
@@ -93,7 +111,7 @@ class unit_test::DenseMatrix {
     void setZeroBlock( int     i_numberOfRows,
                        int     i_numberOfColumns,
                        int     i_numberOfNonZeroRows,
-                       double *io_matrix ) {
+                       real    *io_matrix ) {
       for( int l_column = 0; l_column < i_numberOfColumns; l_column++ ) {
         for( int l_row = 0; l_row < i_numberOfRows; l_row++ ) {
           // check if this a zero row
@@ -106,7 +124,7 @@ class unit_test::DenseMatrix {
         }
       }
     }
-
+#if 0
     /**
      * Allocate memory and set random values for dense matrix multiplication setup.
      *   Remark: C1 and C2 are set to the same random values 
@@ -156,6 +174,7 @@ class unit_test::DenseMatrix {
         (*o_c2)[l_i] = (*o_c1)[l_i];
       }
     }
+#endif
 
     /**
      * Copies the non-zeros of the dense matrix to the sparse matrix.
@@ -169,8 +188,8 @@ class unit_test::DenseMatrix {
      **/
     void copyDenseToSparse(       int     i_numberOfRows,
                                   int     i_numberOfColumns,
-                            const double *i_denseMatrix,
-                                  double *o_sparseMatrix ) {
+                            const real   *i_denseMatrix,
+                                  real   *o_sparseMatrix ) {
      // #(dense elements)
      int l_numberOfDenseElements = i_numberOfRows * i_numberOfColumns;
 
@@ -179,13 +198,79 @@ class unit_test::DenseMatrix {
 
      // iterate over dense matrix elements
      for( int l_denseElement = 0; l_denseElement < l_numberOfDenseElements; l_denseElement++ ) {
-       if( i_denseMatrix[ l_denseElement ] > 1e-15 ) {
+       if( std::abs( i_denseMatrix[ l_denseElement ] ) > 1e-15 ) {
          o_sparseMatrix[ l_sparseElement ] = i_denseMatrix[ l_denseElement ];
          
          // next sparse element
          l_sparseElement++;
        }
      }
+    }
+
+    /*
+     * Copies a submatrix of A (sizes of B) to B.
+     * If B doesn't fit in A zeros are set.
+     *
+     * @param i_A values of matrix A.
+     * @param i_aNumberOfRows number of rows of A.
+     * @param i_aNumberOfColumns number of columns of A.
+     * @param i_aLeadingDimension leading dimension of A.
+     * @param o_B values of matrix B, which will be set.
+     * @param i_bNumberOfRows number of rows of matrix B.
+     * @param i_bNumberOfColumns number of columns of matrix B.
+     * @param i_bLeadingDimension leading dimension of B.
+     */
+    void copySubMatrix( const real* i_A,
+                        const unsigned int i_aNumberOfRows,
+                        const unsigned int i_aNumberOfColumns,
+                        const unsigned int i_aLeadingDimension,
+                              real* o_B,
+                        const unsigned int i_bNumberOfRows,
+                        const unsigned int i_bNumberOfColumns,
+                        const unsigned int i_bLeadingDimension ) {
+      // set matrix B to zero
+      for( unsigned int l_index = 0; l_index < i_bLeadingDimension*i_bNumberOfColumns; l_index++ ) {
+        o_B[l_index] = (real) 0;
+      }
+
+      // copy the entries
+      for( unsigned int l_column = 0; l_column < std::min( i_aNumberOfColumns, i_bNumberOfColumns ); l_column++ ) {
+        for( unsigned int l_row = 0; l_row < std::min( i_aNumberOfRows, i_bNumberOfRows ); l_row++ ) {
+          unsigned int l_aIndex = l_column * i_aLeadingDimension + l_row;
+          unsigned int l_bIndex = l_column * i_bLeadingDimension + l_row;
+
+          o_B[l_bIndex] = i_A[l_aIndex];
+        }
+      }
+     
+    }
+
+    /*
+     * Copies a submatrix of A (sizes of B) to B.
+     * If B doesn't fit in A zeros are set.
+     *
+     * @param i_A values of matrix A.
+     * @param i_aNumberOfRows number of rows of A.
+     * @param i_aNumberOfColumns number of columns of A.
+     * @param o_B values of matrix B, which will be set.
+     * @param i_bNumberOfRows number of rows of matrix B.
+     * @param i_bNumberOfColumns number of columns of matrix B.
+     */
+    void copySubMatrix( const real* i_A,
+                        const unsigned int i_aNumberOfRows,
+                        const unsigned int i_aNumberOfColumns,
+                              real* o_B,
+                        const unsigned int i_bNumberOfRows,
+                        const unsigned int i_bNumberOfColumns ) {
+      copySubMatrix( i_A,
+                     i_aNumberOfRows,
+                     i_aNumberOfColumns,
+                     i_aNumberOfRows,
+                     o_B,
+                     i_bNumberOfRows,
+                     i_bNumberOfColumns,
+                     i_bNumberOfRows
+                   );
     }
 
     /**
@@ -200,7 +285,7 @@ class unit_test::DenseMatrix {
      * @i_add true: C += A.B, false C = A.B
      **/
     void executeStandardMultiplication(       int     i_m,       int     i_n, int     i_k,
-                                        const double *i_a, const double *i_b, double *io_c,
+                                        const real   *i_a, const real   *i_b, real   *io_c,
                                               bool    i_add = true ) {
       // set result matrix to zero first of required
       if( i_add == false ) {
@@ -231,7 +316,7 @@ class unit_test::DenseMatrix {
      * @param i_numberOfColumnes number of columns.
      * @param i_matrix pointer to matrix elements.
      **/
-    void printDenseMatrix( int i_numberOfRows, int i_numberOfColumns, double* i_matrix ) {
+    static void printDenseMatrix( int i_numberOfRows, int i_numberOfColumns, real* i_matrix ) {
       for( int l_row = 0; l_row < i_numberOfRows; l_row++ ) {
         for( int l_column = 0; l_column < i_numberOfColumns; l_column++ ) {
           std::cout << i_matrix[ l_column * i_numberOfRows + l_row ] << " ";
@@ -247,15 +332,44 @@ class unit_test::DenseMatrix {
      * @param i_array1 first array.
      * @param i_array2 second array.
      **/
-    void checkResult( int i_length, double* i_array1, double* i_array2 ) {
+    void checkResult( int i_length, const real* i_array1, const real* i_array2 ) {
       // check every value individually
       for( int l_i = 0; l_i < i_length; l_i++) {
-        if( std::abs(i_array2[l_i]) > 10e-10 ) { 
-          TS_ASSERT_DELTA( (double) ( (long double) i_array1[l_i] / (long double) i_array2[l_i]), 1.0, s_zeroTolerance);
+        if( std::abs(i_array2[l_i]) > 10e-5 ) { 
+          TS_ASSERT_DELTA( (long double) ( (long double) i_array1[l_i] / (long double) i_array2[l_i]), 1.0, s_zeroTolerance);
         }
         else {
           TS_ASSERT_DELTA( i_array1[l_i], i_array2[l_i], s_zeroTolerance );
         }
+      }
+    }
+
+    /*
+     * Check that the submatrix of A with size B matches B.
+     *
+     * @param i_A values of matrix A.
+     * @param i_aNumberOfRows number of rows of A.
+     * @param i_aNumberOfColumns number of columns of A.
+     * @param o_B values of matrix B, which will be set.
+     * @param i_bNumberOfRows number of rows of matrix B.
+     * @param i_bNumberOfColumns number of columns of matrix B
+     */
+    void checkSubMatrix( const real* i_A,
+                         const unsigned int i_aNumberOfRows,
+                         const unsigned int i_aNumberOfColumns,
+                         const real* i_B,
+                         const unsigned int i_bNumberOfRows,
+                         const unsigned int i_bNumberOfColumns ) {
+      // assert that B is a submatrix of A
+      TS_ASSERT_LESS_THAN_EQUALS( i_bNumberOfRows,    i_aNumberOfRows    );
+      TS_ASSERT_LESS_THAN_EQUALS( i_bNumberOfColumns, i_aNumberOfColumns );
+
+      for( unsigned int l_column = 0; l_column < i_bNumberOfColumns; l_column++ ) {
+        unsigned int l_aStart = l_column*i_aNumberOfRows;
+        unsigned int l_bStart = l_column*i_bNumberOfRows;
+
+        // check result column wise
+        checkResult( i_bNumberOfRows, &i_A[l_aStart], &i_B[l_bStart] );
       }
     }
 
@@ -280,7 +394,7 @@ class unit_test::DenseMatrix {
                                                m_matrixNumberOfRows, m_matrixNumberOfColumns, m_matrixSparsities,
                                                m_matrixRows, m_matrixColumns );
       // synchronize size of values and name (which are not set by the local matrix reader)
-      m_matrixValues.push_back( std::vector< double >());
+      m_matrixValues.push_back( std::vector< real >());
       m_matrixNames.push_back( std::string() );
 
       // read stiffness matrices
@@ -309,7 +423,7 @@ class unit_test::DenseMatrix {
     void initializeMatrix( unsigned int i_id,
                            unsigned int i_numberOfRows,
                            unsigned int i_numberOfColumns,
-                           double*      o_matrix ) {
+                           real*        o_matrix ) {
       // assert the matrices have been read
       assert( m_matrixIds.size() > 0 );
 
@@ -325,27 +439,34 @@ class unit_test::DenseMatrix {
         }
       }
 
-      // assert we expect the correct size
-      TS_ASSERT_EQUALS( m_matrixNumberOfRows[l_position],    i_numberOfRows );
-      TS_ASSERT_EQUALS( m_matrixNumberOfColumns[l_position], i_numberOfColumns );
-
       // flux solver -> random values
       if( i_id == 52 ) {
         // assert correct matrix id
         TS_ASSERT_EQUALS( m_matrixIds[l_position], 52 );
         setRandomValues( i_numberOfRows * i_numberOfColumns,
-                        o_matrix );
+                         o_matrix );
       } 
       // flux matrix, stiffness matrix or star matrix
       else {
-        std::fill( o_matrix, o_matrix + (m_matrixNumberOfRows[l_position] * m_matrixNumberOfColumns[l_position]), 0 );
+        std::fill( o_matrix, o_matrix + i_numberOfRows * i_numberOfColumns, 0 );
         for( unsigned int l_element = 0; l_element < m_matrixRows[l_position].size(); l_element++ ) {
-          unsigned int l_denseIndex = (m_matrixColumns[l_position][l_element]-1) * m_matrixNumberOfRows[l_position] + (m_matrixRows[l_position][l_element]-1);
+          // assert that we can save the non-zero element
+          TS_ASSERT_LESS_THAN_EQUALS( m_matrixRows[l_position][l_element],    i_numberOfRows);
+          TS_ASSERT_LESS_THAN_EQUALS( m_matrixColumns[l_position][l_element], i_numberOfColumns);
+
+          unsigned int l_denseIndex = (m_matrixColumns[l_position][l_element]-1) * i_numberOfRows + (m_matrixRows[l_position][l_element]-1);
+
+          // assert this a valid index
+          TS_ASSERT_LESS_THAN( l_denseIndex, i_numberOfRows*i_numberOfColumns );
+
           if( i_id == 59 ) { // star matrix
-            o_matrix[ l_denseIndex ] = ((double)rand()/(double)RAND_MAX)*10.0;
+            o_matrix[ l_denseIndex ] = ((real)rand()/(real)RAND_MAX)*10.0;
+          }
+          else if( i_id >= 56 && i_id <= 58 ) { // add minus-sign for time kernel
+            o_matrix[ l_denseIndex ] = -m_matrixValues[l_position][l_element];
           }
           else{ // flux or stiffness matrix
-            o_matrix[ l_denseIndex ] = m_matrixValues[l_position][l_element];
+            o_matrix[ l_denseIndex ] =  m_matrixValues[l_position][l_element];
           }
         }
       }

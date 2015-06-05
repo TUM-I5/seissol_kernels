@@ -42,7 +42,7 @@
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
 #include <Initializer/MemoryAllocator.h>
-#include "generated_code/matrix_kernels/dense_matrices.hpp_include"
+#include <matrix_kernels/dense_matrices.hpp_include>
 #include "DenseMatrix.hpp"
 
 namespace unit_test {
@@ -81,8 +81,8 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
      * @o_c pointer to matrix C.
      **/
     void executeGeneratedMultiplication( int     i_m, int     i_n, int     i_k,
-                                         double *i_a, double *i_b, double *io_c ) {
-      #include "generated_code/unit_tests/dense_matrix_kernels.hpp_include"
+                                         real   *i_a, real   *i_b, real    *io_c ) {
+      #include <unit_tests/dense_matrix_kernels.hpp_include>
     }
 
     /**
@@ -94,7 +94,7 @@ class unit_test::DenseMatrixKernelTestSuite: public CxxTest::TestSuite {
      **/
     void testGeneratedMultiplication( int i_m, int i_n, int i_k, bool i_add = true ){
       // matrices for operation C = A.B 
-      double *l_a, *l_b, *l_c1, *l_c2;
+      real *l_a, *l_b, *l_c1, *l_c2;
 
       m_denseMatrix.allocateMemoryAndSetRandomValues( i_m, i_n, i_k, &l_a, &l_b, &l_c1, &l_c2 );
 

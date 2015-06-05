@@ -43,8 +43,8 @@
 #include "configuration.hpp"
 #include <Initializer/MemoryAllocator.h>
 #include "DenseMatrix.hpp"
-#include "generated_code/matrix_kernels/stiffness_matrices_3d.hpp_include"
-#include "generated_code/matrix_kernels/star_matrices_3d.hpp_include"
+#include <matrix_kernels/stiffness_matrices_3d.hpp_include>
+#include <matrix_kernels/star_matrices_3d.hpp_include>
 
 namespace unit_test {
   class BlockedMatrixKernelsTestSuite;
@@ -89,7 +89,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
       int l_numberOfBasisFunctions  = computeNumberOfBasisFunctions( i_basisDegree );
 
       // setup path to xml file
-      std::string l_matricesPath = m_matricesDirectory + "matrices_" + std::to_string(l_numberOfBasisFunctions) + ".xml";
+      std::string l_matricesPath = m_configuration.getMatricesFile();
 
       // setup the xml-parser
       seissol::XmlParser l_matrixReader( l_matricesPath );
@@ -104,7 +104,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
       // element information in coordinate format
       std::vector< std::vector<unsigned int> > l_matrixRows;
       std::vector< std::vector<unsigned int> > l_matrixColumns;
-      std::vector< std::vector<double>       > l_matrixValues;
+      std::vector< std::vector<real>       > l_matrixValues;
 
       // read the stiffness matrices
       l_matrixReader.readGlobalMatrices( "stiffness",
@@ -130,7 +130,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
           }
 
           // matrices for operation C = A.B 
-          double *l_a = NULL, *l_b = NULL, *l_c1 = NULL, *l_c2 = NULL;
+          real *l_a = NULL, *l_b = NULL, *l_c1 = NULL, *l_c2 = NULL;
 
           // allocate memory and set to random values
           // For simplicity we are reusing dense memory l_a for the sparse matrix
@@ -145,7 +145,7 @@ class unit_test::BlockedMatrixKernelsTestSuite: public CxxTest::TestSuite {
           }
 
           // do the blocked sparse matrix multiplication
-#include "generated_code/unit_tests/time_sparse_matrix_kernels.hpp_include"
+#include <unit_tests/time_sparse_matrix_kernels.hpp_include>
 
           // reset matrix to zero and set dense matrix values
           std::fill( l_a, l_a+l_numberOfBasisFunctions*l_numberOfBasisFunctions, 0 );
