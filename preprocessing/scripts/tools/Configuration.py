@@ -112,22 +112,29 @@ class Configuration():
                   "fP443DivM":  51,
 
                   "fluxSolver": 52,
-                  "starMatrix": 59  }
+                  "starMatrix": 59,
+                  "eT":         60,
+                  "viscoelasticFluxSolver": 61,
+                  "viscoelasticStarMatrix": 62,
+                  "inverseMass": 63 }
 
   # names of matrix ids
   m_matrixNames = {}
 
   # matrix bindings in the corresponding integration kernels
   m_matrixBinds = {
-                    'time': {            "kXiDivMT":    0,
-                                         "kEtaDivMT":   1,
-                                         "kZetaDivMT":  2,
-                                         "starMatrix":  3  },
+                    'time': {            "viscoelasticStarMatrix": 0,
+                                         "eT":                     1,
+                                         "kXiDivMT":               2,
+                                         "kEtaDivMT":              3,
+                                         "kZetaDivMT":             4,
+                                         "starMatrix":             5 },
                     'volume': {
-                                         "kXiDivM":     0,
-                                         "kEtaDivM":    1,
-                                         "kZetaDivM":   2,
-                                         "starMatrix":  3  },
+                                         "kXiDivM":                0,
+                                         "kEtaDivM":               1,
+                                         "kZetaDivM":              2,
+                                         "starMatrix":             3,
+                                         "viscoelasticStarMatrix": 4 },
 
                     'boundary': {
                                          "fM1DivM":     0,
@@ -188,14 +195,14 @@ class Configuration():
                                          "fP443DivM":  51,
 
                                          "fluxSolver": 52,
-                                         "fluxSolverPF": 53 }
+                                         "fluxSolverPF": 53,
+                                         "viscoelasticFluxSolver": 54,
+                                         "viscoelasticFluxSolverPF": 55 }
                   }
-
-  m_globalMatrices = { 'time': 3, 'volume': 3, 'boundary': 52 }
 
   m_matricesDir = ""
   m_matrixMarketFiles = {}
-  m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81 } }
+  m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81, 'viscoelasticStarMatrix': 9, 'viscoelasticFluxSolver': 54, 'viscoelasticFluxSolverPF': 54} }
 
   m_architectures = ['wsm', 'snb', 'hsw', 'skx', 'knc', 'knl', 'noarch']
 
@@ -251,23 +258,21 @@ class Configuration():
     for l_order in range(2, i_maximumOrder+1):
       # create new dicts for this order
       self.m_matrixMarketFiles[l_order] = {}
-      self.m_nonZeros[l_order]          = { 'starMatrix':   24,
-                                            'fluxSolver':   81,
-                                            'fluxSolverPF': 81 }
+      self.m_nonZeros[l_order]          = { 'fluxSolver':   81,
+                                            'fluxSolverPF': 81,
+                                            'viscoelasticFluxSolver': 54,
+                                            'viscoelasticFluxSolverPF': 54 }
 
       for l_matrix in self.m_matrixIds.keys():
-        if( l_matrix is "fluxSolver" or l_matrix is "starMatrix" ):
+        if (l_matrix is "fluxSolver" or l_matrix is "viscoelasticFluxSolver" or l_matrix is "inverseMass"):
           continue
+        orderStr = ''
+        if (l_matrix is not "eT" and l_matrix is not "starMatrix" and l_matrix is not "viscoelasticStarMatrix"):
+          orderStr = str(l_order-1) + '_'          
 
-        self.m_matrixMarketFiles[l_order][l_matrix] = i_matricesDir + "/" + l_matrix + "_3D_" + str(l_order-1) + "_maple.mtx"
+        self.m_matrixMarketFiles[l_order][l_matrix] = i_matricesDir + "/" + l_matrix + "_3D_" + orderStr + "maple.mtx"
         self.m_nonZeros[l_order][l_matrix] = len(numpy.nonzero(scipy.io.mmread( self.m_matrixMarketFiles[l_order][l_matrix] ))[0])
 
         if( not os.path.exists( self.m_matrixMarketFiles[l_order][l_matrix] ) ):
           logging.error( "matrix market files does not exist: " + self.m_matrixMarketFiles[l_order][l_matrix] )
           exit(1)
-
-    # setup path to local matrix market files
-    self.m_matrixMarketFiles["starMatrix"] = i_matricesDir + "/starMatrix_3D_maple.mtx"
-    if( not os.path.exists( self.m_matrixMarketFiles["starMatrix"] ) ):
-      logging.error( "matrix market files does not exist: " + self.m_matrixMarketFiles["starMatrix"] )
-      exit(1)

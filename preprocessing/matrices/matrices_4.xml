@@ -1,11 +1,5 @@
 <matrices>
   <global>
-    <inverseMass rows="4" name="m" columns="4" id="60">
-      <entry column="1" value="6.00000000000000000000" row="1"/>
-      <entry column="2" value="60.00000000000000000000" row="2"/>
-      <entry column="3" value="20.00000000000000000000" row="3"/>
-      <entry column="4" value="10.00000000000000000000" row="4"/>
-    </inverseMass>
     <stiffness rows="4" name="kXiDivM" columns="4" id="53">
       <entry column="1" value="20." row="2"/>
     </stiffness>
@@ -768,9 +762,16 @@
       <entry column="4" value="-3.3333333333333333333" row="3"/>
       <entry column="4" value="-1.6666666666666666667" row="4"/>
     </flux>
+    <inverseMass rows="4" name="m" columns="4" id="63">
+      <entry column="1" value="6.00000000000000000000" row="1"/>
+      <entry column="2" value="60.00000000000000000000" row="2"/>
+      <entry column="3" value="20.00000000000000000000" row="3"/>
+      <entry column="4" value="10.00000000000000000000" row="4"/>
+    </inverseMass>
   </global>
   <local>
     <fluxSolver rows="9" id="52" columns="9"/>
+    <viscoelasticFluxSolver rows="9" id="61" columns="6"/>
     <starMatrix rows="9" id="59" columns="9">
       <entry column="1" row="7"/>
       <entry column="1" row="8"/>
@@ -797,5 +798,30 @@
       <entry column="9" row="5"/>
       <entry column="9" row="6"/>
     </starMatrix>
+    <viscoelasticStarMatrix rows="9" id="62" columns="6">
+      <entry column="1" row="7"/>
+      <entry column="2" row="8"/>
+      <entry column="3" row="9"/>
+      <entry column="4" row="7"/>
+      <entry column="4" row="8"/>
+      <entry column="5" row="8"/>
+      <entry column="5" row="9"/>
+      <entry column="6" row="7"/>
+      <entry column="6" row="9"/>
+    </viscoelasticStarMatrix>
+    <viscoelasticSourceMatrix rows="6" id="60" columns="9">
+      <entry column="1" row="1"/>
+      <entry column="1" row="2"/>
+      <entry column="1" row="3"/>
+      <entry column="2" row="1"/>
+      <entry column="2" row="2"/>
+      <entry column="2" row="3"/>
+      <entry column="3" row="1"/>
+      <entry column="3" row="2"/>
+      <entry column="3" row="3"/>
+      <entry column="4" row="4"/>
+      <entry column="5" row="5"/>
+      <entry column="6" row="6"/>
+    </viscoelasticSourceMatrix>
   </local>
 </matrices>

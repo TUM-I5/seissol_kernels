@@ -42,6 +42,7 @@
 import logging
 import xmltodict
 import pprint
+import scipy.io
 
 import Configuration
 
@@ -189,6 +190,57 @@ class MatrixSetup:
                                               )]
 
     return l_denseMatrices
+    
+  # Gets the dense matrices for the source matrix computation in the time kernel.
+  #
+  # @param i_alignment assumed memory alignment of the stiffness matrices and time derivatives of the DOFs.
+  # @param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+  # @param i_numberOfQuantities #(elastic quantities).
+  # @param i_numberOfViscoelasticQuantities #(viscoelastic quantities).
+  # @param i_precision precision either 's' for single precision or 'd' for double precision
+  def getDenseSourceTimeMatrices( self,
+                                 i_alignment,
+                                 i_degreesOfBasisFunctions,
+                                 i_numberOfQuantities,
+                                 i_numberOfViscoelasticQuantities,
+                                 i_precision ):
+    l_denseMatrices = []
+
+    for l_degree in i_degreesOfBasisFunctions:
+      l_order = l_degree + 1
+      
+      alignedNumberOfBasisFunctions = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
+                                                                             i_alignment       = i_alignment,
+                                                                             i_precision       = self.m_configuration.m_bytesPerReal[i_precision] )
+      l_m   = alignedNumberOfBasisFunctions
+      l_n   = i_numberOfQuantities
+      l_k   = i_numberOfViscoelasticQuantities
+      l_ldA = alignedNumberOfBasisFunctions
+      l_ldB = i_numberOfViscoelasticQuantities
+      l_ldC = alignedNumberOfBasisFunctions
+
+      l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                   + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                   + "_beta0_pfsigonly";
+
+      l_flops = l_m * l_k * l_n * 2;
+
+      # Add matrix to dictionary
+      l_denseMatrices.append(dict(\
+                                              routine_name = l_routineNameOfGeneratedKernel, \
+                                              m            = l_m,                            \
+                                              n            = l_n,                            \
+                                              k            = l_k,                            \
+                                              ld_a         = l_ldA,                          \
+                                              ld_b         = l_ldB,                          \
+                                              ld_c         = l_ldC,                          \
+                                              flops        = l_flops,                        \
+                                              add          = True,                           \
+                                              bind         = -1,                             \
+                                              prefetch     = 'pfsigonly'
+                                 ))
+
+    return l_denseMatrices
 
   # Gets the dense matrices for the stiffness matrix computation in the volume kernel.
   #
@@ -243,6 +295,57 @@ class MatrixSetup:
                                            )]
 
     return l_denseMatrices
+
+  # Gets the dense matrices for viscoelastic star and flux solver computation.
+  #
+  # \param i_alignment assumed memory alignment of the flux matrices and time integrated DOFs.
+  # \param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
+  # \param i_numberOfQuantities #(elastic quantities).
+  # \param i_numberOfViscoelasticQuantities #(viscoelastic quantities).
+  def getDenseViscoelasticStarSolverMatrices( self,
+                            i_alignment,
+                            i_degreesOfBasisFunctions,
+                            i_numberOfQuantities,
+                            i_numberOfViscoelasticQuantities,
+                            i_precision, 
+                            i_prefetch = 'pfsigonly' ):
+    l_denseMatrices = []
+    
+    for l_degree in i_degreesOfBasisFunctions:
+      l_order = l_degree + 1
+      alignedNumberOfBasisFunctions = self.getAlignedNumberOfBasisFunctions( i_order     = l_order,
+                                                                             i_alignment = i_alignment,
+                                                                             i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+
+      l_m   = alignedNumberOfBasisFunctions 
+      l_n   = i_numberOfViscoelasticQuantities
+      l_k   = i_numberOfQuantities
+      l_ldA = alignedNumberOfBasisFunctions 
+      l_ldB = i_numberOfQuantities
+      l_ldC = alignedNumberOfBasisFunctions
+
+      l_routineNameOfGeneratedKernel = i_precision + "gemm_m"   + str(l_m)   + "_n"   + str(l_n)   + "_k"   + str(l_k)\
+                                                   + "_ldA" + str(l_ldA) + "_ldB" + str(l_ldB) + "_ldC" + str(l_ldC)\
+                                                   + "_beta1_" + i_prefetch;
+
+      l_flops = l_m * l_k * l_n * 2;
+
+      # Add matrix to dictionary
+      l_denseMatrices.append(dict(\
+                                              routine_name = l_routineNameOfGeneratedKernel, \
+                                              m            = l_m,                            \
+                                              n            = l_n,                            \
+                                              k            = l_k,                            \
+                                              ld_a         = l_ldA,                          \
+                                              ld_b         = l_ldB,                          \
+                                              ld_c         = l_ldC,                          \
+                                              flops        = l_flops,                        \
+                                              add          = True,                           \
+                                              bind         = -1,                             \
+                                              prefetch     = i_prefetch
+                                  ))
+
+    return l_denseMatrices        
 
   # Gets the dense matrices for flux matrix computation in the flux kernel.
   #
@@ -343,7 +446,7 @@ class MatrixSetup:
       l_flops = l_m * l_k * l_n * 2;
 
       # Add matrix to dictionary
-      l_denseMatrices = l_denseMatrices + [ dict(\
+      l_denseMatrices.append(dict(\
                                               routine_name = l_routineNameOfGeneratedKernel, \
                                               m            = l_m,                            \
                                               n            = l_n,                            \
@@ -355,9 +458,10 @@ class MatrixSetup:
                                               add          = True,                           \
                                               bind         = -1,                             \
                                               prefetch     = i_prefetch
-                                          )]
+                                  ))
 
     return l_denseMatrices
+    
 
   # Returns a list of dense*dense matrix kernels for near dense matrices in SeisSol.
   #   Each matrix is specified by:
@@ -394,10 +498,13 @@ class MatrixSetup:
                         i_architectures,
                         i_precision = ['s', 'd'],
                         i_numberOfQuantities = 9,
+                        i_numberOfViscoelasticQuantities = 6,
                         i_maximumDegreeOfBasisFunctions = 8 ):
     
     # list which holds the different matrix structures
     l_denseMatrices = []
+    
+    degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions)
 
     # iterate over different architectures:
     for l_architecture in i_architectures:
@@ -406,19 +513,25 @@ class MatrixSetup:
 
       for l_precision in i_precision:
         l_alignedGemm = l_alignedGemm + self.getDenseStiffTimeMatrices(   i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = degreesOfBasisFunctions,
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
+                                                                          
+        l_alignedGemm.extend(self.getDenseSourceTimeMatrices(             i_alignment                       = l_alignment,
+                                                                          i_degreesOfBasisFunctions         = degreesOfBasisFunctions,
+                                                                          i_numberOfQuantities              = i_numberOfQuantities,
+                                                                          i_numberOfViscoelasticQuantities  = i_numberOfViscoelasticQuantities,
+                                                                          i_precision                       = l_precision ))
 
         l_alignedGemm = l_alignedGemm + self.getDenseStiffVolumeMatrices( i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = degreesOfBasisFunctions,
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
 
         l_alignedGemm = l_alignedGemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
-                                                                          i_numberOfQuantities      = i_numberOfQuantities,
-                                                                          i_precision               = l_precision )
+                                                                          i_degreesOfBasisFunctions         = degreesOfBasisFunctions,
+                                                                          i_numberOfQuantities              = i_numberOfQuantities,
+                                                                          i_precision                       = l_precision )
         
         if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
           l_fluxMatrix_prefetch = 'BL2viaC'
@@ -428,15 +541,21 @@ class MatrixSetup:
           l_fluxMatrix_prefetch = 'pfsigonly'
 
         l_alignedGemm = l_alignedGemm + self.getDenseFluxMatrices(        i_alignment = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = degreesOfBasisFunctions,
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision,
                                                                           i_prefetch                = l_fluxMatrix_prefetch )
 
         l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = degreesOfBasisFunctions,
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision )
+        
+        l_alignedGemm.extend(self.getDenseViscoelasticStarSolverMatrices( i_alignment                       = l_alignment,
+                                                                          i_degreesOfBasisFunctions         = degreesOfBasisFunctions,
+                                                                          i_numberOfQuantities              = i_numberOfQuantities,
+                                                                          i_numberOfViscoelasticQuantities  = i_numberOfViscoelasticQuantities,
+                                                                          i_precision                       = l_precision ))
 
         if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
           l_starSolver_prefetch = 'pfsigonly'
@@ -446,10 +565,17 @@ class MatrixSetup:
           l_starSolver_prefetch = 'pfsigonly'
 
         l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
-                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_degreesOfBasisFunctions = degreesOfBasisFunctions,
                                                                           i_numberOfQuantities      = i_numberOfQuantities,
                                                                           i_precision               = l_precision,
                                                                           i_prefetch                = l_starSolver_prefetch )
+        
+        l_alignedGemm.extend(self.getDenseViscoelasticStarSolverMatrices( i_alignment                       = l_alignment,
+                                                                          i_degreesOfBasisFunctions         = degreesOfBasisFunctions,
+                                                                          i_numberOfQuantities              = i_numberOfQuantities,
+                                                                          i_numberOfViscoelasticQuantities  = i_numberOfViscoelasticQuantities,
+                                                                          i_precision                       = l_precision,
+                                                                          i_prefetch                        = l_starSolver_prefetch ))
 
         # remove all duplicates which might have been generated (recursive time integration)
         l_alignedGemm =  {l_value['routine_name']:l_value for l_value in l_alignedGemm}.values()
@@ -472,12 +598,14 @@ class MatrixSetup:
   #
   # @param i_alignment assumed memory alignment of the flux matrices and time integrated DOFs.
   # @param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
-  # @param i_numberOfQuantities #(quantities).
+  # @param i_numberOfQuantities #(elastic quantities).
+  # @param i_numberOfViscoelasticQuantities #(viscoelastic quantities).
   # @param i_pathToSparseDenseSwitch
   def getSparseTimeMatrices( self,
                              i_alignment,
                              i_degreesOfBasisFunctions,
                              i_numberOfQuantities,
+                             i_numberOfViscoelasticQuantities,
                              i_pathToSparseDenseSwitch,
                              i_precision ):
     # open sparse-dense-switch configuration
@@ -610,7 +738,7 @@ class MatrixSetup:
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = 'starMatrix',
-                                                      matrix_market = self.m_configuration.m_matrixMarketFiles['starMatrix'],
+                                                      matrix_market = self.m_configuration.m_matrixMarketFiles[l_order]['starMatrix'],
                                                       routine_name  = l_routineName,
                                                       m             = l_m,
                                                       n             = l_n,
@@ -624,19 +752,116 @@ class MatrixSetup:
                                                       prefetch      = 'pfsigonly'
                                                    )
                                                   ]
+        
+        # generate viscoelastic star matrix if star matrix is sparse
+        if( "starMatrix" in ( l_sparseDense[l_setup]['local'].keys() if l_sparseDense[l_setup]['local'] != None else [] ) ):
+          # compute bind id
+          l_bindId = self.m_configuration.m_matrixBinds['time']['viscoelasticStarMatrix']
+          
+          numberOfBasisFunctions = self.getNumberOfBasisFunctions(i_order = l_order)
+          alignedNumberOfBasisFunctions = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
+                                                                                 i_alignment       = i_alignment,
+                                                                                 i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+          
+          l_m   = numberOfBasisFunctions 
+          l_n   = i_numberOfViscoelasticQuantities
+          l_k   = i_numberOfQuantities
+          l_ldA = alignedNumberOfBasisFunctions 
+          l_ldB = -(l_degree+1)
+          l_ldC = alignedNumberOfBasisFunctions
+
+          l_routineName = i_precision             +\
+                          "sparse"                +\
+                          "_"      + "viscoelasticStarMatrix" +\
+                          "_m"     + str(l_m)     +\
+                          "_n"     + str(l_n)     +\
+                          "_k"     + str(l_k)     +\
+                          "_ldA"   + str(l_ldA)   +\
+                          "_ldBna" + str(-l_ldB)  +\
+                          "_ldC"   + str(l_ldC)   +\
+                          "_beta1_pfsigonly"
+
+          l_flops = self.m_configuration.m_nonZeros[l_associatedOrder]['viscoelasticStarMatrix'] * l_m * 2
+
+          # Add matrix to dictionary
+          l_sparseMatrices.append(dict(
+                                                    name          = 'viscoelasticStarMatrix',
+                                                    matrix_market = self.m_configuration.m_matrixMarketFiles[l_order]['viscoelasticStarMatrix'],
+                                                    routine_name  = l_routineName,
+                                                    m             = l_m,
+                                                    n             = l_n,
+                                                    k             = l_k,
+                                                    ld_a          = l_ldA,
+                                                    ld_b          = l_ldB,
+                                                    ld_c          = l_ldC,
+                                                    flops         = l_flops,
+                                                    add           = True,
+                                                    bind          = l_bindId,
+                                                    prefetch      = 'pfsigonly'
+                                       ))
+                                       
+        # generate viscoelastic source matrix if source matrix is sparse
+        if( "eT" in ( l_sparseDense[l_setup]['local'].keys() if l_sparseDense[l_setup]['local'] != None else [] ) ):
+          # compute bind id
+          l_bindId = self.m_configuration.m_matrixBinds['time']['eT']
+          
+          numberOfBasisFunctions = self.numberOfBasisFunctions(i_order = l_order)
+          alignedNumberOfBasisFunctions = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
+                                                                                 i_alignment       = i_alignment,
+                                                                                 i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+          
+          l_m   = numberOfBasisFunctions 
+          l_n   = i_numberOfQuantities
+          l_k   = i_numberOfViscoelasticQuantities
+          l_ldA = alignedNumberOfBasisFunctions 
+          l_ldB = -(l_degree+1)
+          l_ldC = alignedNumberOfBasisFunctions
+
+          l_routineName = i_precision             +\
+                          "sparse"                +\
+                          "_"      + "eT" +\
+                          "_m"     + str(l_m)     +\
+                          "_n"     + str(l_n)     +\
+                          "_k"     + str(l_k)     +\
+                          "_ldA"   + str(l_ldA)   +\
+                          "_ldBna" + str(-l_ldB)  +\
+                          "_ldC"   + str(l_ldC)   +\
+                          "_beta1_pfsigonly"
+
+          l_flops = self.m_configuration.m_nonZeros[l_associatedOrder]['eT'] * l_m * 2
+
+          # Add matrix to dictionary
+          l_sparseMatrices.append(dict(
+                                                    name          = 'eT',
+                                                    matrix_market = self.m_configuration.m_matrixMarketFiles[l_order]['eT'],
+                                                    routine_name  = l_routineName,
+                                                    m             = l_m,
+                                                    n             = l_n,
+                                                    k             = l_k,
+                                                    ld_a          = l_ldA,
+                                                    ld_b          = l_ldB,
+                                                    ld_c          = l_ldC,
+                                                    flops         = l_flops,
+                                                    add           = True,
+                                                    bind          = l_bindId,
+                                                    prefetch      = 'pfsigonly'
+                                       ))
+    
     return l_sparseMatrices
 
   # Gets the sparse volume and flux matrices for flux computation.
   #
   # @param i_alignment assumed memory alignment of the flux matrices and time integrated DOFs.
   # @param i_degreesOfBasisFunctions list of degrees of the basis functions for which kernels are generated.
-  # @param i_numberOfQuantities #(quantities).
+  # @param i_numberOfQuantities #(elastic quantities).
+  # @param i_numberOfViscoelasticQuantities #(viscoelastic quantities).
   # @param i_pathToSparseDenseSwitch
   # @param i_integrationKernels get either the matrices for both kernels ['volume', 'boundary']  or only one: ['volume'] or ['boundary']
   def getSparseVolumeAndFluxMatrices( self,
                                       i_alignment,
                                       i_degreesOfBasisFunctions,
                                       i_numberOfQuantities,
+                                      i_numberOfViscoelasticQuantities,
                                       i_pathToSparseDenseSwitch,
                                       i_precision,
                                       i_integrationKernels = ['volume', 'boundary'] ):
@@ -722,7 +947,7 @@ class MatrixSetup:
                                                    )
                                                   ]
           # generate sparse star matrix if requested
-          if( l_kernel == 'volume' and l_sparseDense[l_setup]['local'] != None and "starMatrix" in l_sparseDense[l_setup]['local'].keys() ):
+          if( l_kernel == 'volume' and l_sparseDense[l_setup]['local'] != None and "starMatrix" in l_sparseDense[l_setup]['local'].keys()):
             # set up bind id
             l_bindId = self.m_configuration.m_matrixBinds[l_kernel]['starMatrix']
 
@@ -760,7 +985,7 @@ class MatrixSetup:
             # Add matrix to dictionary
             l_sparseMatrices = l_sparseMatrices + [ dict(
                                                       name          = "starMatrix",
-                                                      matrix_market = self.m_configuration.m_matrixMarketFiles['starMatrix'],
+                                                      matrix_market = self.m_configuration.m_matrixMarketFiles[l_order]['starMatrix'],
                                                       routine_name  = l_routineName,
                                                       m             = l_m,
                                                       n             = l_n,
@@ -774,6 +999,51 @@ class MatrixSetup:
                                                       prefetch      = 'pfsigonly'
                                                    )
                                                   ]
+            # if star matrix is sparse, viscoelastic star matrix shall be sparse as well
+            
+            # set up bind id
+            l_bindId = self.m_configuration.m_matrixBinds[l_kernel]['viscoelasticStarMatrix']
+
+            numberOfBasisFunctions = self.getNumberOfBasisFunctions(i_order = l_order)
+            alignedNumberOfBasisFunctions = self.getAlignedNumberOfBasisFunctions( i_order           = l_order,
+                                                                                   i_alignment       = i_alignment,
+                                                                                   i_precision = self.m_configuration.m_bytesPerReal[i_precision] )
+            l_m   = numberOfBasisFunctions 
+            l_n   = i_numberOfViscoelasticQuantities
+            l_k   = i_numberOfQuantities
+            l_ldA = alignedNumberOfBasisFunctions 
+            l_ldB = -(l_degree+1)
+            l_ldC = alignedNumberOfBasisFunctions
+
+            l_routineName = i_precision                         +\
+                            "sparse"                            +\
+                            "_"      + "viscoelasticStarMatrix" +\
+                            "_m"     + str(l_m)                 +\
+                            "_n"     + str(l_n)                 +\
+                            "_k"     + str(l_k)                 +\
+                            "_ldA"   + str(l_ldA)               +\
+                            "_ldBna" + str(-l_ldB)              +\
+                            "_ldC"   + str(l_ldC)               +\
+                            "_beta1_pfsigonly"
+
+            l_flops = self.m_configuration.m_nonZeros[l_order]['viscoelasticStarMatrix'] * l_m * 2
+
+            # Add matrix to dictionary
+            l_sparseMatrices.append(dict(
+                                                      name          = "viscoelasticStarMatrix",
+                                                      matrix_market = self.m_configuration.m_matrixMarketFiles[l_order]['viscoelasticStarMatrix'],
+                                                      routine_name  = l_routineName,
+                                                      m             = l_m,
+                                                      n             = l_n,
+                                                      k             = l_k,
+                                                      ld_a          = l_ldA,
+                                                      ld_b          = l_ldB,
+                                                      ld_c          = l_ldC,
+                                                      flops         = l_flops,
+                                                      add           = True,
+                                                      bind          = l_bindId,
+                                                      prefetch      = 'pfsigonly'
+                                          ))
     return l_sparseMatrices
 
   # Returns a list of sparse matrix kernels for SeisSol.
@@ -786,6 +1056,7 @@ class MatrixSetup:
                          i_architectures,
                          i_precision = ['s', 'd'],
                          i_numberOfQuantities = 9,
+                         i_numberOfViscoelasticQuantities = 6,
                          i_maximumDegreeOfBasisFunctions = 8 ):
 
     # list which holds the different matrix structures
@@ -807,12 +1078,14 @@ class MatrixSetup:
                                                                                  i_degreesOfBasisFunctions = range(l_minimumGlobalDegree,i_maximumDegreeOfBasisFunctions),
                                                                                  i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
                                                                                  i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                 i_numberOfViscoelasticQuantities = i_numberOfViscoelasticQuantities,
                                                                                  i_precision               = l_precision )
 
         l_alignedSparse = l_alignedSparse + self.getSparseVolumeAndFluxMatrices( i_alignment               = l_alignment,
                                                                                  i_degreesOfBasisFunctions = range(l_minimumLocalDegree,i_maximumDegreeOfBasisFunctions),
                                                                                  i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
                                                                                  i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                 i_numberOfViscoelasticQuantities = i_numberOfViscoelasticQuantities,
                                                                                  i_precision               = l_precision )
 
         # file where the generated code is stored
@@ -822,7 +1095,10 @@ class MatrixSetup:
           l_alignedSparse[l_matrix]['arch'] = l_architecture
           l_alignedSparse[l_matrix]['fileNameOfGeneratedKernel'] = l_fileNameOfGeneratedKernel
 
+        # remove all duplicates which might have been generated
+        l_alignedSparse =  {l_value['routine_name'] : l_value for l_value in l_alignedSparse}.values()
+
         # add the alignment to all matrices
-        l_sparseMatrices = l_sparseMatrices + l_alignedSparse 
+        l_sparseMatrices = l_sparseMatrices + l_alignedSparse
 
     return l_sparseMatrices

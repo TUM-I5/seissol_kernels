@@ -112,14 +112,6 @@ l_commandLineParser.add_argument('--plotSparsityPatterns',
 l_commandLineParser.add_argument('--runVectorization',
                                  action='store_true',
                                  help='vectorizes the columns of the matrices.')
-
-l_commandLineParser.add_argument('--generatePreprocessorCode',
-                                 action='store_true',
-                                 help='generates preprocessor code which contains the dimensions of the matrices.')
-
-l_commandLineParser.add_argument('--generateStarMatrixInitializationCode',
-                                 action='store_true',
-                                 help='generates Fortran Code, which initializes a flat star matrix given the full matrix.')
                                  
 l_commandLineParser.add_argument('--generateMatrixKernels',
                                  nargs=4,
@@ -147,21 +139,18 @@ l_commandLineArguments = l_commandLineParser.parse_args()
 
 l_logger.printWelcomeMessage()
 
-# construct configuration
-
-if l_commandLineArguments.generateMatrixKernels == None:
-  l_configuration = tools.Configuration.Configuration()
-else:
-  l_configuration = tools.Configuration.Configuration(
-    i_matricesDir              = l_commandLineArguments.generateMatrixKernels[0],
-    i_maximumOrder             = 8,
-    i_pathToSparseDenseConfigs = l_commandLineArguments.generateMatrixKernels[1],
-    i_pathToGemmCodeGenerator  = l_commandLineArguments.generateMatrixKernels[2],
-    i_pathToGeneratedCodeDir   = l_commandLineArguments.generateMatrixKernels[3] )
-
-
 # construct classes
 if l_availableModules['seissol_gen']:
+  # construct configuration
+  if l_commandLineArguments.generateMatrixKernels == None:
+    l_configuration = tools.Configuration.Configuration()
+  else:
+    l_configuration = tools.Configuration.Configuration(
+      i_matricesDir              = l_commandLineArguments.generateMatrixKernels[0],
+      i_maximumOrder             = 8,
+      i_pathToSparseDenseConfigs = l_commandLineArguments.generateMatrixKernels[1],
+      i_pathToGemmCodeGenerator  = l_commandLineArguments.generateMatrixKernels[2],
+      i_pathToGeneratedCodeDir   = l_commandLineArguments.generateMatrixKernels[3] )
   l_matrixSetup = tools.MatrixSetup.MatrixSetup( i_configuration = l_configuration )
   l_seissolGen = tools.SeisSolGen.SeisSolGen( i_matrixSetup = l_matrixSetup )
 
@@ -174,26 +163,9 @@ if l_availableModules['performance_modeler']:
 if l_availableModules['unit_test_generator']:
   l_unitTestGenerator = UnitTestGenerator.UnitTestGenerator( i_pathToMatrices = 'matrices' )
 
-# get the matrix files and sort them
-#l_matrixFiles = os.listdir('matrices')
-#l_matrixFiles.sort()
-
-#for l_file in l_matrixFiles:
-#  if l_file.endswith('_maple.mtx'):
-#    l_baseName = l_file.replace('_maple.mtx','')
-#    if l_commandLineArguments.plotSparsityPatterns:
-#      l_matrixConverter.plotSparsityPattern( i_fullMatrix = 'matrices/'+l_file,
-#                                             i_baseName = l_baseName,
-#                                             i_pathToOutputDirectory = 'matrices',
-#                                             i_readMatrix = True )
-#    if l_commandLineArguments.runVectorization:
-#      l_vectorizer.vectorizeMatrix( 'matrices/'+l_file, l_baseName, 'vectorization', True)
-#    if l_commandLineArguments.generatePreprocessorCode:
-#      l_matrixConverter.addMatrixToPreProcessorCode( i_pathToFullMatrix = 'matrices/'+l_file,
-#                                                     i_baseName = l_baseName)
-#    if l_baseName == 'starMatrix_3D':
-#      if l_commandLineArguments.generateStarMatrixInitializationCode:
-#        l_matrixConverter.generateMatrixInitializationCode('matrices/'+l_file, l_baseName, 'initializeFlatStarMatrixColumnMajor', 'csc' ,'generated_code/initialization')
+if l_commandLineArguments.plotSparsityPatterns:
+  l_matrixConverter.plotSparsityPatterns( i_pathToMatrices='matrices',
+                                          i_pathToOutputDirectory='matrices' )
 
 if l_commandLineArguments.convertToXml:
   l_matrixConverter.convertToXml( i_pathToMatrices='matrices',
@@ -203,9 +175,6 @@ if l_commandLineArguments.generatePerformanceModel:
   for l_matrixFile in ['matrices_4.xml', 'matrices_10.xml', 'matrices_20.xml', 'matrices_35.xml', 'matrices_56.xml']:
     l_pathToMatricesFile = 'matrices/'+l_matrixFile
     l_performanceModeler.generatePerformanceModel( i_pathToMatricesFile = l_pathToMatricesFile )
-  
-  if l_commandLineArguments.generatePreprocessorCode:
-    l_matrixConverter.writePreProcessorCode('generated_code/pre_processor')
 
   
 if l_commandLineArguments.generateMatrixKernels:
