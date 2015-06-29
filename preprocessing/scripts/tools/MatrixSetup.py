@@ -392,8 +392,8 @@ class MatrixSetup:
   # @return dictionary conatinig the dense matrices described abover.
   def getDenseMatrices( self,
                         i_architectures,
-                        i_precision = ['s', 'd'],
-                        i_numberOfQuantities = 9,
+                        i_precision,
+                        i_numberOfQuantities,
                         i_maximumDegreeOfBasisFunctions = 8 ):
     
     # list which holds the different matrix structures
@@ -784,8 +784,8 @@ class MatrixSetup:
   # @return dictionary containing the sparse matrices described.
   def getSparseMatrices( self,
                          i_architectures,
-                         i_precision = ['s', 'd'],
-                         i_numberOfQuantities = 9,
+                         i_precision,
+                         i_numberOfQuantities,
                          i_maximumDegreeOfBasisFunctions = 8 ):
 
     # list which holds the different matrix structures

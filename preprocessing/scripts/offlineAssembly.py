@@ -138,6 +138,9 @@ l_commandLineParser.add_argument('--generateMatrixUnitTests',
 l_commandLineParser.add_argument('--generatePerformanceModel',
                                  action='store_true',
                                  help='generates a theoretical performance model.')
+                                 
+l_commandLineParser.add_argument('--numberOfQuantities',
+                                 help='If you do not know what you are doing, set it to 9.')
 
 l_commandLineArguments = l_commandLineParser.parse_args()
 
@@ -148,6 +151,10 @@ l_commandLineArguments = l_commandLineParser.parse_args()
 l_logger.printWelcomeMessage()
 
 # construct configuration
+
+numberOfQuantities = 9
+if l_commandLineArguments.numberOfQuantities is not None:
+  numberOfQuantities = int(l_commandLineArguments.numberOfQuantities)
 
 if l_commandLineArguments.generateMatrixKernels == None:
   l_configuration = tools.Configuration.Configuration()
@@ -209,8 +216,8 @@ if l_commandLineArguments.generatePerformanceModel:
 
   
 if l_commandLineArguments.generateMatrixKernels:
-  l_seissolGen.generateMatrixKernels()
-  l_seissolGen.generateMatrixKernelsInitializationCode()
+  l_seissolGen.generateMatrixKernels(numberOfQuantities)
+  l_seissolGen.generateMatrixKernelsInitializationCode(numberOfQuantities)
 
 if l_commandLineArguments.generateMatrixUnitTests:
   l_unitTestGenerator.generateMatrixUnitTests( i_pathToOutputDirectory = 'generated_code/unit_tests' )

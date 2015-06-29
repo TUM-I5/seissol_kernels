@@ -85,8 +85,7 @@ class SeisSolGen:
   # @param i_pathToSeisSolGen path to executable of the code generator.
   # @param i_pathToMatrices path to directory, which contains the matrices in MatrixMarket-format.
   # @param i_pathToOutputDirectory path to directory where the generated code will be written to.
-  def generateMatrixKernels( self ):
-
+  def generateMatrixKernels( self, i_numberOfQuantities ):
     l_outputDir = self.m_configuration.m_pathToGeneratedCodeDir+'/matrix_kernels'
 
     l_logger.log('generating matrix kernels with'+
@@ -140,10 +139,10 @@ class SeisSolGen:
         l_outputFile.close()
 
       # get dense matrices
-      l_denseMatrices = self.m_matrixSetup.getDenseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision )
+      l_denseMatrices = self.m_matrixSetup.getDenseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision, i_numberOfQuantities = i_numberOfQuantities )
 
       # get sparse matrices
-      l_sparseMatrices = self.m_matrixSetup.getSparseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision )
+      l_sparseMatrices = self.m_matrixSetup.getSparseMatrices( i_architectures = self.m_configuration.m_architectures, i_precision = l_precision, i_numberOfQuantities = i_numberOfQuantities )
 
       # generate code for all matrices
       for l_matrix in l_denseMatrices + l_sparseMatrices:
@@ -232,7 +231,7 @@ class SeisSolGen:
     l_globalInclude.close()
 
   # Generates code, which initializes the matrix function pointers for in the time, volume and flux kernel.
-  def generateMatrixKernelsInitializationCode( self ):
+  def generateMatrixKernelsInitializationCode( self, i_numberOfQuantities ):
     l_logger.log('generating dense matrix initialization code' )
 
     l_outputDir = self.m_configuration.m_pathToGeneratedCodeDir+'/initialization'
@@ -294,17 +293,17 @@ class SeisSolGen:
 
               l_sparse      = self.m_matrixSetup.getSparseTimeMatrices(            i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
                                                                                    i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseStiffTimeMatrices(        i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = reversed(range(l_order-1)),
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
               assert( len(l_globalDgemm) == len(l_localDgemm) )
 
@@ -319,19 +318,19 @@ class SeisSolGen:
 
               l_sparse =  self.m_matrixSetup.getSparseVolumeAndFluxMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
                                                                                    i_integrationKernels      = ['volume'],
                                                                                    i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseStiffVolumeMatrices(      i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
             if( l_kernel == 'boundary' ):
@@ -345,14 +344,14 @@ class SeisSolGen:
 
               l_sparse      =  self.m_matrixSetup.getSparseVolumeAndFluxMatrices(  i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_pathToSparseDenseSwitch = l_pathToSparseDenseSwitch,
                                                                                    i_integrationKernels      = ['boundary'],
                                                                                    i_precision               = l_precision )
 
               l_globalDgemm = self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
               if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
@@ -364,13 +363,13 @@ class SeisSolGen:
 
               l_globalDgemm = l_globalDgemm + self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision,
                                                                                    i_prefetch                = l_fluxMatrix_prefetch )
 
               l_localDgemm  = self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
               if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
@@ -382,7 +381,7 @@ class SeisSolGen:
 
               l_localDgemm  = l_localDgemm + self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
-                                                                                   i_numberOfQuantities      = 9,
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision,
                                                                                    i_prefetch                = l_starSolver_prefetch )
 
