@@ -72,7 +72,7 @@ endif ()
 add_definitions( -DCONVERGENCE_ORDER=${CONVERGENCE_ORDER} )
 
 # set number of quantities
-add_definitions( -DNUMBER_OF_QUANTITIES=9 )
+add_definitions( -DNUMBER_OF_RELAXATION_MECHANISMS=3 )
 
 # set include to generated code
 if( GENERATED_CODE )

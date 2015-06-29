@@ -121,7 +121,7 @@ l_matrices = {
                             "fP443DivM" ]
 }
 
-l_genKernels = [ 'swsm','dwsm', 'ssnb', 'dsnb', 'sknc', 'dknc', 'shsw', 'dhsw', 'snoarch', 'dnoarch' ]
+l_genKernels = [ 'swsm','dwsm', 'ssnb', 'dsnb', 'sknc', 'sskx', 'sknl', 'shsw', 'dknc', 'shsw', 'dhsw', 'snoarch', 'dnoarch', 'dskx', 'dknl', 'dhsw' ]
 
 # add a command line parser
 l_parser    = argparse.ArgumentParser( description='Sets up the sparse-dense switches.' )

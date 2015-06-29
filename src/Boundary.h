@@ -75,18 +75,18 @@ class seissol::kernels::Boundary {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[54])( const real *i_A,         const real *i_B,               real *io_C,
+    void (*m_matrixKernels[56])( const real *i_A,         const real *i_B,               real *io_C,
                                  const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );
 
     /**
      * Number of non-zero floating point operations performed by each matrix kernel.
      **/
-    unsigned int m_nonZeroFlops[54];
+    unsigned int m_nonZeroFlops[56];
 
     /**
      * Number of floating point operations in hardware performed by each matrix kernels
      **/
-    unsigned int m_hardwareFlops[54];
+    unsigned int m_hardwareFlops[56];
 
   public:
     /**

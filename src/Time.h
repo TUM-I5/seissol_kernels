@@ -144,18 +144,18 @@ class seissol::kernels::Time {
      * @param i_BPrefetch right matrix \f$ B \f$ of the next matrix triple \f$ (A, B, C) \f$.
      * @param i_CPrefetch result matrix \f$ C \f$ of the next matrix triple \f$ (A, B, C) \f$.
      **/  
-    void (*m_matrixKernels[(CONVERGENCE_ORDER-1)*4])( const real *i_A,         const real *i_B,               real *io_C,
-                                                      const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );
+    void (*m_matrixKernels[2 + (CONVERGENCE_ORDER-1)*4])( const real *i_A,         const real *i_B,               real *io_C,
+                                                          const real *i_APrefetch, const real *i_BPrefetch, const real *i_CPrefetch );
 
     /**
      * Number of non-zero floating point operations performed by each matrix kernel.
      **/
-    unsigned int m_nonZeroFlops[(CONVERGENCE_ORDER-1)*4];
+    unsigned int m_nonZeroFlops[2 + (CONVERGENCE_ORDER-1)*4];
 
     /**
      * Number of floating point operations in hardware performed by each matrix kernels
      **/
-    unsigned int m_hardwareFlops[(CONVERGENCE_ORDER-1)*4];
+    unsigned int m_hardwareFlops[2 + (CONVERGENCE_ORDER-1)*4];
 
     /**
      * Stream-Copy (no-read-before-write) the degress of freedom into the first position of the time derivatives buffer

@@ -419,7 +419,7 @@ void seissol::kernels::Time::integrateInTime( const real*        i_derivativesBu
 void seissol::kernels::Time::flopsAder( unsigned int        &o_nonZeroFlops,
                                         unsigned int        &o_hardwareFlops ) {
   // reset flops
-  o_nonZeroFlops = 0; o_hardwareFlops =0;
+  o_nonZeroFlops = 0; o_hardwareFlops = 0;
 
   // initialization
   o_nonZeroFlops  += NUMBER_OF_DOFS;
@@ -429,11 +429,11 @@ void seissol::kernels::Time::flopsAder( unsigned int        &o_nonZeroFlops,
   for( unsigned l_derivative = 1; l_derivative < CONVERGENCE_ORDER; l_derivative++ ) {
     // iterate over dimensions
     for( unsigned int l_c = 0; l_c < 3; l_c++ ) {
-      o_nonZeroFlops  += m_nonZeroFlops[  (l_derivative-1)*4 + l_c ];
-      o_hardwareFlops += m_hardwareFlops[ (l_derivative-1)*4 + l_c ];
+      o_nonZeroFlops  += m_nonZeroFlops[  2 + (l_derivative-1)*4 + l_c ];
+      o_hardwareFlops += m_hardwareFlops[ 2 + (l_derivative-1)*4 + l_c ];
 
-      o_nonZeroFlops  += m_nonZeroFlops[  (l_derivative-1)*4 + 3   ];
-      o_hardwareFlops += m_hardwareFlops[ (l_derivative-1)*4 + 3   ];
+      o_nonZeroFlops  += m_nonZeroFlops[  2 + (l_derivative-1)*4 + 3   ];
+      o_hardwareFlops += m_hardwareFlops[ 2 + (l_derivative-1)*4 + 3   ];
     }
 
     // update of time integrated DOFs
