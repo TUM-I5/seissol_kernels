@@ -42,7 +42,7 @@
 #include "FlopCounter.hpp"
 
   // Define the FLOP counter.
-  unsigned long long num_flops = 0;
+  unsigned long long libxsmm_num_total_flops = 0;
 
   unsigned long long l_numberOfTimeIntegrationFlops = 0;
   unsigned long long l_numberOfVolumeIntegrationFlops = 0;
@@ -54,14 +54,14 @@
      * Resets the FLOP counter to zero.
      */
     void resetFlops() {
-      num_flops = 0;
+      libxsmm_num_total_flops = 0;
     }
 
     /**
      * Stores the boundary FLOPs and resets the counter to zero.
      */
     void addTimeFlops() {
-      l_numberOfTimeIntegrationFlops += num_flops;
+      l_numberOfTimeIntegrationFlops += libxsmm_num_total_flops;
       resetFlops();
     }
 
@@ -69,7 +69,7 @@
      * Stores the volume FLOPs and resets the counter to zero.
      */
     void addVolumeFlops() {
-      l_numberOfVolumeIntegrationFlops += num_flops;
+      l_numberOfVolumeIntegrationFlops += libxsmm_num_total_flops;
       resetFlops();
     }
 
@@ -77,7 +77,7 @@
      * Stores the boundary FLOPs and resets the counter to zero.
      */
     void addBoundaryFlops() {
-      l_numberOfBoundaryIntegrationFlops += num_flops;
+      l_numberOfBoundaryIntegrationFlops += libxsmm_num_total_flops;
       resetFlops();
     }
     

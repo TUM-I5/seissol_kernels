@@ -47,7 +47,7 @@
 
   //! floating point operations performed in the matrix kernels.
   //!   Remark: This variable is updated by the matrix kernels.
-  extern unsigned long long num_flops;
+  extern unsigned long long libxsmm_num_total_flops;
 
   extern "C" {
     void addTimeFlops();

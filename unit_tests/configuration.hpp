@@ -47,7 +47,7 @@
 #include <cxxtest/GlobalFixture.h>
 
 //! dummy variable for the FLOP counter
-static unsigned long long num_flops = 0;
+static unsigned long long libxsmm_num_total_flops = 0;
 
 namespace unit_test {
   class Configuration;
