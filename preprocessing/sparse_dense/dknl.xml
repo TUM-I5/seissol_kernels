@@ -45,9 +45,7 @@
     </local>
     <time/>
     <volume/>
-    <boundary>
-      <fP113DivM/>
-    </boundary>
+    <boundary/>
   </O6>
 
   <O7>
@@ -56,10 +54,7 @@
     </local>
     <time/>
     <volume/>
-    <boundary>
-      <fP113DivM/>
-      <fP111DivM/>
-    </boundary>
+    <boundary/>
   </O7>
 
   <O8>
