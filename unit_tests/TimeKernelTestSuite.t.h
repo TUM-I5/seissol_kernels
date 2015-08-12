@@ -606,15 +606,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       TS_ASSERT_EQUALS( l_ltsSetup, 1016 );
 
       /*
-       * GTS with dynamic rupture and cell is part of the ghost layer.
-       * | - 0 1 0 | 1 1 1 1 | 1 0 0 0 |
-       */
-      l_faceNeighborIds[1] = std::numeric_limits<unsigned int>::max();
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
-      TS_ASSERT_EQUALS( l_ltsSetup, 760 );
-      l_faceNeighborIds[1] = rand()%10000;
-
-      /*
        * Local time stepping.
        * | - 1 1 1 | 1 0 1 0 | 0 0 0 1 |
        */
@@ -623,15 +614,6 @@ class unit_test::TimeKernelTestSuite: public CxxTest::TestSuite {
       l_neighboringClusterIds[2] = 2;
       l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
       TS_ASSERT_EQUALS( l_ltsSetup, 1953 );
-
-      /*
-       * Local time stepping and cell is part of the ghost layer. -> Only derivatives are communicated.
-       * | - - 1 1 | 1 0 1 0 | 0 0 0 1 |
-       */
-      l_faceNeighborIds[0] = std::numeric_limits<unsigned int>::max();
-      l_ltsSetup = seissol::kernels::Time::getLtsSetup( l_localClusterId, l_neighboringClusterIds, l_faceTypes, l_faceNeighborIds );
-      TS_ASSERT_EQUALS( l_ltsSetup, 673 );
-      l_faceNeighborIds[0] = rand()%10000;
 
       /*
        * Local time stepping with dynamic rupture and boundary conditions.

@@ -248,7 +248,7 @@ class seissol::kernels::Time {
     static unsigned short getLtsSetup(      unsigned int   i_localClusterId,
                                             unsigned int   i_neighboringClusterIds[4],
                                       const enum faceType  i_faceTypes[4],
-                                      const unsigned int   i_faceNeighborIds[4],
+                                      const unsigned int   i_faceNeighborIds[4], // TODO: Remove, outdated
                                             bool           i_copy = false ) {
       // reset the LTS setup
       unsigned short l_ltsSetup = 0;
