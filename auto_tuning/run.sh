@@ -39,12 +39,12 @@
 # Entry point for the auto-tuning runs.
 
 # Global config
-TUNE_CELLS[2]=10000
-TUNE_CELLS[3]=10000
-TUNE_CELLS[4]=10000
-TUNE_CELLS[5]=10000
-TUNE_CELLS[6]=10000
-TUNE_CELLS[7]=10000
+TUNE_CELLS[2]=50000
+TUNE_CELLS[3]=50000
+TUNE_CELLS[4]=50000
+TUNE_CELLS[5]=50000
+TUNE_CELLS[6]=50000
+TUNE_CELLS[7]=50000
 
 TUNE_TS[2]=25000
 TUNE_TS[3]=15000
@@ -264,7 +264,7 @@ else
   echo_date "\t SEISSOL_KERNELS_DIR:      ${SEISSOL_KERNELS_DIR}"
   echo_date "\t GEMM_CODE_GEN_EXE:        ${GEMM_CODE_GEN_EXE}"
   echo_date "\t OUTPUT_DIR:               ${OUTPUT_DIR}"
-  if [ $WORK_DIR != "" ]; then
+  if [ "$WORK_DIR" != "" ]; then
     echo_date "\t WORK_DIR:               ${WORK_DIR}\n"
   fi
   echo_date "\t Deleting enabled?         ${DELETE}"
