@@ -167,8 +167,10 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' 1'                          +\
                                     ' '+str(int(l_matrix['add'])) +\
-                                    ' 1 1'
-          # 1 1: we always rely on alignment based on LDA and LDC
+                                    ' 1 1'                        +\
+                                    ' '+str(l_matrix['arch'])     +\
+                                    ' '+str(l_matrix['prefetch']) +\
+                                    ' '+l_precision.upper() + 'P'
         else:
           # convert to temporary csc file
           l_cscFile = tempfile.NamedTemporaryFile(); l_csrFile = tempfile.NamedTemporaryFile();
@@ -180,7 +182,6 @@ class SeisSolGen:
           l_commandLineParameters =     l_matrix['type']          +\
                                     ' '+l_pathToOutputFile        +\
                                     ' '+l_matrix['routine_name']  +\
-                                    ' '+l_cscFile.name            +\
                                     ' '+str(l_matrix['m'])        +\
                                     ' '+str(l_matrix['n'])        +\
                                     ' '+str(l_matrix['k'])        +\
@@ -189,10 +190,11 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' 1'                          +\
                                     ' '+str(int(l_matrix['add'])) +\
-                                    ' 1 1'
-          # 1 1: we always rely on alignment based on LDA and LDC
-
-        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
+                                    ' 1 1'                        +\
+                                    ' '+str(l_matrix['arch'])     +\
+                                    ' '+str(l_matrix['prefetch']) +\
+                                    ' '+l_precision.upper() + 'P' +\
+                                    ' ' + l_cscFile.name
 
         # generate code C++-code for the current matrix
         self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
