@@ -188,14 +188,15 @@ class Configuration():
                                          "fP443DivM":  51,
 
                                          "fluxSolver": 52,
-                                         "fluxSolverPF": 53 }
+                                         "fluxSolverPF": 53,
+                                         "fluxSolverPF2": 54 }
                   }
 
   m_globalMatrices = { 'time': 3, 'volume': 3, 'boundary': 52 }
 
   m_matricesDir = ""
   m_matrixMarketFiles = {}
-  m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81 } }
+  m_nonZeros          = { 1: { 'starMatrix': 24, 'fluxSolver': 81, 'fluxSolverPF': 81, 'fluxSolverPF2': 81 } }
 
   m_architectures = ['wsm', 'snb', 'hsw', 'skx', 'knc', 'knl', 'noarch']
 
@@ -253,7 +254,8 @@ class Configuration():
       self.m_matrixMarketFiles[l_order] = {}
       self.m_nonZeros[l_order]          = { 'starMatrix':   24,
                                             'fluxSolver':   81,
-                                            'fluxSolverPF': 81 }
+                                            'fluxSolverPF': 81, 
+                                            'fluxSolverPF2': 81 }
 
       for l_matrix in self.m_matrixIds.keys():
         if( l_matrix is "fluxSolver" or l_matrix is "starMatrix" ):

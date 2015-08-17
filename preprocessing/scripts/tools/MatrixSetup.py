@@ -451,6 +451,19 @@ class MatrixSetup:
                                                                           i_precision               = l_precision,
                                                                           i_prefetch                = l_starSolver_prefetch )
 
+        if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+          l_starSolver_prefetch = 'pfsigonly'
+        elif l_architecture in ['knl']:
+          l_starSolver_prefetch = 'BL2viaC'
+        else:
+          l_starSolver_prefetch = 'pfsigonly'
+
+        l_alignedGemm = l_alignedGemm + self.getDenseStarSolverMatrices(  i_alignment               = l_alignment,
+                                                                          i_degreesOfBasisFunctions = range(0,i_maximumDegreeOfBasisFunctions),
+                                                                          i_numberOfQuantities      = i_numberOfQuantities,
+                                                                          i_precision               = l_precision,
+                                                                          i_prefetch                = l_starSolver_prefetch )
+
         # remove all duplicates which might have been generated (recursive time integration)
         l_alignedGemm =  {l_value['routine_name']:l_value for l_value in l_alignedGemm}.values()
 

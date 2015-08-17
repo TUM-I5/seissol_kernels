@@ -336,7 +336,7 @@ class SeisSolGen:
                                                                                    i_precision               = l_precision )
 
             if( l_kernel == 'boundary' ):
-              l_numberOfBinds = 54
+              l_numberOfBinds = 55
 
               # get the order and name of the matrices
               l_matrixNames = {}
@@ -378,6 +378,19 @@ class SeisSolGen:
                 l_starSolver_prefetch = 'pfsigonly'
               elif l_architecture in ['knl']:
                 l_starSolver_prefetch = 'AL2jpst_BL2viaC'
+              else:
+                l_starSolver_prefetch = 'pfsigonly'
+
+              l_localDgemm  = l_localDgemm + self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
+                                                                                   i_degreesOfBasisFunctions = [l_order-1],
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                   i_precision               = l_precision,
+                                                                                   i_prefetch                = l_starSolver_prefetch )
+
+              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+                l_starSolver_prefetch = 'pfsigonly'
+              elif l_architecture in ['knl']:
+                l_starSolver_prefetch = 'BL2viaC'
               else:
                 l_starSolver_prefetch = 'pfsigonly'
 
@@ -456,11 +469,14 @@ class SeisSolGen:
                     l_gemmMatrix = l_globalDgemm[0]
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                     l_sourceCode = l_sourceCode + '#endif\n'
-                  elif (l_bind == 53):
-                    l_gemmMatrix = l_localDgemm[1]
+                  elif (l_bind > 52):
+                    l_gemmMatrix = l_localDgemm[(l_bind % 52)]
                     l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
                     l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
-                    l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    if ( l_bind == 53 ):
+                      l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    else:
+                      l_sourceCode = l_sourceCode + '#ifdef ENABLE_STREAM_MATRIX_PREFETCH\n'
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                     l_sourceCode = l_sourceCode + '#else\n'
                     l_gemmMatrix = l_localDgemm[0]

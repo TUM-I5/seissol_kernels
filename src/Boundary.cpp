@@ -43,6 +43,10 @@
 #include <matrix_kernels/sparse.h>
 #include <matrix_kernels/dense.h>
 
+#ifdef ENABLE_MATRIX_PREFETCH
+#include <immintrin.h>
+#endif
+
 #ifndef NDEBUG
 #pragma message "compiling boundary kernel with assertions"
 #endif
@@ -62,7 +66,13 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
                                                              real         *i_fluxMatrices[52],
                                                              real          i_timeIntegrated[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
                                                              real          i_fluxSolvers[4][    NUMBER_OF_QUANTITIES             *NUMBER_OF_QUANTITIES ],
+#ifdef ENABLE_STREAM_MATRIX_PREFETCH
+                                                             real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                             real          i_timeIntegrated_prefetch[    NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ],
+                                                             real          io_degreesOfFreedom_prefetch[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
+#else
                                                              real          io_degreesOfFreedom[ NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES ] ) {
+#endif
   /*
    * assert valid input
    */
@@ -90,9 +100,33 @@ void seissol::kernels::Boundary::computeLocalIntegral( const enum faceType i_fac
       // compute neighboring elements contribution
       m_matrixKernels[l_face]( i_fluxMatrices[l_face], i_timeIntegrated,      l_temporaryResult,
                                NULL,                   NULL,                  NULL                 ); // These will be be ignored
-
+#ifdef ENABLE_STREAM_MATRIX_PREFETCH
+      if (l_face == 1) {
+        m_matrixKernels[54](     l_temporaryResult,      i_fluxSolvers[l_face],       io_degreesOfFreedom,
+                                 NULL,                   i_timeIntegrated_prefetch,   NULL                 );
+      } else if (l_face == 2) {
+        m_matrixKernels[54](     l_temporaryResult,      i_fluxSolvers[l_face],              io_degreesOfFreedom,
+                                 NULL,                   io_degreesOfFreedom_prefetch,       NULL                 );
+      } else {
+        m_matrixKernels[52](     l_temporaryResult,      i_fluxSolvers[l_face], io_degreesOfFreedom,
+                                 NULL,                   NULL,                  NULL                 ); // These will be be ignored
+      }
+#else
       m_matrixKernels[52](     l_temporaryResult,      i_fluxSolvers[l_face], io_degreesOfFreedom,
                                NULL,                   NULL,                  NULL                 ); // These will be be ignored
+#endif
+    } else {
+#ifdef ENABLE_STREAM_MATRIX_PREFETCH
+      if (l_face == 0) {
+        for (unsigned int l_p = 0; l_p < NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES; l_p += 8 ){
+          _mm_prefetch( (const char*) i_timeIntegrated_prefetch+l_p, _MM_HINT_T1 );
+        }
+      } else if (l_face == 1) {
+        for (unsigned int l_p = 0; l_p < NUMBER_OF_ALIGNED_BASIS_FUNCTIONS*NUMBER_OF_QUANTITIES; l_p += 8 ){
+          _mm_prefetch( (const char*) io_degreesOfFreedom_prefetch+l_p, _MM_HINT_T1 );
+        }
+      }
+#endif
     }
   }
 }
