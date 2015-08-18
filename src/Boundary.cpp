@@ -43,7 +43,7 @@
 #include <matrix_kernels/sparse.h>
 #include <matrix_kernels/dense.h>
 
-#ifdef ENABLE_MATRIX_PREFETCH
+#ifdef ENABLE_STREAM_MATRIX_PREFETCH
 #include <immintrin.h>
 #endif
 
@@ -189,6 +189,13 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
    */
   // temporary product (we have to multiply a matrix from the left and the right)
   real l_temporaryResult[NUMBER_OF_ALIGNED_DOFS] __attribute__((aligned(PAGESIZE_STACK)));
+
+#ifdef ENABLE_STREAM_MATRIX_PREFETCH
+  // perfetch the first cacheline per column for the DOFs
+  for ( unsigned int l_var = 0; l_var < NUMBER_OF_QUANTITIES; l_var++ ) {
+    _mm_prefetch( (const char*) io_degreesOfFreedom+(l_var*NUMBER_OF_ALIGNED_BASIS_FUNCTIONS), _MM_HINT_T1 );
+  }
+#endif
 
   // iterate over faces
   for( unsigned int l_face = 0; l_face < 4; l_face++ ) {
