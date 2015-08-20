@@ -167,8 +167,10 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' 1'                          +\
                                     ' '+str(int(l_matrix['add'])) +\
-                                    ' 1 1'
-          # 1 1: we always rely on alignment based on LDA and LDC
+                                    ' 1 1'                        +\
+                                    ' '+str(l_matrix['arch'])     +\
+                                    ' '+str(l_matrix['prefetch']) +\
+                                    ' '+l_precision.upper() + 'P'
         else:
           # convert to temporary csc file
           l_cscFile = tempfile.NamedTemporaryFile(); l_csrFile = tempfile.NamedTemporaryFile();
@@ -180,7 +182,6 @@ class SeisSolGen:
           l_commandLineParameters =     l_matrix['type']          +\
                                     ' '+l_pathToOutputFile        +\
                                     ' '+l_matrix['routine_name']  +\
-                                    ' '+l_cscFile.name            +\
                                     ' '+str(l_matrix['m'])        +\
                                     ' '+str(l_matrix['n'])        +\
                                     ' '+str(l_matrix['k'])        +\
@@ -189,10 +190,11 @@ class SeisSolGen:
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' 1'                          +\
                                     ' '+str(int(l_matrix['add'])) +\
-                                    ' 1 1'
-          # 1 1: we always rely on alignment based on LDA and LDC
-
-        l_commandLineParameters += ' '+str(l_matrix['arch']) + ' ' + str(l_matrix['prefetch']) + ' ' + l_precision.upper() + 'P'
+                                    ' 1 1'                        +\
+                                    ' '+str(l_matrix['arch'])     +\
+                                    ' '+str(l_matrix['prefetch']) +\
+                                    ' '+l_precision.upper() + 'P' +\
+                                    ' ' + l_cscFile.name
 
         # generate code C++-code for the current matrix
         self.executeSeisSolgen( self.m_configuration.m_pathToGemmCodeGenerator,\
@@ -334,7 +336,7 @@ class SeisSolGen:
                                                                                    i_precision               = l_precision )
 
             if( l_kernel == 'boundary' ):
-              l_numberOfBinds = 54
+              l_numberOfBinds = 55
 
               # get the order and name of the matrices
               l_matrixNames = {}
@@ -376,6 +378,19 @@ class SeisSolGen:
                 l_starSolver_prefetch = 'pfsigonly'
               elif l_architecture in ['knl']:
                 l_starSolver_prefetch = 'AL2jpst_BL2viaC'
+              else:
+                l_starSolver_prefetch = 'pfsigonly'
+
+              l_localDgemm  = l_localDgemm + self.m_matrixSetup.getDenseStarSolverMatrices(       i_alignment               = l_alignment,
+                                                                                   i_degreesOfBasisFunctions = [l_order-1],
+                                                                                   i_numberOfQuantities      = i_numberOfQuantities,
+                                                                                   i_precision               = l_precision,
+                                                                                   i_prefetch                = l_starSolver_prefetch )
+
+              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+                l_starSolver_prefetch = 'pfsigonly'
+              elif l_architecture in ['knl']:
+                l_starSolver_prefetch = 'BL2viaC'
               else:
                 l_starSolver_prefetch = 'pfsigonly'
 
@@ -454,11 +469,14 @@ class SeisSolGen:
                     l_gemmMatrix = l_globalDgemm[0]
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                     l_sourceCode = l_sourceCode + '#endif\n'
-                  elif (l_bind == 53):
-                    l_gemmMatrix = l_localDgemm[1]
+                  elif (l_bind > 52):
+                    l_gemmMatrix = l_localDgemm[(l_bind % 52)]
                     l_sourceCode = l_sourceCode + 'm_nonZeroFlops[' + str(l_bind) + '] = ' + str(l_nonZeros*self.m_matrixSetup.getNumberOfBasisFunctions(l_matrixOrder)*2)   + ';\n'
                     l_sourceCode = l_sourceCode + 'm_hardwareFlops[' + str(l_bind) + '] = ' + str(l_gemmMatrix['flops'])   + ';\n'
-                    l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    if ( l_bind == 53 ):
+                      l_sourceCode = l_sourceCode + '#ifdef ENABLE_MATRIX_PREFETCH\n'
+                    else:
+                      l_sourceCode = l_sourceCode + '#ifdef ENABLE_STREAM_MATRIX_PREFETCH\n'
                     l_sourceCode = l_sourceCode + 'm_matrixKernels[' + str(l_bind) + '] = ' + l_gemmMatrix['routine_name'] + ';\n'
                     l_sourceCode = l_sourceCode + '#else\n'
                     l_gemmMatrix = l_localDgemm[0]

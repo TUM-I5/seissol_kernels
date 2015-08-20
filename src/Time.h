@@ -182,6 +182,19 @@ class seissol::kernels::Time {
                                        real*        o_timeIntegrated,
                                        real*        o_timeDerivatives );
 
+    /**
+     * Initialize the timeIntegrated and derivativesBuffer before computing the time integration
+     *
+     * @param i_scalar the scalar factor of the time integration for the derivative which is currently being processed
+     * @param i_degreesOfFreedom of the current time step \f$ t^\text{cell} \f$
+     * @param o_timeIntegrated the buffer into which the time integration is accumulated to
+     * @param o_derivativesBuffer time derivatives of the degrees of freedom in compressed format, this needs to be start address
+     */
+    inline void initialize( const real         i_scalar,
+                            const real*        i_degreesOfFreedom,
+                                  real*        o_timeIntegrated,
+                                  real*        o_derivativesBuffer );
+
   public:
     /**
      * Gets the lts setup in relation to the four face neighbors.
