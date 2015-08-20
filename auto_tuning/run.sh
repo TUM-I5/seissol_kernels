@@ -46,12 +46,12 @@ TUNE_CELLS[5]=50000
 TUNE_CELLS[6]=50000
 TUNE_CELLS[7]=50000
 
-TUNE_TS[2]=25000
-TUNE_TS[3]=15000
-TUNE_TS[4]=8500
-TUNE_TS[5]=4000
-TUNE_TS[6]=1750
-TUNE_TS[7]=750
+TUNE_TS[2]=15000
+TUNE_TS[3]=7500
+TUNE_TS[4]=4250
+TUNE_TS[5]=2500
+TUNE_TS[6]=1000
+TUNE_TS[7]=500
 
 # Usage info
 show_help() {
@@ -101,6 +101,18 @@ generate_code() {
     echo_date "offline assembly failed, exiting: $1 $2 $3 $4 $5" >&2
     exit 1
   fi
+}
+
+# Waits until less then the given number of jobs are scheduled.
+#
+# @param $1 ${NUMBER_OF_JOBS}
+wait_for_slot() {
+  JOB_LIST=($(jobs -p))
+  while (( ${#JOB_LIST[*]} >= $1 ))
+  do
+    sleep 1
+    JOB_LIST=($(jobs -p))
+  done
 }
 
 # Builds the code.
@@ -339,7 +351,10 @@ while [ $CURRENT_REPEAT -lt $TUNE_REPEATS ]; do
           # build this setting
           mkdir -p $BUILD_DIR
 
-          build ${GENERATED_KERNELS} ${ORDER} ${SEISSOL_KERNELS_DIR} ${CODE_DIR} ${BUILD_DIR} ${SEISSOL_KERNELS_DIR}/proxy >> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.err
+          # wait for a slot to build
+          wait_for_slot 8
+
+          build ${GENERATED_KERNELS} ${ORDER} ${SEISSOL_KERNELS_DIR} ${CODE_DIR} ${BUILD_DIR} ${SEISSOL_KERNELS_DIR}/proxy >> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.log 2>> ${LOG_DIR}/build_${CONFIG_BASE}_${ORDER}.err &
         fi
 
         if [ $UT_SWITCH ]  && [ $CURRENT_REPEAT -lt 1 ]; then
