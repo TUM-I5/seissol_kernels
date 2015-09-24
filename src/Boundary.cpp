@@ -223,12 +223,25 @@ void seissol::kernels::Boundary::computeNeighborsIntegral( const enum faceType i
       assert( l_id < 52 );
 
 #ifdef ENABLE_MATRIX_PREFETCH
-      // compute neighboring elements contribution
-      m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face],         l_temporaryResult,
-                             i_fluxMatricies_prefetch[l_face], i_faceNeighbors_prefetch[l_face], NULL                 ); 
+      real* l_faceNeigh_prefetch = NULL;
+      real* l_flux_prefetch = NULL;
+      if (i_faceNeighbors_prefetch[l_face] != NULL) {
+        l_faceNeigh_prefetch = i_faceNeighbors_prefetch[l_face];
+      } else {
+        l_faceNeigh_prefetch = io_degreesOfFreedom;
+      }
+      if (i_fluxMatricies_prefetch[l_face] != NULL) {
+        l_flux_prefetch = i_fluxMatricies_prefetch[l_face];
+      } else {
+        l_flux_prefetch = i_fluxMatrices[l_id];
+      }
 
-      m_matrixKernels[53](   l_temporaryResult,                i_fluxSolvers[l_face],    io_degreesOfFreedom,
-                             i_fluxMatricies_prefetch[l_face], i_faceNeighbors_prefetch[l_face],                     NULL                 ); 
+      // compute neighboring elements contribution
+      m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
+                             l_flux_prefetch,      l_faceNeigh_prefetch,     NULL                 ); 
+
+      m_matrixKernels[53](   l_temporaryResult,    i_fluxSolvers[l_face],    io_degreesOfFreedom,
+                             l_flux_prefetch,      l_faceNeigh_prefetch,     NULL                 ); 
 #else
       // compute neighboring elements contribution
       m_matrixKernels[l_id]( i_fluxMatrices[l_id], i_timeIntegrated[l_face], l_temporaryResult,
