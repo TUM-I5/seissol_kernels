@@ -112,7 +112,7 @@ for l_file in l_files:
       l_runtime[l_base]['order']                       = int(l_match.group(5))
       l_runtime[l_base]['time']                        = ''
   elif 'neighboring' in l_base and l_arguments['type'] in ['all', 'neighboring']:
-    l_match = re.search( "tune_neighboring_0_([0-9])+_([0-9])+.log" , l_base )
+    l_match = re.search( "tune_neighboring_0_([0-9]+)_([0-9]+).log" , l_base )
 
     # create a new dictionary for this base if required
     if( not l_base in l_runtime ):
