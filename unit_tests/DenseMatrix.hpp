@@ -41,7 +41,7 @@
 #ifndef DENSEMATRIX_HPP_
 #define DENSEMATRIX_HPP_
 
-#include <typedefs.hpp>
+#include <Initializer/typedefs.hpp>
 #include <Initializer/XmlParser.hpp>
 #include <cxxtest/TestSuite.h>
 

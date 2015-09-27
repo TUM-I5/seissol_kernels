@@ -42,7 +42,7 @@
 #include <cxxtest/TestSuite.h>
 #include "configuration.hpp"
 
-#include "../src/common.hpp"
+#include "../src/Kernels/common.hpp"
 #define private public
 #include "../src/Time.h"
 #undef private

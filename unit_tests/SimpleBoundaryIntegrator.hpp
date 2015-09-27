@@ -41,7 +41,7 @@
 #ifndef SIMPLEBOUNDARYINTEGRATOR_HPP_
 #define SIMPLEBOUNDARYINTEGRATOR_HPP_
 
-#include <typedefs.hpp>
+#include <Initializer/typedefs.hpp>
 
 #include "DenseMatrix.hpp"
 

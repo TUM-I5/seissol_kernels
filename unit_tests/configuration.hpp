@@ -42,7 +42,7 @@
 #define CONFIGURATION_HPP
 
 #include <cstdio>
-#include <typedefs.hpp>
+#include <Initializer/typedefs.hpp>
 #include <cxxtest/TestSuite.h>
 #include <cxxtest/GlobalFixture.h>
 
