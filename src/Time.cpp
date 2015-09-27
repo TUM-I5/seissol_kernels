@@ -484,7 +484,7 @@ void seissol::kernels::Time::initialize( const real         i_scalar,
   }
   __m128d l_zero = _mm_setzero_pd();
   for( unsigned int l_dof = NUMBER_OF_ALIGNED_DOFS; l_dof < NUMBER_OF_ALIGNED_DERS; l_dof += 2 ) {
-    _mm128_store_pd( o_derivativesBuffer + l_dof, l_zero );
+    _mm_store_pd( o_derivativesBuffer + l_dof, l_zero );
   }
 #elif defined(SINGLE_PRECISION)
   __m128 l_intrin_scalar = _mm_load_ss(&i_scalar);
@@ -496,7 +496,7 @@ void seissol::kernels::Time::initialize( const real         i_scalar,
   }
   __m128 l_zero = _mm_setzero_ps();
   for( unsigned int l_dof = NUMBER_OF_ALIGNED_DOFS; l_dof < NUMBER_OF_ALIGNED_DERS; l_dof += 4 ) {
-    _mm128_store_ps( o_derivativesBuffer + l_dof, l_zero );
+    _mm_store_ps( o_derivativesBuffer + l_dof, l_zero );
   }
 #else
 #error no precision was defined 
