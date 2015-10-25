@@ -2,56 +2,42 @@
 <sparse_matrices>
 
   <O2>
-    <local>
-      <starMatrix/>
-    </local>
-    <time>
-      <kXiDivMT/>
-    </time>
+    <local/>
+    <time/>
     <volume/>
     <boundary/>
   </O2>
 
   <O3>
-    <local>
-      <starMatrix/>
-    </local>
+    <local/>
     <time/>
     <volume/>
     <boundary/>
   </O3>
 
   <O4>
-    <local>
-      <starMatrix/>
-    </local>
+    <local/>
     <time/>
     <volume/>
     <boundary/>
   </O4>
 
   <O5>
-    <local>
-      <starMatrix/>
-    </local>
+    <local/>
     <time/>
     <volume/>
     <boundary/>
   </O5>
 
   <O6>
-    <local>
-      <starMatrix/>
-    </local>
+    <local/>
     <time/>
     <volume/>
     <boundary/>
   </O6>
 
   <O7>
-    <local>
-      <starMatrix/>
-    </local>
+    <local/>
     <time/>
     <volume/>
     <boundary/>
