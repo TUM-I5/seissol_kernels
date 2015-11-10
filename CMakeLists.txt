@@ -55,7 +55,7 @@ macro (test_cache_enum var)
 endmacro ()
 
 set (GENERATED_KERNELS "" CACHE STRING "Generated kernels to use")
-set_property (CACHE GENERATED_KERNELS PROPERTY STRINGS swsm dwsm ssnb dsnb sknc dknc shsw dhsw)
+set_property (CACHE GENERATED_KERNELS PROPERTY STRINGS swsm dwsm ssnb dsnb sknc dknc shsw dhsw sknl dknl sskx dskx)
 test_cache_enum (GENERATED_KERNELS)
 
 set (CONVERGENCE_ORDER "" CACHE STRING "Convergence order")
