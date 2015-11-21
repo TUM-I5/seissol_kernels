@@ -55,7 +55,7 @@ macro (test_cache_enum var)
 endmacro ()
 
 set (GENERATED_KERNELS "" CACHE STRING "Generated kernels to use")
-set_property (CACHE GENERATED_KERNELS PROPERTY STRINGS swsm dwsm ssnb dsnb sknc dknc shsw dhsw sknl dknl sskx dskx)
+set_property (CACHE GENERATED_KERNELS PROPERTY STRINGS swsm dwsm ssnb dsnb sknc dknc shsw dhsw sknl dknl)
 test_cache_enum (GENERATED_KERNELS)
 
 set (CONVERGENCE_ORDER "" CACHE STRING "Convergence order")
@@ -93,10 +93,6 @@ elseif( ${ARCHITECTURE_PLAIN} STREQUAL snb )
 elseif( ${ARCHITECTURE_PLAIN} STREQUAL hsw )
   add_definitions( -DALIGNMENT=32
                    -xCORE-AVX2
-                   -fma )
-elseif( ${ARCHITECTURE_PLAIN} STREQUAL skx )
-  add_definitions( -DALIGNMENT=64
-                   -xCORE-AVX512
                    -fma )
 elseif( ${ARCHITECTURE_PLAIN} STREQUAL knc )
   add_definitions( -DALIGNMENT=64

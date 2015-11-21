@@ -356,7 +356,7 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+              if l_architecture in ['wsm', 'snb', 'hsw']:
                 l_fluxMatrix_prefetch = 'BL2viaC'
               elif l_architecture in ['knl']:
                 l_fluxMatrix_prefetch = 'curAL2_BL2viaC'
@@ -374,7 +374,7 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+              if l_architecture in ['wsm', 'snb', 'hsw']:
                 l_starSolver_prefetch = 'pfsigonly'
               elif l_architecture in ['knl']:
                 l_starSolver_prefetch = 'AL2jpst_BL2viaC'
@@ -387,7 +387,7 @@ class SeisSolGen:
                                                                                    i_precision               = l_precision,
                                                                                    i_prefetch                = l_starSolver_prefetch )
 
-              if l_architecture in ['wsm', 'snb', 'hsw', 'skx']:
+              if l_architecture in ['wsm', 'snb', 'hsw']:
                 l_starSolver_prefetch = 'pfsigonly'
               elif l_architecture in ['knl']:
                 l_starSolver_prefetch = 'BL2viaC'
