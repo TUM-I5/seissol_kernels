@@ -185,8 +185,8 @@ class SeisSolGen:
                                     ' '+str(l_matrix['m'])        +\
                                     ' '+str(l_matrix['n'])        +\
                                     ' '+str(l_matrix['k'])        +\
-                                    ' '+str(l_matrix['ld_a'])     +\
-                                    ' '+str(l_matrix['ld_b'])     +\
+                                    ' '+str(max(l_matrix['ld_a'],0))     +\
+                                    ' '+str(max(l_matrix['ld_b'],0))     +\
                                     ' '+str(l_matrix['ld_c'])     +\
                                     ' 1'                          +\
                                     ' '+str(int(l_matrix['add'])) +\
