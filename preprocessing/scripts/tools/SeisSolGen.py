@@ -356,12 +356,12 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw']:
-                l_fluxMatrix_prefetch = 'BL2viaC'
+              if l_architecture in ['knc','noarch']:
+                l_fluxMatrix_prefetch = 'pfsigonly'
               elif l_architecture in ['knl']:
                 l_fluxMatrix_prefetch = 'curAL2_BL2viaC'
               else:
-                l_fluxMatrix_prefetch = 'pfsigonly'
+                l_fluxMatrix_prefetch = 'BL2viaC'
 
               l_globalDgemm = l_globalDgemm + self.m_matrixSetup.getDenseFluxMatrices(             i_alignment               = l_alignment,
                                                                                    i_degreesOfBasisFunctions = [l_order-1],
@@ -374,9 +374,7 @@ class SeisSolGen:
                                                                                    i_numberOfQuantities      = i_numberOfQuantities,
                                                                                    i_precision               = l_precision )
 
-              if l_architecture in ['wsm', 'snb', 'hsw']:
-                l_starSolver_prefetch = 'pfsigonly'
-              elif l_architecture in ['knl']:
+              if l_architecture in ['knl']:
                 l_starSolver_prefetch = 'AL2jpst_BL2viaC'
               else:
                 l_starSolver_prefetch = 'pfsigonly'
@@ -387,9 +385,7 @@ class SeisSolGen:
                                                                                    i_precision               = l_precision,
                                                                                    i_prefetch                = l_starSolver_prefetch )
 
-              if l_architecture in ['wsm', 'snb', 'hsw']:
-                l_starSolver_prefetch = 'pfsigonly'
-              elif l_architecture in ['knl']:
+              if l_architecture in ['knl']:
                 l_starSolver_prefetch = 'BL2viaC'
               else:
                 l_starSolver_prefetch = 'pfsigonly'
