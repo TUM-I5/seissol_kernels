@@ -43,8 +43,12 @@
 from scipy.io.mmio import *
 from scipy.sparse import *
 
-from matplotlib import pyplot, colors
-from pylab import savefig
+try:
+  from matplotlib import pyplot, colors
+  from pylab import savefig
+  use_matplotlib = True
+except ImportError:
+  use_matplotlib = False
 from numpy import arange, nonzero, sort, float64
 from lxml import etree
 
@@ -423,6 +427,10 @@ class MatrixConverter():
                            i_baseName,
                            i_pathToOutputDirectory,
                            i_readMatrix = False):
+    if not use_matplotlib:
+      l_logger.log('matplotlib not found, skipping plots', 2)
+      return
+
     l_logger.log('plotting sparsity pattern of: '+i_fullMatrix, 2)
     
     if( i_readMatrix == True ):
